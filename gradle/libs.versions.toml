@@ -15,6 +15,8 @@ hilt = "2.57.2"
 ktor = "3.5.0"
 ksp = "2.3.9"
 taglib = "1.0.6"
+androidxTest = "1.7.0"
+robolectric = "4.17"
 
 [libraries]
 guava = { group = "com.google.guava", name = "guava", version = "33.5.0-android" }
@@ -61,6 +63,9 @@ media3-workmanager = { group = "androidx.media3", name = "media3-exoplayer-workm
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+androidx-test-core = { group = "androidx.test", name = "core-ktx", version.ref = "androidxTest" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
 apache-lang3 = { group = "org.apache.commons", name = "commons-lang3", version = "3.20.0" }
 

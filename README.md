@@ -1,4 +1,4 @@
-# OuterTune
+# OuterTune-Bage340
 
 [![OuterTune app icon](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/outertune.webp)](https://github.com/yuuichi-s/OuterTune/blob/dev/assets/outertune.webp)
 
@@ -8,12 +8,14 @@
 
 [English](README.md) | [日本語](README_ja.md)
 
-A Material 3 YouTube Music client & local music player for Android
+An independent GPL-3.0 fork of OuterTune that combines YouTube Music with local music playback.
 
 > [!NOTE]
-> This is a fork based on [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune).
+> This is an independent fork based on [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune). It is not the official OuterTune project.
 >
-> - No distribution channel is available at this time, but one may be provided in the future.
+> OuterTune-Bage340 preserves YouTube Music support and adds playback/download reliability fixes while selectively backporting compatible improvements from the official local-focused branch. Its features can therefore differ from official OuterTune even when the version baseline is the same.
+>
+> Test builds are distributed as CI artifacts. GitHub Releases are published only after a revision has been tested and explicitly approved.
 >
 > If you would like to use it, you can build the app yourself. For most people, we recommend the `core` build:
 >

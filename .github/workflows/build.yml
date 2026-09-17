@@ -46,17 +46,17 @@ jobs:
           test -n "$APK"
           AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
           "$AAPT" dump badging "$APK" | tee apk-badging.txt
-          grep -q "package: name='com.dd3boh.outertune' versionCode='91' versionName='0.10.15'" apk-badging.txt
-          cp "$APK" OuterTune-0.10.15-v91-unsigned.apk
-          sha256sum OuterTune-0.10.15-v91-unsigned.apk | tee SHA256SUMS.txt
+          grep -q "package: name='com.dd3boh.outertune' versionCode='91' versionName='0.11.1'" apk-badging.txt
+          cp "$APK" OuterTune-0.11.1-v91-unsigned.apk
+          sha256sum OuterTune-0.11.1-v91-unsigned.apk | tee SHA256SUMS.txt
 
       - name: Upload verified unsigned APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: OuterTune-0.10.15-v91-unsigned
+          name: OuterTune-0.11.1-v91-unsigned
           if-no-files-found: error
           retention-days: 14
           path: |
-            OuterTune-0.10.15-v91-unsigned.apk
+            OuterTune-0.11.1-v91-unsigned.apk
             apk-badging.txt
             SHA256SUMS.txt

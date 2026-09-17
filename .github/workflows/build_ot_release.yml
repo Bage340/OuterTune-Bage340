@@ -1,4 +1,4 @@
-name: Build APKs for release
+name: Build signed release-candidate APKs
 on:
   workflow_dispatch:
 
@@ -29,12 +29,6 @@ jobs:
           KEYSTORE: ${{ secrets.KEYSTORE }}
           KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
 
-      - name: Get date-time string
-        id: datetime
-        run: |
-          DATE_TAG=$(date +'%Y-%m-%d_%H-%M-%S')
-          echo "date_tag=$DATE_TAG" >> $GITHUB_ENV
-
       - name: Build core release APK
         run: ./gradlew assembleCoreRelease
 
@@ -44,14 +38,12 @@ jobs:
       - name: Build full release APK
         run: ./gradlew assembleFullRelease
 
-      - name: Create github release draft
-        uses: softprops/action-gh-release@v2
+      - name: Upload signed release-candidate APKs
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: build-${{ env.date_tag }}
-          name: "Build ${{ env.date_tag }}"
-          draft: true
-          files: |
+          name: OuterTune-0.11.1-v91-signed-release-candidate
+          if-no-files-found: error
+          retention-days: 14
+          path: |
             app/build/outputs/apk/core/release/*.apk
             app/build/outputs/apk/full/release/*.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.REL_TOKEN }}
