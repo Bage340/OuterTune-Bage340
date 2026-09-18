@@ -69,7 +69,7 @@ object PlaylistFolders {
         if (from == ROOT || contains(from, parent)) return null
 
         val target = child(parent, newName)
-        if (target == from) return emptyMap()
+        if (same(target, from)) return emptyMap()
         val subtree = canonicalPaths.filter { contains(from, it) }
         val outside = canonicalPaths - subtree.toSet()
         val plan = subtree.associateWith { relocate(it, from, target) }

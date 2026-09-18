@@ -57,4 +57,13 @@ class ScanPathPolicyTest {
         assertTrue(shouldReconcileScan(resultCount = 0, existingLocalSongCount = 0))
         assertTrue(shouldReconcileScan(resultCount = 1, existingLocalSongCount = 3))
     }
+
+    @Test(expected = ScannerAbortException::class)
+    fun emptyTagLibEnumerationAbortsBeforeExistingSongsCanBeDisabled() {
+        requireSafeReconciliation(
+            resultCount = 0,
+            existingLocalSongCount = 12,
+            source = "TagLib scan",
+        )
+    }
 }

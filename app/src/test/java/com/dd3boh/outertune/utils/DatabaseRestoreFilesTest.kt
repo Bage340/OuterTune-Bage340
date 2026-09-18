@@ -7,6 +7,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.IOException
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 
 class DatabaseRestoreFilesTest {
     @get:Rule
@@ -17,7 +19,7 @@ class DatabaseRestoreFilesTest {
         val target = temporaryFolder.newFile("song.db").apply { writeText("old") }
         val staged = temporaryFolder.newFile("probe_song.db").apply { writeText("new") }
 
-        installRestoredDatabase(staged, target)
+        installRestoredFiles(listOf(RestoreFileReplacement(staged, target)))
 
         assertEquals("new", target.readText())
         assertFalse(staged.exists())
@@ -30,10 +32,31 @@ class DatabaseRestoreFilesTest {
         val missing = temporaryFolder.root.resolve("missing.db")
 
         assertThrows(IOException::class.java) {
-            installRestoredDatabase(missing, target)
+            installRestoredFiles(listOf(RestoreFileReplacement(missing, target)))
         }
 
         assertEquals("current", target.readText())
+    }
+
+    @Test
+    fun laterInstallFailureRollsBackEarlierDatabaseReplacement() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("old-db") }
+        val stagedDatabase = temporaryFolder.newFile("probe_song.db").apply { writeText("new-db") }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply { writeText("old-settings") }
+        val missingSettings = temporaryFolder.root.resolve("missing-settings")
+
+        assertThrows(IOException::class.java) {
+            installRestoredFiles(
+                listOf(
+                    RestoreFileReplacement(stagedDatabase, database),
+                    RestoreFileReplacement(missingSettings, settings),
+                )
+            )
+        }
+
+        assertEquals("old-db", database.readText())
+        assertEquals("old-settings", settings.readText())
+        assertFalse(temporaryFolder.root.resolve("song.db.restore-backup").exists())
     }
 
     @Test
@@ -47,5 +70,16 @@ class DatabaseRestoreFilesTest {
         assertFalse(database.exists())
         assertFalse(wal.exists())
         assertFalse(shm.exists())
+    }
+
+    @Test
+    fun oversizedArchiveEntryIsRejectedBeforeWritingPastLimit() {
+        val output = ByteArrayOutputStream()
+
+        assertThrows(IOException::class.java) {
+            copyRestoreEntry(ByteArrayInputStream(ByteArray(9)), output, maxBytes = 8)
+        }
+
+        assertEquals(0, output.size())
     }
 }

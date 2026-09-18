@@ -426,6 +426,11 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         // TODO: duplicate songs with different paths will cycle through paths, causing it to be synced instead of ignored...
         val allSongs = database.allLocalSongs().fastMapNotNull { it.song.localPath }.toSet()
         val converted = newSongs.fastMapNotNull { fileFromUri(context, it)?.absolutePath }
+        requireSafeReconciliation(
+            resultCount = converted.size,
+            existingLocalSongCount = allSongs.size,
+            source = "TagLib scan",
+        )
         val delta = converted.minus(allSongs)
         Log.d(TAG, "Songs found: ${delta.size}")
         val mod = if (newSongs.size < 20) {
@@ -872,11 +877,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         // TODO: duplicate songs with different paths will cycle through paths, causing it to be synced instead of ignored...
         val existingLocalSongs = database.allLocalSongs()
-        if (!shouldReconcileScan(mediaStoreSongs.size, existingLocalSongs.size)) {
-            throw ScannerAbortException(
-                "MediaStore returned no songs; existing local library was left unchanged"
-            )
-        }
+        requireSafeReconciliation(mediaStoreSongs.size, existingLocalSongs.size, "MediaStore")
         val finalSongs = if (!refreshExisting) {
             val allSongs = existingLocalSongs.fastMapNotNull { it.song.localPath }.toSet()
             ArrayList(mediaStoreSongs.filterNot { it.song.song.localPath in allSongs })

@@ -1,7 +1,7 @@
-# OuterTune 0.10.15 custom revisions
+# OuterTune 0.11.1 custom revision
 
-The application ID remains `com.dd3boh.outertune`. Revision v91 uses
-`versionName = 0.10.15` and `versionCode = 91`.
+The application ID remains `com.dd3boh.outertune`. The current test revision uses
+`versionName = 0.11.1` and `versionCode = 91`.
 
 ## Source history
 
@@ -21,10 +21,12 @@ Use JDK 21 and an Android SDK with the required platforms/build tools:
 ```
 
 The universal APK is under `app/build/outputs/apk/core/userdebug/`.
-CI builds from this repository and uploads an explicitly unsigned APK.
+The manual test workflow signs the core APK with the existing private OuterTune key
+stored in GitHub Secrets, verifies its package/version/certificate, and uploads only a
+short-lived Actions artifact. It does not create a tag or GitHub Release.
 
-An unsigned APK is not an installable update. Sign only with the existing private
-OuterTune key, outside Git. Never generate a replacement key. Verify package,
+Local builds without `keystore.properties` remain unsigned and are not installable updates.
+Never generate a replacement key. Verify package,
 version, alignment, APK SHA-256, and this certificate SHA-256 before publishing:
 
 ```text
@@ -66,5 +68,5 @@ If a Source error persists, collect its extended diagnostics. Equal IDs with a
 missing local path indicate a storage/index problem; differing IDs require further
 canonical-ID investigation. No title-based alias matching or database migration is introduced.
 
-Keep revision/tag/release `0.10.15-v91` until the user confirms these phone checks.
+Do not create a new tag or GitHub Release until the user confirms these phone checks.
 Build and unit tests alone do not establish that intermittent live YouTube failures are resolved.

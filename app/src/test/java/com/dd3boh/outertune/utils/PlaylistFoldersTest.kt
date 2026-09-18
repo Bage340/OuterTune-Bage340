@@ -48,6 +48,18 @@ class PlaylistFoldersTest {
         )
     }
 
+    @Test fun caseOnlyRenameIsASafeNoOp() {
+        assertEquals(
+            emptyMap<String, String>(),
+            PlaylistFolders.relocationPlan(
+                source = "/Mixes/",
+                destinationParent = "/",
+                paths = listOf("/Mixes/"),
+                newName = "mixes",
+            )
+        )
+    }
+
     @Test fun contentsIncludePersistentEmptyFoldersAndOnlyImmediatePlaylists() {
         val contents = PlaylistFolders.contents(
             parent = "/a/",

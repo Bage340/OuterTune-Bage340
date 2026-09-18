@@ -14,9 +14,11 @@ import com.dd3boh.outertune.extensions.div
 import com.dd3boh.outertune.extensions.zipInputStream
 import com.dd3boh.outertune.extensions.zipOutputStream
 import com.dd3boh.outertune.playback.MusicService
+import com.dd3boh.outertune.utils.RestoreFileReplacement
+import com.dd3boh.outertune.utils.copyRestoreEntry
 import com.dd3boh.outertune.utils.deleteDatabaseFiles
 import com.dd3boh.outertune.utils.deleteDatabaseSidecars
-import com.dd3boh.outertune.utils.installRestoredDatabase
+import com.dd3boh.outertune.utils.installRestoredFiles
 import com.dd3boh.outertune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -68,7 +70,10 @@ class BackupRestoreViewModel @Inject constructor(
         var restartRequired = false
         val result = runCatching {
             val stagedDatabase = context.getDatabasePath(InternalDatabase.TEST_DB_NAME)
-            val stagedSettings = context.cacheDir.resolve("restore-$SETTINGS_FILENAME")
+            val settingsFile = context.filesDir / "datastore" / SETTINGS_FILENAME
+            val settingsDirectory = requireNotNull(settingsFile.parentFile)
+            settingsDirectory.mkdirs()
+            val stagedSettings = settingsDirectory.resolve("$SETTINGS_FILENAME.restore-staged")
             stagedDatabase.parentFile?.mkdirs()
             deleteDatabaseFiles(stagedDatabase)
             if (stagedSettings.exists() && !stagedSettings.delete()) {
@@ -87,13 +92,17 @@ class BackupRestoreViewModel @Inject constructor(
                             SETTINGS_FILENAME -> {
                                 if (settingsFound) throw IOException("Duplicate settings in backup")
                                 settingsFound = true
-                                stagedSettings.outputStream().use(inputStream::copyTo)
+                                stagedSettings.outputStream().use { output ->
+                                    copyRestoreEntry(inputStream, output, MAX_SETTINGS_RESTORE_BYTES)
+                                }
                             }
 
                             InternalDatabase.DB_NAME -> {
                                 if (databaseFound) throw IOException("Duplicate database in backup")
                                 databaseFound = true
-                                FileOutputStream(stagedDatabase).use(inputStream::copyTo)
+                                FileOutputStream(stagedDatabase).use { output ->
+                                    copyRestoreEntry(inputStream, output, MAX_DATABASE_RESTORE_BYTES)
+                                }
                             }
                         }
                         entry = inputStream.nextEntry
@@ -120,15 +129,14 @@ class BackupRestoreViewModel @Inject constructor(
             restartRequired = true
 
             deleteDatabaseSidecars(targetDatabase)
-            installRestoredDatabase(stagedDatabase, targetDatabase)
-
-            if (settingsFound) {
-                val settingsFile = context.filesDir / "datastore" / SETTINGS_FILENAME
-                settingsFile.parentFile?.mkdirs()
-                stagedSettings.inputStream().use { inputStream ->
-                    settingsFile.outputStream().use(inputStream::copyTo)
+            installRestoredFiles(
+                buildList {
+                    add(RestoreFileReplacement(stagedDatabase, targetDatabase))
+                    if (settingsFound) {
+                        add(RestoreFileReplacement(stagedSettings, settingsFile))
+                    }
                 }
-            }
+            )
             RestoreResult.SUCCESS
         }
 
@@ -160,11 +168,15 @@ class BackupRestoreViewModel @Inject constructor(
         var probe: MusicDatabase? = null
         return try {
             probe = InternalDatabase.newTestInstance(context, InternalDatabase.TEST_DB_NAME)
-            val integrityOk = probe.openHelper.writableDatabase.isDatabaseIntegrityOk
-            if (integrityOk) {
+            val writableDatabase = probe.openHelper.writableDatabase
+            val integrityOk = writableDatabase.isDatabaseIntegrityOk
+            val foreignKeysOk = writableDatabase.query("PRAGMA foreign_key_check").use { cursor ->
+                !cursor.moveToFirst()
+            }
+            if (integrityOk && foreignKeysOk) {
                 runBlocking(Dispatchers.IO) { probe.checkpoint() }
             }
-            integrityOk
+            integrityOk && foreignKeysOk
         } catch (e: Exception) {
             Log.e(TAG, "DB validation failed", e)
             false
@@ -179,6 +191,8 @@ class BackupRestoreViewModel @Inject constructor(
 
     companion object {
         const val SETTINGS_FILENAME = "settings.preferences_pb"
+        private const val MAX_SETTINGS_RESTORE_BYTES = 64L * 1024 * 1024
+        private const val MAX_DATABASE_RESTORE_BYTES = 4L * 1024 * 1024 * 1024
     }
 
     private enum class RestoreResult { SUCCESS, INCOMPATIBLE }

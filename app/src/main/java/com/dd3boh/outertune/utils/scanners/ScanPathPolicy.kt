@@ -46,6 +46,18 @@ fun <T> requireScanResult(result: T?, operation: String): T =
 fun shouldReconcileScan(resultCount: Int, existingLocalSongCount: Int): Boolean =
     resultCount > 0 || existingLocalSongCount == 0
 
+fun requireSafeReconciliation(
+    resultCount: Int,
+    existingLocalSongCount: Int,
+    source: String,
+) {
+    if (!shouldReconcileScan(resultCount, existingLocalSongCount)) {
+        throw ScannerAbortException(
+            "$source returned no songs; existing local library was left unchanged"
+        )
+    }
+}
+
 private fun escapeLikeLiteral(value: String): String =
     value.replace("\\", "\\\\")
         .replace("%", "\\%")
