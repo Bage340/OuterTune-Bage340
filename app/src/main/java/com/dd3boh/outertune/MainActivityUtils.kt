@@ -9,7 +9,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.datastore.preferences.core.edit
 import androidx.navigation.NavController
 import com.dd3boh.outertune.constants.AUTO_SCAN_COOLDOWN
-import com.dd3boh.outertune.constants.AUTO_SCAN_SOFT_COOLDOWN
 import com.dd3boh.outertune.constants.AutomaticScannerKey
 import com.dd3boh.outertune.constants.ExcludedScanPathsKey
 import com.dd3boh.outertune.constants.LastLocalScanKey
@@ -40,6 +39,8 @@ import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerState
+import com.dd3boh.outertune.utils.scanners.ScannerAbortException
+import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -168,10 +169,6 @@ suspend fun scanInit(
         return
     }
     Log.i(MAIN_TAG, "Starting local media and downloads auto scan")
-    context.dataStore.edit { settings ->
-        settings[LastLocalScanKey] =
-            timeNow - AUTO_SCAN_COOLDOWN + AUTO_SCAN_SOFT_COOLDOWN // min cooldown to avoid crash loops
-    }
     coroutineScope.launch {
         snackbarHostState.showSnackbar(
             message = context.getString(R.string.scanner_auto_start),
@@ -199,6 +196,7 @@ suspend fun scanInit(
     if (scannerState.value <= 0 && localLibEnable) {
         if (perms == PackageManager.PERMISSION_GRANTED) {
             // equivalent to (quick scan)
+            var localScanSucceeded = false
             try {
                 withContext(Dispatchers.Main) {
                     playerConnection?.player?.pause()
@@ -206,8 +204,29 @@ suspend fun scanInit(
                 val scanner = LocalMediaScanner.getScanner(
                     context, scannerImpl, SCANNER_OWNER_LM
                 )
-                val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
-                scanner.quickSync(database, uris, scannerSensitivity, strictExtensions, strictFilePaths)
+                if (scannerImpl == ScannerImpl.MEDIASTORE) {
+                    scanner.fullMediaStoreSync(
+                        database = database,
+                        scanPaths = uriListFromString(scanPaths),
+                        excludedScanPaths = uriListFromString(excludedScanPaths),
+                        matchCriteria = scannerSensitivity,
+                        strictFileNames = strictExtensions,
+                        strictFilePaths = strictFilePaths,
+                        refreshExisting = false,
+                    )
+                } else {
+                    val uris = scanner.scanLocal(scanPaths, excludedScanPaths)
+                    scanner.quickSync(database, uris, scannerSensitivity, strictExtensions, strictFilePaths)
+                }
+                localScanSucceeded = true
+            } catch (e: ScannerAbortException) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "${context.getString(R.string.scanner_scan_fail)}: ${e.message}",
+                        withDismissAction = true,
+                        duration = SnackbarDuration.Short
+                    )
+                }
             } catch (e: Exception) {
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(
@@ -222,12 +241,16 @@ suspend fun scanInit(
                 destroyScanner(SCANNER_OWNER_LM)
             }
 
-            // post scan actions
-            context.dataStore.edit { settings ->
-                settings[LastLocalScanKey] = timeNow
+            if (localScanSucceeded) {
+                // post scan actions
+                context.dataStore.edit { settings ->
+                    settings[LastLocalScanKey] = timeNow
+                }
+                playerConnection?.service?.initQueue()
+                Log.i(MAIN_TAG, "Local media and downloads scan completed")
+            } else {
+                Log.w(MAIN_TAG, "Local media scan aborted; preserving the previous scan state")
             }
-            playerConnection?.service?.initQueue()
-            Log.i(MAIN_TAG, "Local media and downloads scan completed")
         } else if (perms == PackageManager.PERMISSION_DENIED) {
             // Request the permission using the permission launcher
             (context as MainActivity).permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)

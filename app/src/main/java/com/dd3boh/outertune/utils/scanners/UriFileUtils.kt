@@ -12,11 +12,11 @@ import androidx.documentfile.provider.TreeDocumentFileOt
 import java.io.File
 
 fun documentFileFromUri(context: Context, uris: List<Uri>): List<DocumentFile> {
-    return uris.map { customDocFileFromTreeTreeUri(context, it) }.filter { it.isDirectory }
+    return uris.mapNotNull { customDocFileFromUri(context, it) }.filter { it.isDirectory }
 }
 
 fun documentFileFromUri(context: Context, uri: Uri): DocumentFile? {
-    return customDocFileFromTreeTreeUri(context, uri)
+    return customDocFileFromUri(context, uri)
 }
 
 fun stringFromUriList(uris: List<Uri>): String {
@@ -30,7 +30,7 @@ fun uriListFromString(str: String): List<Uri> {
 
 fun fileFromUri(context: Context, uri: Uri): File? {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (!DocumentsContract.isTreeUri(uri)) return null
+        if (!DocumentsContract.isTreeUri(uri) && !DocumentsContract.isDocumentUri(context, uri)) return null
         if (uri.authority != "com.android.externalstorage.documents") return null
 
         val treeDocId = DocumentsContract.getDocumentId(uri)
@@ -58,7 +58,7 @@ fun fileFromUri(context: Context, uri: Uri): File? {
 
         return rootDir?.let { if (relativePath.isEmpty()) it else File(it, relativePath) }
     } else {
-        if (!DocumentsContract.isDocumentUri(context, uri)) return null
+        if (!DocumentsContract.isTreeUri(uri) && !DocumentsContract.isDocumentUri(context, uri)) return null
 
         if (uri.authority != "com.android.externalstorage.documents") return null
 
@@ -88,13 +88,15 @@ fun fileFromUri(context: Context, uri: Uri): File? {
 }
 
 fun absoluteFilePathFromUri(context: Context, uri: Uri): String? {
-    val dfUri = documentFileFromUri(context, uri)?.uri
-    if (dfUri == null) return null
-    return fileFromUri(context, dfUri)?.absolutePath
+    return fileFromUri(context, uri)?.absolutePath
 }
 
-private fun customDocFileFromTreeTreeUri(context: Context, uri: Uri) = TreeDocumentFileOt(
-    null, context, DocumentsContract.buildDocumentUriUsingTree(
-        uri, DocumentsContract.getTreeDocumentId(uri)
+private fun customDocFileFromUri(context: Context, uri: Uri): DocumentFile? = when {
+    DocumentsContract.isTreeUri(uri) -> TreeDocumentFileOt(
+        null, context, DocumentsContract.buildDocumentUriUsingTree(
+            uri, DocumentsContract.getTreeDocumentId(uri)
+        )
     )
-)
+    DocumentsContract.isDocumentUri(context, uri) -> DocumentFile.fromSingleUri(context, uri)
+    else -> null
+}

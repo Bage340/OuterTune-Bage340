@@ -154,8 +154,8 @@ fun ColumnScope.LocalScannerFrag() {
 
     val (lastLocalScan, onLastLocalScanChange) = rememberPreference(LastLocalScanKey, 0L)
 
-    LaunchedEffect(scanPaths) {
-        if (scanPaths.isBlank()) {
+    LaunchedEffect(scanPaths, scannerImpl) {
+        if (scanPaths.isBlank() && scannerImpl != ScannerImpl.MEDIASTORE) {
             showAddFolderDialog = true
         }
     }

@@ -61,7 +61,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.io.FileNotFoundException
 import java.io.IOException
 import java.time.Instant
 import java.time.LocalDateTime
@@ -155,6 +154,9 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         scanPaths: String,
         excludedScanPaths: String,
     ): List<Uri> {
+        if (!shouldScanLocalFiles(usesMediaStore = false, configuredScanPaths = scanPaths)) {
+            throw ScannerAbortException("Select at least one folder before scanning with TagLib")
+        }
         val songs = ArrayList<Uri>()
         Log.i(TAG, "------------ SCAN: Starting Full Scanner ------------")
         scannerState.value = 1
@@ -250,8 +252,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
             // check if this song is known to the library
             val songMatch = allLocalSongs.filter {
-                return@filter it.song.title.contains(song.song.title, true) &&
-                        compareSong(it, song.song, matchStrength, strictFileNames, strictFilePaths)
+                compareSong(it, song.song, matchStrength, strictFileNames, strictFilePaths)
             }
 
             if (SCANNER_DEBUG) {
@@ -696,30 +697,39 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
 
         val contentResolver: ContentResolver = context.contentResolver
-        val selectionBuilder = StringBuilder("${MediaStore.Audio.Media.IS_MUSIC} != 0")
-        val selectionArgs = mutableListOf<String>()
-        scanPaths.forEachIndexed { index, path ->
-            val convertedPath = absoluteFilePathFromUri(context, path)
-            if (index == 0) {
-                selectionBuilder.append(" AND (")
-            } else {
-                selectionBuilder.append(" OR ")
-            }
-            selectionBuilder.append("${MediaStore.Audio.Media.DATA} LIKE ?")
-            selectionArgs.add("$convertedPath%")
+        val scanRootPaths = scanPaths.map { scanPath ->
+            absoluteFilePathFromUri(context, scanPath)
+                ?: throw ScannerAbortException("Could not access selected scan directory: $scanPath")
         }
-        selectionBuilder.append(")")
-        val selection = selectionBuilder.toString()
+        val excludedScanRootPaths = excludedScanPaths.map { scanPath ->
+            absoluteFilePathFromUri(context, scanPath)
+                ?: throw ScannerAbortException("Could not access excluded scan directory: $scanPath")
+        }
+        val scanSelection = try {
+            mediaStoreScanSelection(scanRootPaths)
+        } catch (e: IllegalArgumentException) {
+            throw ScannerAbortException("Invalid MediaStore scan directory", e)
+        }
 
         // Query for audio files
-        val cursor = contentResolver.query(
-            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-            projection.toTypedArray(),
-            selection,
-            selectionArgs.toTypedArray(),
-            null
-        )
-        cursor?.use { cursor ->
+        val cursor = try {
+            requireScanResult(
+                contentResolver.query(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    projection.toTypedArray(),
+                    scanSelection.selection,
+                    scanSelection.arguments.toTypedArray(),
+                    null
+                ),
+                "MediaStore audio query"
+            )
+        } catch (e: ScannerAbortException) {
+            throw e
+        } catch (e: Exception) {
+            throw ScannerAbortException("Unable to query MediaStore audio", e)
+        }
+        try {
+            cursor.use { cursor ->
             // Columns indices
             val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
             val titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
@@ -758,7 +768,9 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 val rawDateModified = cursor.getString(dateModifiedColumn)
                 val path = cursor.getString(pathColumn)
                 val mime = cursor.getString(mimeColumn)
-                if (excludedScanPaths.any { path.startsWith(it.path ?: "") }) continue
+                if (excludedScanRootPaths.any { excludedPath ->
+                        isWithinScanDirectory(path, excludedPath)
+                    }) continue
 
                 // extra stream info
                 var bitrate: Int? = null
@@ -851,11 +863,22 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                     )
                 )
             }
+            }
+        } catch (e: ScannerAbortException) {
+            throw e
+        } catch (e: Exception) {
+            throw ScannerAbortException("Unable to read MediaStore audio", e)
         }
 
         // TODO: duplicate songs with different paths will cycle through paths, causing it to be synced instead of ignored...
+        val existingLocalSongs = database.allLocalSongs()
+        if (!shouldReconcileScan(mediaStoreSongs.size, existingLocalSongs.size)) {
+            throw ScannerAbortException(
+                "MediaStore returned no songs; existing local library was left unchanged"
+            )
+        }
         val finalSongs = if (!refreshExisting) {
-            val allSongs = database.allLocalSongs().fastMapNotNull { it.song.localPath }.toSet()
+            val allSongs = existingLocalSongs.fastMapNotNull { it.song.localPath }.toSet()
             ArrayList(mediaStoreSongs.filterNot { it.song.song.localPath in allSongs })
         } else {
             mediaStoreSongs
@@ -1119,45 +1142,62 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
          * Build a list of files to scan, taking in exclusions into account. Exclusions
          * will override inclusions. All subdirectories will also be affected.
          *
-         * Uri.path can be assumed to be non-null
+         * Every configured tree must resolve to a filesystem path before traversal begins.
          */
         fun getScanFiles(scanPaths: List<Uri>, excludedScanPaths: List<Uri>, context: Context): List<Uri> {
+            if (scanPaths.isEmpty()) {
+                throw ScannerAbortException("Select at least one folder before scanning with TagLib")
+            }
+            val scanRootPaths = scanPaths.map { scanPath ->
+                absoluteFilePathFromUri(context, scanPath)
+                    ?: throw ScannerAbortException("Could not access selected scan directory: $scanPath")
+            }
+            val excludedScanRootPaths = excludedScanPaths.map { scanPath ->
+                absoluteFilePathFromUri(context, scanPath)
+                    ?: throw ScannerAbortException("Could not access excluded scan directory: $scanPath")
+            }
             val allSongs = ArrayList<Uri>()
             val resultingPaths =
-                scanPaths.filterNot { incl ->
-                    excludedScanPaths.any { excl -> incl.path?.startsWith(excl.path.toString()) == true }
+                scanPaths.zip(scanRootPaths).filterNot { (_, includedPath) ->
+                    excludedScanRootPaths.any { excludedPath ->
+                        isWithinScanDirectory(includedPath, excludedPath)
+                    }
                 }
 
-            resultingPaths.forEach { path ->
+            resultingPaths.forEach { (path, _) ->
                 try {
                     val file = documentFileFromUri(context, path)
-                    if (file != null) {
-                        val songsHere = ArrayList<DocumentFile>()
-                        scanDfRecursive(file, songsHere) {
-                            // Allow: audio mime, or certain audio exts
-                            // Disallow: x-mpegurl (m3u)
-                            val mime = it.type ?: return@scanDfRecursive false
-                            if (!mime.startsWith("audio")) {
-                                if (it.name?.substringAfterLast('.') !in scannerWhitelistExts) {
-                                    return@scanDfRecursive false
-                                }
-                            }
-                            if (mime == "audio/x-mpegurl") {
+                    if (file == null || !file.exists() || !file.isDirectory) {
+                        throw ScannerAbortException("Could not read selected scan directory: $path")
+                    }
+                    val songsHere = ArrayList<DocumentFile>()
+                    scanDfRecursive(file, songsHere) {
+                        // Allow: audio mime, or certain audio exts
+                        // Disallow: x-mpegurl (m3u)
+                        val mime = it.type ?: return@scanDfRecursive false
+                        if (!mime.startsWith("audio")) {
+                            if (it.name?.substringAfterLast('.') !in scannerWhitelistExts) {
                                 return@scanDfRecursive false
                             }
-
-                            return@scanDfRecursive true
+                        }
+                        if (mime == "audio/x-mpegurl") {
+                            return@scanDfRecursive false
                         }
 
-                        allSongs.addAll(songsHere.fastFilter { incl ->
-                            !excludedScanPaths.any {
-                                incl.uri.path?.startsWith(it.path.toString()) == true
-                            }
-                        }.map { it.uri })
+                        return@scanDfRecursive true
                     }
-                } catch (e: FileNotFoundException) {
-                    e.printStackTrace()
-                    throw Exception("oh well idk man this should never happen")
+
+                    allSongs.addAll(songsHere.fastFilter { includedFile ->
+                        val includedPath = fileFromUri(context, includedFile.uri)?.absolutePath
+                            ?: throw ScannerAbortException("Could not access scanned file: ${includedFile.uri}")
+                        excludedScanRootPaths.none { excludedPath ->
+                            isWithinScanDirectory(includedPath, excludedPath)
+                        }
+                    }.map { it.uri })
+                } catch (e: ScannerAbortException) {
+                    throw e
+                } catch (e: Exception) {
+                    throw ScannerAbortException("Could not read selected scan directory: $path", e)
                 }
             }
 
@@ -1474,5 +1514,5 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 }
 
 class InvalidAudioFileException(message: String) : Throwable(message)
-class ScannerAbortException(message: String) : Throwable(message)
+class ScannerAbortException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class ScannerCriticalFailureException(message: String) : Throwable(message)
