@@ -62,7 +62,9 @@ android {
             isShrinkResources = true
             isCrunchPngs = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = null
+            // Local builds stay unsigned unless the existing project keystore is supplied.
+            // CI provides the same keystore through the ignored keystore.properties file.
+            signingConfig = if (keystoreProperties.isEmpty) null else signingConfigs.getByName("ot_release")
         }
         debug {
             applicationIdSuffix = ".debug"

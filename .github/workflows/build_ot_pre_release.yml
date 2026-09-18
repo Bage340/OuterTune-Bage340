@@ -32,11 +32,20 @@ jobs:
       - name: Build core userdebug APK
         run: ./gradlew assembleCoreUserdebug
 
-      - name: Resolve ffmpeg libs
-        run: git clone https://github.com/mikooomich/ffmpeg-android-maker-prebuilt/ -b audio ffMetadataEx/ffmpeg-android-maker
-
-      - name: Build full userdebug APK
-        run: ./gradlew assembleFullUserdebug
+      - name: Verify signed test APK identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="$(find app/build/outputs/apk/core/userdebug -name '*universal*.apk' -print -quit)"
+          test -n "$APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
+          AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          "$APKSIGNER" verify --verbose --print-certs "$APK" | tee apk-signature.txt
+          grep -qi '98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736' apk-signature.txt
+          "$AAPT" dump badging "$APK" | tee apk-badging.txt
+          grep -q "package: name='com.dd3boh.outertune' versionCode='91' versionName='0.11.1'" apk-badging.txt
+          cp "$APK" OuterTune-0.11.1-v91-signed-test.apk
+          sha256sum OuterTune-0.11.1-v91-signed-test.apk | tee SHA256SUMS.txt
 
       - name: Upload signed test APKs
         uses: actions/upload-artifact@v4
@@ -45,5 +54,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: |
-            app/build/outputs/apk/core/userdebug/*.apk
-            app/build/outputs/apk/full/userdebug/*.apk
+            OuterTune-0.11.1-v91-signed-test.apk
+            apk-signature.txt
+            apk-badging.txt
+            SHA256SUMS.txt
