@@ -6,8 +6,10 @@ import android.util.Log
 import com.dd3boh.outertune.constants.UI_DEBUG
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -43,6 +45,7 @@ fun PlayerScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     bottomPadding: Dp = 0.dp,
+    windowInsets: WindowInsets = WindowInsets.safeDrawing,
 ) {
     val TAG = "PlayerScreen"
 
@@ -86,9 +89,9 @@ fun PlayerScreen(
 
         val tabMode = context.tabMode()
         if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && !tabMode && context.supportsWideScreen()) {
-            LandscapePlayer(state, navController, queueBoard)
+            LandscapePlayer(state, navController, queueBoard, windowInsets = windowInsets)
         } else {
-            PortraitPlayer(state, navController, queueBoard)
+            PortraitPlayer(state, navController, queueBoard, windowInsets = windowInsets)
         }
     }
 }

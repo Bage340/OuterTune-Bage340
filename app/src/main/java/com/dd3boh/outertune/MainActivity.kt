@@ -45,9 +45,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -119,6 +119,8 @@ import com.dd3boh.outertune.constants.DefaultOpenTabKey
 import com.dd3boh.outertune.constants.DynamicThemeKey
 import com.dd3boh.outertune.constants.EnabledTabsKey
 import com.dd3boh.outertune.constants.LibraryFilterKey
+import com.dd3boh.outertune.constants.KeepScreenOn
+import com.dd3boh.outertune.constants.KeepScreenOnKey
 import com.dd3boh.outertune.constants.MinMiniPlayerHeight
 import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.NavigationBarAnimationSpec
@@ -138,6 +140,9 @@ import com.dd3boh.outertune.ui.component.shimmer.ShimmerTheme
 import com.dd3boh.outertune.ui.menu.BottomSheetMenu
 import com.dd3boh.outertune.ui.menu.MenuState
 import com.dd3boh.outertune.ui.player.BottomSheetPlayer
+import com.dd3boh.outertune.ui.player.KeepScreenOnEffect
+import com.dd3boh.outertune.ui.player.LocalKeepScreenOnRequestState
+import com.dd3boh.outertune.ui.player.rememberKeepScreenOnRequestState
 import com.dd3boh.outertune.ui.screens.AccountScreen
 import com.dd3boh.outertune.ui.screens.AlbumScreen
 import com.dd3boh.outertune.ui.screens.BrowseScreen
@@ -271,6 +276,7 @@ class MainActivity : ComponentActivity() {
             val customThemeColorArgb by rememberPreference(CustomThemeColorKey, defaultValue = DefaultThemeColor.toArgb())
             val darkTheme by rememberEnumPreference(DarkModeKey, defaultValue = DarkMode.AUTO)
             val pureBlack by rememberPreference(PureBlackKey, defaultValue = false)
+            val keepScreenOn by rememberEnumPreference(KeepScreenOnKey, defaultValue = KeepScreenOn.LYRICS)
             val isSystemInDarkTheme = isSystemInDarkTheme()
             val useDarkTheme = remember(darkTheme, isSystemInDarkTheme) {
                 if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
@@ -336,9 +342,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 if (UI_DEBUG) Log.v(MAIN_TAG, "RC-2.1")
                 val density = LocalDensity.current
-                val windowsInsets = WindowInsets.systemBars
+                val windowsInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
                 val bottomInset = with(density) { windowsInsets.getBottom(density).toDp() }
-                val cutoutInsets = WindowInsets.displayCutout
 
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -388,15 +393,16 @@ class MainActivity : ComponentActivity() {
                         remember(
                             bottomInset,
                             playerBottomSheetState.isDismissed,
+                            tabMode,
+                            useNavRail,
                         ) {
                             // TODO: Navbar is shown in all screens except for oobe (which doesn't use these insets). Idk what do to tbh
                             var bottom = bottomInset + if (!useNavRail) NavigationBarHeight else 0.dp
 
-                            if (!playerBottomSheetState.isDismissed) bottom += MiniPlayerHeight
+                            if (!playerBottomSheetState.isDismissed) bottom += MiniPlayerHeight + MinMiniPlayerHeight
                             if (!tabMode) {
                                 windowsInsets
                                     .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
-                                    .add(cutoutInsets.only(WindowInsetsSides.Horizontal))
                                     .add(
                                         WindowInsets(
                                             left = if (!useNavRail) 0.dp else NavigationBarHeight,
@@ -406,7 +412,7 @@ class MainActivity : ComponentActivity() {
                                     )
                             } else {
                                 windowsInsets
-                                    .only(WindowInsetsSides.Top)
+                                    .only(WindowInsetsSides.Top + WindowInsetsSides.End)
                                     .add(WindowInsets(top = AppBarHeight, bottom = bottom))
                             }
                         }
@@ -438,6 +444,16 @@ class MainActivity : ComponentActivity() {
                         onDispose { removeOnNewIntentListener(listener) }
                     }
 
+                    val keepScreenOnRequestState = rememberKeepScreenOnRequestState()
+                    val isPlaying by playerConnection?.isPlaying?.collectAsState(initial = false)
+                        ?: remember { mutableStateOf(false) }
+                    KeepScreenOnEffect(
+                        lifecycle = lifecycle,
+                        mode = keepScreenOn,
+                        isPlaying = isPlaying,
+                        requestState = keepScreenOnRequestState,
+                    )
+
                     CompositionLocalProvider(
                         LocalDatabase provides database,
                         LocalContentColor provides contentColorFor(MaterialTheme.colorScheme.surface),
@@ -450,6 +466,7 @@ class MainActivity : ComponentActivity() {
                         LocalAccountImageFetcher provides accountImageFetcher,
                         LocalNetworkConnected provides isNetworkConnected,
                         LocalSnackbarHostState provides snackbarHostState,
+                        LocalKeepScreenOnRequestState provides keepScreenOnRequestState,
                     ) {
                         Box(
                             modifier = Modifier
@@ -1001,14 +1018,18 @@ class MainActivity : ComponentActivity() {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal))
                                 ) {
                                     Box(
                                         modifier = Modifier
                                             .width(playerW.dp)
                                     ) {
                                         if (oobeStatus >= OOBE_VERSION && !navigationItems.contains(Screens.Player)) {
-                                            PlayerScreen(navController)
+                                            PlayerScreen(
+                                                navController = navController,
+                                                windowInsets = windowsInsets.only(
+                                                    WindowInsetsSides.Start + WindowInsetsSides.Vertical
+                                                ),
+                                            )
                                         }
                                     }
 
@@ -1018,7 +1039,13 @@ class MainActivity : ComponentActivity() {
                                     ) {
                                         navHost()
 
-                                        SearchBarContainer(navController, scrollBehavior)
+                                        SearchBarContainer(
+                                            navController = navController,
+                                            scrollBehavior = scrollBehavior,
+                                            windowInsets = windowsInsets.only(
+                                                WindowInsetsSides.Top + WindowInsetsSides.End
+                                            ),
+                                        )
 
                                         if (oobeStatus >= OOBE_VERSION) {
                                             navbar()

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.AudioFile
 import androidx.compose.material.icons.rounded.NoCell
+import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -37,10 +38,13 @@ import com.dd3boh.outertune.constants.AudioDecoderKey
 import com.dd3boh.outertune.constants.DEFAULT_AUDIO_DECODER
 import com.dd3boh.outertune.constants.ENABLE_FFMETADATAEX
 import com.dd3boh.outertune.constants.KeepAliveKey
+import com.dd3boh.outertune.constants.KeepScreenOn
+import com.dd3boh.outertune.constants.KeepScreenOnKey
 import com.dd3boh.outertune.constants.StopMusicOnTaskClearKey
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.ui.component.ColumnWithContentPadding
 import com.dd3boh.outertune.ui.component.ListPreference
+import com.dd3boh.outertune.ui.component.EnumListPreference
 import com.dd3boh.outertune.ui.component.PreferenceGroupTitle
 import com.dd3boh.outertune.ui.component.SwitchPreference
 import com.dd3boh.outertune.ui.component.button.IconButton
@@ -52,6 +56,7 @@ import com.dd3boh.outertune.ui.screens.settings.fragments.PlayerGeneralFrag
 import com.dd3boh.outertune.ui.screens.settings.fragments.SleepTimerFrag
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.utils.rememberEnumPreference
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.CompositionLocalProvider
@@ -70,6 +75,10 @@ fun PlayerSettings(
         defaultValue = DEFAULT_AUDIO_DECODER
     )
     val (keepAlive, onKeepAliveChange) = rememberPreference(key = KeepAliveKey, defaultValue = false)
+    val (keepScreenOn, onKeepScreenOnChange) = rememberEnumPreference(
+        key = KeepScreenOnKey,
+        defaultValue = KeepScreenOn.LYRICS,
+    )
     val (stopMusicOnTaskClear, onStopMusicOnTaskClearChange) = rememberPreference(
         key = StopMusicOnTaskClearKey,
         defaultValue = true
@@ -88,6 +97,19 @@ fun PlayerSettings(
             modifier = Modifier.fillMaxWidth()
         ) {
             PlayerGeneralFrag()
+            EnumListPreference(
+                title = { Text(stringResource(R.string.keep_screen_on)) },
+                icon = { Icon(Icons.Rounded.Visibility, null) },
+                selectedValue = keepScreenOn,
+                onValueSelected = onKeepScreenOnChange,
+                valueText = {
+                    when (it) {
+                        KeepScreenOn.NEVER -> stringResource(R.string.keep_screen_on_never)
+                        KeepScreenOn.LYRICS -> stringResource(R.string.keep_screen_on_lyrics)
+                        KeepScreenOn.PLAYER -> stringResource(R.string.keep_screen_on_player)
+                    }
+                },
+            )
         }
         Spacer(modifier = Modifier.height(16.dp))
 

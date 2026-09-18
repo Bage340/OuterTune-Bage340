@@ -24,6 +24,7 @@ val TabletUiKey = booleanPreferencesKey("tabletUi")
 val EnabledTabsKey = stringPreferencesKey("enabledTabs")
 val EnabledFiltersKey = stringPreferencesKey("enabledFilters")
 val DefaultOpenTabKey = stringPreferencesKey("defaultOpenTab")
+val KeepScreenOnKey = stringPreferencesKey("keepScreenOn")
 val SlimNavBarKey = booleanPreferencesKey("slimNavBar")
 val SliderStyleKey = stringPreferencesKey("sliderStyle")
 

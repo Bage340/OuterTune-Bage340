@@ -113,19 +113,12 @@ import androidx.media3.common.Player.REPEAT_MODE_ONE
 import androidx.media3.common.Player.STATE_ENDED
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalMenuState
-import com.dd3boh.outertune.LocalPlayerAwareWindowInsets
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.CONTENT_TYPE_SONG
-import com.dd3boh.outertune.constants.InsetsSafeE
-import com.dd3boh.outertune.constants.InsetsSafeS
-import com.dd3boh.outertune.constants.InsetsSafeSE
-import com.dd3boh.outertune.constants.InsetsSafeSTE
-import com.dd3boh.outertune.constants.InsetsSafeT
 import com.dd3boh.outertune.constants.ListItemHeight
 import com.dd3boh.outertune.constants.ListThumbnailSize
 import com.dd3boh.outertune.constants.LockQueueKey
-import com.dd3boh.outertune.constants.MiniPlayerHeight
 import com.dd3boh.outertune.constants.PLAYER_DEBUG
 import com.dd3boh.outertune.constants.PlayerHorizontalPadding
 import com.dd3boh.outertune.constants.SeekIncrement
@@ -169,6 +162,7 @@ fun QueueSheet(
     onTerminate: () -> Unit,
     playerBottomSheetState: BottomSheetState,
     navController: NavController,
+    windowInsets: WindowInsets = WindowInsets.safeDrawing,
     modifier: Modifier = Modifier,
 ) {
     if (PLAYER_DEBUG) Log.v("QueueSheet", "Q-1")
@@ -192,8 +186,7 @@ fun QueueSheet(
                 modifier = Modifier
                     .fillMaxSize()
                     .windowInsetsPadding(
-                        WindowInsets.systemBars
-                            .only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
+                        windowInsets.only(WindowInsetsSides.Bottom + WindowInsetsSides.Horizontal)
                     )
                     .clickable {
                         state.expandSoft()
@@ -225,7 +218,8 @@ fun QueueSheet(
             queueState = state,
             onTerminate = onTerminate,
             playerState = playerBottomSheetState,
-            navController = navController
+            navController = navController,
+            windowInsets = windowInsets,
         )
     }
 }
@@ -254,10 +248,6 @@ fun QueueScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .windowInsetsPadding(
-                LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Bottom)
-                    .add(WindowInsets(bottom = MiniPlayerHeight))
-            )
     ) {
         QueueContent(
             onTerminate = onTerminate,
@@ -274,6 +264,7 @@ fun BoxScope.QueueContent(
     playerState: BottomSheetState,
     onTerminate: () -> Unit,
     navController: NavController,
+    windowInsets: WindowInsets = WindowInsets.safeDrawing,
 ) {
     if (PLAYER_DEBUG) Log.v("QueueContent", "QC-1")
     val context = LocalContext.current
@@ -308,29 +299,13 @@ fun BoxScope.QueueContent(
     val landscape =
         LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE && wideScreen && !tabMode
 
-    val insets = LocalPlayerAwareWindowInsets.current
-    val insetsSTE = if (!tabMode) {
-        InsetsSafeSTE
-    } else {
-        insets
-            .only(WindowInsetsSides.Start + WindowInsetsSides.End)
-            .add(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))
-    }
-    val insetsSE = if (!tabMode) {
-        InsetsSafeSE
-    } else {
-        insets.only(WindowInsetsSides.Start + WindowInsetsSides.End)
-    }
-    val insetsS = if (!tabMode) {
-        InsetsSafeS
-    } else {
-        insets.only(WindowInsetsSides.Start)
-    }
-    val insetsE = if (!tabMode) {
-        InsetsSafeE
-    } else {
-        insets.only(WindowInsetsSides.End)
-    }
+    val insetsSTE = windowInsets.only(
+        WindowInsetsSides.Start + WindowInsetsSides.Top + WindowInsetsSides.End
+    )
+    val insetsSE = windowInsets.only(WindowInsetsSides.Start + WindowInsetsSides.End)
+    val insetsS = windowInsets.only(WindowInsetsSides.Start)
+    val insetsE = windowInsets.only(WindowInsetsSides.End)
+    val insetsT = windowInsets.only(WindowInsetsSides.Top)
 
 
     val queueWindows by playerConnection.queueWindows.collectAsState()
@@ -926,7 +901,7 @@ fun BoxScope.QueueContent(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.secondaryContainer)
                 .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))
+                .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Bottom + WindowInsetsSides.End))
                 .clickable {
                     queueState?.collapseSoft()
                     haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
@@ -1186,7 +1161,7 @@ fun BoxScope.QueueContent(
                         .weight(1f, false)
                 ) {
                     if (isSearching) {
-                        Spacer(Modifier.windowInsetsPadding(InsetsSafeT))
+                        Spacer(Modifier.windowInsetsPadding(insetsT))
                         searchBar()
                         if (inSelectMode) {
                             Row {
@@ -1234,10 +1209,10 @@ fun BoxScope.QueueContent(
                 AnimatedVisibility(
                     visible = isSearching,
                     modifier = Modifier
-                        .windowInsetsPadding(InsetsSafeT)
+                        .windowInsetsPadding(insetsT)
                 ) {
                     if (PLAYER_DEBUG) Log.v("QueueContent", "QC-2.4a")
-                    Spacer(Modifier.windowInsetsPadding(InsetsSafeT))
+                    Spacer(Modifier.windowInsetsPadding(insetsT))
                     searchBar()
                     if (inSelectMode) {
                         Row {

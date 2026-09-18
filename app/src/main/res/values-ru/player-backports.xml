@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="keep_screen_on">Не выключать экран</string>
+    <string name="keep_screen_on_never">Никогда</string>
+    <string name="keep_screen_on_lyrics">Пока отображается текст песни</string>
+    <string name="keep_screen_on_player">Пока открыт проигрыватель</string>
+</resources>

@@ -22,6 +22,10 @@ enum class SliderStyle {
 
 val DEFAULT_SLIDER_STYLE = SliderStyle.SQUIGGLY
 
+enum class KeepScreenOn {
+    NEVER, LYRICS, PLAYER
+}
+
 enum class LibraryViewType {
     LIST, GRID;
 

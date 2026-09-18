@@ -94,6 +94,8 @@ import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
 import com.dd3boh.outertune.ui.component.shimmer.TextPlaceholder
 import com.dd3boh.outertune.ui.menu.LyricsMenu
+import com.dd3boh.outertune.ui.player.KeepScreenOnRequest
+import com.dd3boh.outertune.ui.player.KeepScreenOnRequestEffect
 import com.dd3boh.outertune.ui.utils.fadingEdge
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -113,13 +115,19 @@ import kotlin.time.Duration.Companion.seconds
 fun Lyrics(
     sliderPositionProvider: () -> Long?,
     modifier: Modifier = Modifier,
+    keepScreenOn: Boolean = true,
 ) {
     val context = LocalContext.current
     val haptic = LocalHapticFeedback.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val menuState = LocalMenuState.current
     val density = LocalDensity.current
-    var (showLyrics, onShowLyricsChange) = rememberPreference(ShowLyricsKey, false)
+    val (showLyrics, onShowLyricsChange) = rememberPreference(ShowLyricsKey, false)
+
+    KeepScreenOnRequestEffect(
+        request = KeepScreenOnRequest.LYRICS,
+        active = keepScreenOn,
+    )
     val landscapeOffset = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
 
     val lyricsTextPosition by rememberEnumPreference(LyricsTextPositionKey, LyricsPosition.CENTER)

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="keep_screen_on_never">Never</string>
+    <string name="keep_screen_on_lyrics">While lyrics are visible</string>
+    <string name="keep_screen_on_player">While the player is open</string>
+</resources>

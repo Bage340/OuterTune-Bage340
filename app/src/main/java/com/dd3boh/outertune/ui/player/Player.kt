@@ -38,15 +38,16 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.add
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -241,11 +242,17 @@ fun PortraitPlayer(
     navController: NavController,
     queueBoard: QueueBoard,
     enableQueueSheet: Boolean = true,
+    windowInsets: WindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
 ) {
     val TAG = "BottomSheetPlayer"
     if (PLAYER_DEBUG) Log.v(TAG, "PLR-3.1b")
 
     val playerConnection = LocalPlayerConnection.current ?: return
+
+    KeepScreenOnRequestEffect(
+        request = KeepScreenOnRequest.PLAYER,
+        active = playerSheetState.isExpanded,
+    )
 
     val dismissedBound = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
@@ -259,7 +266,7 @@ fun PortraitPlayer(
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Horizontal))
+            .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Horizontal))
             .padding(bottom = queueSheetState.collapsedBound)
     ) {
         BoxWithConstraints(
@@ -304,6 +311,7 @@ fun PortraitPlayer(
                         .animateContentSize(),
                     sliderPositionProvider = { sliderPosition },
                     showLyricsOnClick = showLyricsOnClick,
+                    lyricsVisible = playerSheetState.isExpanded && queueSheetState.isCollapsed,
                     customMediaMetadata = mediaMetadata
                 )
             } else {
@@ -359,6 +367,9 @@ fun PortraitPlayer(
                                 .animateContentSize(),
                             sliderPositionProvider = { sliderPosition },
                             showLyricsOnClick = showLyricsOnClick,
+                            lyricsVisible = playerSheetState.isExpanded &&
+                                    queueSheetState.isCollapsed &&
+                                    it == mediaMetadata,
                             customMediaMetadata = it
                         )
                     }
@@ -382,7 +393,8 @@ fun PortraitPlayer(
                 playerSheetState.dismiss()
                 queueBoard.detachedHead = false
             },
-            navController = navController
+            navController = navController,
+            windowInsets = windowInsets,
         )
     }
 }
@@ -394,11 +406,17 @@ fun LandscapePlayer(
     navController: NavController,
     queueBoard: QueueBoard,
     enableQueueSheet: Boolean = true,
+    windowInsets: WindowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout),
 ) {
     val TAG = "BottomSheetPlayer"
 
     val context = LocalContext.current
     val playerConnection = LocalPlayerConnection.current ?: return
+
+    KeepScreenOnRequestEffect(
+        request = KeepScreenOnRequest.PLAYER,
+        active = playerSheetState.isExpanded,
+    )
 
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
@@ -437,15 +455,15 @@ fun LandscapePlayer(
     )
 
     val vPadding = max(
-        WindowInsets.safeDrawing.getTop(LocalDensity.current),
-        WindowInsets.safeDrawing.getBottom(LocalDensity.current)
+        windowInsets.getTop(LocalDensity.current),
+        windowInsets.getBottom(LocalDensity.current)
     )
     val vPaddingDp = with(LocalDensity.current) { vPadding.toDp() }
     val verticalInsets = WindowInsets(left = 0.dp, top = vPaddingDp, right = 0.dp, bottom = vPaddingDp)
     Row(
         modifier = Modifier
             .windowInsetsPadding(
-                WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).add(verticalInsets)
+                windowInsets.only(WindowInsetsSides.Horizontal).add(verticalInsets)
             )
             .fillMaxSize()
     ) {
@@ -463,6 +481,7 @@ fun LandscapePlayer(
 //                                .width(horizontalLazyGridItemWidth)
                         .animateContentSize(),
                     showLyricsOnClick = showLyricsOnClick,
+                    lyricsVisible = playerSheetState.isExpanded && queueSheetState.isCollapsed,
                     customMediaMetadata = mediaMetadata
                 )
             } else {
@@ -519,6 +538,9 @@ fun LandscapePlayer(
                                 .width(horizontalLazyGridItemWidth)
                                 .animateContentSize(),
                             showLyricsOnClick = showLyricsOnClick,
+                            lyricsVisible = playerSheetState.isExpanded &&
+                                    queueSheetState.isCollapsed &&
+                                    it == mediaMetadata,
                             customMediaMetadata = it
                         )
                     }
@@ -532,7 +554,7 @@ fun LandscapePlayer(
                 // "percentage to half width", not "percentage of width"
                 .weight(if (showLyrics) 0.65f else 1f, false)
                 .animateContentSize()
-                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
+                .windowInsetsPadding(windowInsets.only(WindowInsetsSides.Top))
         ) {
             Spacer(Modifier.weight(1f))
 
@@ -550,7 +572,8 @@ fun LandscapePlayer(
                 playerSheetState.dismiss()
                 queueBoard.detachedHead = false
             },
-            navController = navController
+            navController = navController,
+            windowInsets = windowInsets,
         )
     }
 }

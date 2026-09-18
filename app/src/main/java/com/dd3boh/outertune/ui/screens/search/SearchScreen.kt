@@ -81,7 +81,6 @@ import com.dd3boh.outertune.constants.SearchSource
 import com.dd3boh.outertune.constants.SearchSourceKey
 import com.dd3boh.outertune.constants.UpdateAvailableKey
 import com.dd3boh.outertune.db.entities.SearchHistory
-import com.dd3boh.outertune.extensions.tabMode
 import com.dd3boh.outertune.ui.component.AccountAvatar
 import com.dd3boh.outertune.ui.component.InputFieldHeight
 import com.dd3boh.outertune.ui.component.SearchBar
@@ -103,6 +102,9 @@ import kotlin.math.roundToInt
 fun SearchBarContainer(
     navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
+    windowInsets: WindowInsets = WindowInsets.safeDrawing.union(
+        LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Horizontal)
+    ),
 ) {
     if (UI_DEBUG) Log.v("SearchBarContainer", "SB-1")
     val context = LocalContext.current
@@ -205,12 +207,6 @@ fun SearchBarContainer(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        val searchBarInset = if (!context.tabMode()) {
-            WindowInsets.safeDrawing.union(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Start))
-        }
-        else {
-            WindowInsets.systemBars.only(WindowInsetsSides.Top)
-        }
         SearchBar(
             query = query,
             onQueryChange = onQueryChange,
@@ -299,7 +295,7 @@ fun SearchBarContainer(
                     }
                 }
             },
-            windowInsets = searchBarInset,
+            windowInsets = windowInsets,
             focusRequester = searchBarFocusRequester,
         ) {
             if (UI_DEBUG) Log.v("SearchBarContainer", "SB-2")
@@ -353,14 +349,9 @@ fun SearchBarContainer(
         enter = fadeIn(),
         exit = fadeOut()
     ) {
-        val iconRowInset = if (!context.tabMode()) {
-            WindowInsets.safeDrawing.union(LocalPlayerAwareWindowInsets.current.only(WindowInsetsSides.Start))
-        } else {
-            WindowInsets.systemBars.only(WindowInsetsSides.Top)
-        }
         TopIconBar(
             scrollBehavior = scrollBehavior,
-            windowInsets = iconRowInset,
+            windowInsets = windowInsets,
             localLibEnable = localLibEnable,
             onHistoryClick = { navController.navigate("history") },
             onStatsClick = { navController.navigate("stats") },
