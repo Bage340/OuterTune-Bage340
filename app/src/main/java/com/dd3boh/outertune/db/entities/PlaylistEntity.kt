@@ -28,6 +28,8 @@ data class PlaylistEntity(
     val radioEndpointParams: String? = null,
     @ColumnInfo(name = "isLocal", defaultValue = false.toString())
     val isLocal: Boolean = false,
+    @ColumnInfo(defaultValue = "'/'")
+    val path: String = "/",
 ) {
     companion object {
         const val LIKED_PLAYLIST_ID = "LP_LIKED"

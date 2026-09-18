@@ -158,6 +158,7 @@ fun AddToPlaylistDialog(
         items(playlists) { playlist ->
             PlaylistListItem(
                 playlist = playlist,
+                subtitle = playlist.playlist.path,
                 trailingContent = {
                     val inPlaylist =
                         playlistIdsSongParticipation != null && playlist.id in playlistIdsSongParticipation!!

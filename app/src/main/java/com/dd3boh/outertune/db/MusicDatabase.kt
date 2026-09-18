@@ -25,6 +25,7 @@ import com.dd3boh.outertune.db.entities.GenreEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.PlayCountEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.db.entities.PlaylistFolderEntity
 import com.dd3boh.outertune.db.entities.PlaylistEntity.Companion.generatePlaylistId
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.PlaylistSongMapPreview
@@ -68,7 +69,7 @@ class MusicDatabase(
     fun close() = delegate.close()
 
     companion object {
-        const val MUSIC_DATABASE_VERSION = 21
+        const val MUSIC_DATABASE_VERSION = 22
     }
 }
 
@@ -78,6 +79,7 @@ class MusicDatabase(
         ArtistEntity::class,
         AlbumEntity::class,
         PlaylistEntity::class,
+        PlaylistFolderEntity::class,
         SongArtistMap::class,
         SongAlbumMap::class,
         AlbumArtistMap::class,
@@ -135,6 +137,7 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_14_15)
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
+                    .addMigrations(MIGRATION_21_22)
                     .build()
             )
 
@@ -146,8 +149,19 @@ abstract class InternalDatabase : RoomDatabase() {
                     .addMigrations(MIGRATION_14_15)
                     .addMigrations(MIGRATION_15_16)
                     .addMigrations(MIGRATION_16_17)
+                    .addMigrations(MIGRATION_21_22)
                     .build()
             )
+    }
+}
+
+val MIGRATION_21_22 = object : Migration(21, 22) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE playlist ADD COLUMN path TEXT NOT NULL DEFAULT '/'")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS playlist_folder " +
+                "(path TEXT COLLATE NOCASE NOT NULL, PRIMARY KEY(path))"
+        )
     }
 }
 

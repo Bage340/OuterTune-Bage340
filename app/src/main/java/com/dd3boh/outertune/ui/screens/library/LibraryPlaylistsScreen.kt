@@ -5,6 +5,8 @@ import android.util.Log
 import com.dd3boh.outertune.constants.UI_DEBUG
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -31,6 +34,8 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.CloudDownload
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FilterAlt
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -85,16 +90,22 @@ import com.dd3boh.outertune.ui.component.ScrollToTopManager
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.items.AutoPlaylistGridItem
 import com.dd3boh.outertune.ui.component.items.AutoPlaylistListItem
+import com.dd3boh.outertune.ui.component.items.GridItem
+import com.dd3boh.outertune.ui.component.items.ListItem
+import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.dialog.CreatePlaylistDialog
 import com.dd3boh.outertune.ui.dialog.ImportM3uDialog
+import com.dd3boh.outertune.ui.dialog.TextFieldDialog
 import com.dd3boh.outertune.ui.menu.ActionDropdown
 import com.dd3boh.outertune.ui.menu.DropdownItem
+import com.dd3boh.outertune.ui.menu.PlaylistFolderMenu
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.utils.PlaylistFolders
 import com.dd3boh.outertune.viewmodels.LibraryPlaylistsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LibraryPlaylistsScreen(
     navController: NavController,
@@ -118,7 +129,10 @@ fun LibraryPlaylistsScreen(
     val (sortDescending, onSortDescendingChange) = rememberPreference(PlaylistSortDescendingKey, true)
     val (showLikedAndDownloadedPlaylist) = rememberPreference(ShowLikedAndDownloadedPlaylist, true)
 
-    val playlists by viewModel.allPlaylists.collectAsState()
+    val folderPage by viewModel.folderPage.collectAsState()
+    val playlists = folderPage?.playlists
+    val currentPath = folderPage?.path ?: PlaylistFolders.ROOT
+    val canNavigateUp = folderPage?.canNavigateUp == true
     val isSyncingRemotePlaylists by viewModel.isSyncingRemotePlaylists.collectAsState()
     val pullRefreshState = rememberPullToRefreshState()
 
@@ -130,12 +144,27 @@ fun LibraryPlaylistsScreen(
 
     var showImportM3uDialog by rememberSaveable { mutableStateOf(false) }
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
+    var showCreateFolderDialog by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.syncPlaylists() }
 
     if (showCreatePlaylistDialog) {
         CreatePlaylistDialog(
-            onDismiss = { showCreatePlaylistDialog = false }
+            onDismiss = { showCreatePlaylistDialog = false },
+            folderPath = currentPath,
+        )
+    }
+
+    if (showCreateFolderDialog) {
+        TextFieldDialog(
+            icon = { Icon(Icons.Rounded.Folder, contentDescription = null) },
+            title = { Text(stringResource(R.string.create_folder)) },
+            isInputValid = PlaylistFolders::validName,
+            onDone = {
+                viewModel.createFolder(it)
+                showCreateFolderDialog = false
+            },
+            onDismiss = { showCreateFolderDialog = false },
         )
     }
 
@@ -242,6 +271,11 @@ fun LibraryPlaylistsScreen(
                             action = { showCreatePlaylistDialog = true }
                         ),
                         DropdownItem(
+                            title = stringResource(R.string.create_folder),
+                            leadingIcon = { Icon(Icons.Rounded.Folder, null) },
+                            action = { showCreateFolderDialog = true }
+                        ),
+                        DropdownItem(
                             title = stringResource(R.string.import_playlist),
                             leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
                             action = { showImportM3uDialog = true }
@@ -249,6 +283,18 @@ fun LibraryPlaylistsScreen(
                     ),
                 )
             }
+        }
+    }
+
+    val showFolderMenu: (String) -> Unit = { path ->
+        menuState.show {
+            PlaylistFolderMenu(
+                path = path,
+                onRename = { viewModel.renameFolder(path, it) },
+                onMove = { viewModel.moveFolder(path, it) },
+                onDelete = { viewModel.deleteFolder(path) },
+                onDismiss = menuState::dismiss,
+            )
         }
     }
 
@@ -284,7 +330,7 @@ fun LibraryPlaylistsScreen(
                         headerContent()
                     }
 
-                    if (showLikedAndDownloadedPlaylist) {
+                    if (!canNavigateUp && showLikedAndDownloadedPlaylist) {
                         item(
                             key = likedPlaylist.id,
                             contentType = { CONTENT_TYPE_PLAYLIST }
@@ -318,8 +364,40 @@ fun LibraryPlaylistsScreen(
                         }
                     }
 
+                    if (canNavigateUp) {
+                        item(key = "folder-up") {
+                            ListItem(
+                                title = stringResource(R.string.previous_folder),
+                                subtitle = PlaylistFolders.parent(currentPath),
+                                thumbnailContent = {
+                                    Icon(Icons.Rounded.Folder, null, Modifier.size(48.dp).padding(8.dp))
+                                },
+                                modifier = Modifier.clickable { viewModel.navigateUp() },
+                            )
+                        }
+                    }
+
+                    folderPage?.folders?.let { folders ->
+                        items(folders, key = { "folder:$it" }) { path ->
+                            ListItem(
+                                title = PlaylistFolders.name(path),
+                                subtitle = path,
+                                thumbnailContent = {
+                                    Icon(Icons.Rounded.Folder, null, Modifier.size(48.dp).padding(8.dp))
+                                },
+                                trailingContent = {
+                                    IconButton(onClick = { showFolderMenu(path) }) {
+                                        Icon(Icons.Rounded.MoreVert, contentDescription = null)
+                                    }
+                                },
+                                modifier = Modifier.clickable { viewModel.navigateTo(path) },
+                            )
+                        }
+                    }
+
                     playlists?.let { playlists ->
-                        if (playlists.isEmpty() && !showLikedAndDownloadedPlaylist) {
+                        if (playlists.isEmpty() && folderPage?.folders.isNullOrEmpty() &&
+                            (canNavigateUp || !showLikedAndDownloadedPlaylist)) {
                             item {
                                 EmptyPlaceholder(
                                     icon = Icons.AutoMirrored.Rounded.QueueMusic,
@@ -370,7 +448,7 @@ fun LibraryPlaylistsScreen(
                         headerContent()
                     }
 
-                    if (showLikedAndDownloadedPlaylist) {
+                    if (!canNavigateUp && showLikedAndDownloadedPlaylist) {
                         item(
                             key = likedPlaylist.id,
                             contentType = { CONTENT_TYPE_PLAYLIST }
@@ -406,8 +484,48 @@ fun LibraryPlaylistsScreen(
                         }
                     }
 
+                    if (canNavigateUp) {
+                        item(key = "folder-up") {
+                            GridItem(
+                                title = stringResource(R.string.previous_folder),
+                                subtitle = PlaylistFolders.parent(currentPath),
+                                thumbnailContent = {
+                                    Icon(
+                                        Icons.Rounded.Folder,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize().padding(24.dp),
+                                    )
+                                },
+                                fillMaxWidth = true,
+                                modifier = Modifier.clickable { viewModel.navigateUp() },
+                            )
+                        }
+                    }
+
+                    folderPage?.folders?.let { folders ->
+                        items(folders, key = { "folder:$it" }) { path ->
+                            GridItem(
+                                title = PlaylistFolders.name(path),
+                                subtitle = path,
+                                thumbnailContent = {
+                                    Icon(
+                                        Icons.Rounded.Folder,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize().padding(24.dp),
+                                    )
+                                },
+                                fillMaxWidth = true,
+                                modifier = Modifier.combinedClickable(
+                                    onClick = { viewModel.navigateTo(path) },
+                                    onLongClick = { showFolderMenu(path) },
+                                ),
+                            )
+                        }
+                    }
+
                     playlists?.let { playlists ->
-                        if (playlists.isEmpty() && !showLikedAndDownloadedPlaylist) {
+                        if (playlists.isEmpty() && folderPage?.folders.isNullOrEmpty() &&
+                            (canNavigateUp || !showLikedAndDownloadedPlaylist)) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
                                 EmptyPlaceholder(
                                     icon = R.drawable.queue_music,

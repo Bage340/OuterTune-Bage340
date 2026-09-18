@@ -56,6 +56,7 @@ import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Artist
 import com.dd3boh.outertune.db.entities.Playlist
+import com.dd3boh.outertune.db.entities.PlaylistFolderEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.models.DirectoryTree
@@ -63,6 +64,7 @@ import com.dd3boh.outertune.ui.utils.STORAGE_ROOT
 import com.dd3boh.outertune.ui.utils.cacheDirectoryTree
 import com.dd3boh.outertune.ui.utils.getDirectoryTree
 import com.dd3boh.outertune.utils.SyncUtils
+import com.dd3boh.outertune.utils.PlaylistFolders
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.numberToAlpha
 import com.dd3boh.outertune.utils.reportException
@@ -374,8 +376,9 @@ class LibraryAlbumsViewModel @Inject constructor(
 @HiltViewModel
 class LibraryPlaylistsViewModel @Inject constructor(
     @ApplicationContext context: Context,
-    database: MusicDatabase,
+    private val database: MusicDatabase,
     private val syncUtils: SyncUtils,
+    private val savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     val isSyncingRemotePlaylists = syncUtils.isSyncingRemotePlaylists
 
@@ -393,9 +396,68 @@ class LibraryPlaylistsViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
+    private val currentPath = savedStateHandle.getStateFlow(CURRENT_PATH_KEY, PlaylistFolders.ROOT)
+
+    val folderPage = combine(allPlaylists, database.playlistFolders(), currentPath) { playlists, folders, path ->
+        if (playlists == null) return@combine null
+        val contents = PlaylistFolders.contents(
+            parent = path,
+            playlistPaths = playlists.map { it.playlist.path },
+            folderPaths = folders.map(PlaylistFolderEntity::path),
+        )
+        PlaylistFolderPage(
+            path = path,
+            playlists = contents.playlistIndexes.map(playlists::get),
+            folders = contents.folderPaths,
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun navigateTo(path: String) {
+        savedStateHandle[CURRENT_PATH_KEY] = PlaylistFolders.canonical(path)
+    }
+
+    fun navigateUp() = navigateTo(PlaylistFolders.parent(currentPath.value))
+
+    fun createFolder(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            database.createPlaylistFolder(currentPath.value, name)
+        }
+    }
+
+    fun renameFolder(path: String, name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            database.renamePlaylistFolder(path, name)
+        }
+    }
+
+    fun moveFolder(path: String, destinationParent: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            database.movePlaylistFolder(path, destinationParent)
+        }
+    }
+
+    fun deleteFolder(path: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            database.deletePlaylistFolder(path)
+        }
+    }
+
     fun syncPlaylists(bypassCd: Boolean = false) {
         viewModelScope.launch(Dispatchers.IO) { syncUtils.syncRemotePlaylists(bypassCd) }
     }
+
+    companion object {
+        private const val CURRENT_PATH_KEY = "playlistFolderPath"
+    }
+}
+
+data class PlaylistFolderPage(
+    val path: String,
+    val playlists: List<Playlist>,
+    val folders: List<String>,
+) {
+    val canNavigateUp: Boolean
+        get() = path != PlaylistFolders.ROOT
 }
 
 @HiltViewModel

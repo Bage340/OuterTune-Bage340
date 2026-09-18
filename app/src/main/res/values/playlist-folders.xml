@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_folder">Create folder</string>
+    <string name="rename_folder">Rename folder</string>
+    <string name="delete_folder">Delete folder</string>
+    <string name="delete_folder_confirm">Delete folder “%1$s”? Its playlists will be moved to the parent folder.</string>
+    <string name="move_to_folder">Move to folder</string>
+    <string name="root_folder">All playlists</string>
+    <string name="previous_folder">Previous folder</string>
+</resources>

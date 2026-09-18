@@ -38,12 +38,14 @@ import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+import com.dd3boh.outertune.utils.PlaylistFolders
 
 @Composable
 fun CreatePlaylistDialog(
     onDismiss: () -> Unit,
     initialTextFieldValue: String? = null,
     allowSyncing: Boolean = true,
+    folderPath: String = PlaylistFolders.ROOT,
 ) {
     val context = LocalContext.current
     val database = LocalDatabase.current
@@ -68,7 +70,8 @@ fun CreatePlaylistDialog(
                             browseId = browseId,
                             bookmarkedAt = LocalDateTime.now(),
                             isEditable = true,
-                            isLocal = !syncedPlaylist // && check that all songs are non-local
+                            isLocal = !syncedPlaylist, // && check that all songs are non-local
+                            path = PlaylistFolders.canonical(folderPath),
                         )
                     )
                 }

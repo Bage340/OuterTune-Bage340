@@ -200,6 +200,10 @@ android {
         }
     }
 
+    // Room's JVM migration helper reads schemas from the target app assets.
+    // Keep them in debug/test builds only; release APKs do not need the JSON files.
+    sourceSets.getByName("debug").assets.srcDir("$projectDir/schemas")
+
     lint {
         lintConfig = file("lint.xml")
     }

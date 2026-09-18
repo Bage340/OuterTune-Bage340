@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.automirrored.rounded.DriveFileMove
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Output
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -64,6 +65,7 @@ import com.dd3boh.outertune.ui.component.items.PlaylistListItem
 import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
 import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
 import com.dd3boh.outertune.ui.dialog.DefaultDialog
+import com.dd3boh.outertune.ui.dialog.MovePlaylistDialog
 import com.dd3boh.outertune.ui.dialog.TextFieldDialog
 import com.dd3boh.outertune.utils.getDownloadState
 import com.dd3boh.outertune.utils.lmScannerCoroutine
@@ -143,6 +145,9 @@ fun PlaylistMenu(
     var showChoosePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
     }
+    var showMovePlaylistDialog by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(songs) {
         val songs = songs.filterNot { it.song.isLocal }
@@ -155,6 +160,7 @@ fun PlaylistMenu(
 
     PlaylistListItem(
         playlist = playlist,
+        subtitle = playlist.playlist.path,
         trailingContent = {
             if (!playlist.playlist.isEditable) {
                 IconButton(
@@ -281,6 +287,12 @@ fun PlaylistMenu(
             }
         }
         GridMenuItem(
+            icon = Icons.AutoMirrored.Rounded.DriveFileMove,
+            title = R.string.move_to_folder,
+        ) {
+            showMovePlaylistDialog = true
+        }
+        GridMenuItem(
             icon = Icons.Rounded.PlaylistRemove,
             title = R.string.delete
         ) {
@@ -321,13 +333,24 @@ fun PlaylistMenu(
             onDone = { name ->
                 onDismiss()
                 database.query {
-                    update(playlist.playlist.copy(name = name))
+                    renamePlaylist(playlist.id, name)
                 }
 
                 coroutineScope.launch(syncCoroutine) {
                     playlist.playlist.browseId?.let { YouTube.renamePlaylist(it, name) }
                 }
             }
+        )
+    }
+
+    if (showMovePlaylistDialog) {
+        MovePlaylistDialog(
+            onMove = { destination ->
+                database.query {
+                    movePlaylistToFolder(playlist.id, destination)
+                }
+            },
+            onDismiss = { showMovePlaylistDialog = false },
         )
     }
 

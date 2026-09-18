@@ -14,13 +14,18 @@ import com.dd3boh.outertune.extensions.div
 import com.dd3boh.outertune.extensions.zipInputStream
 import com.dd3boh.outertune.extensions.zipOutputStream
 import com.dd3boh.outertune.playback.MusicService
+import com.dd3boh.outertune.utils.deleteDatabaseFiles
+import com.dd3boh.outertune.utils.deleteDatabaseSidecars
+import com.dd3boh.outertune.utils.installRestoredDatabase
 import com.dd3boh.outertune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.zip.Deflater
 import java.util.zip.ZipEntry
 import javax.inject.Inject
@@ -60,60 +65,35 @@ class BackupRestoreViewModel @Inject constructor(
     }
 
     fun restore(uri: Uri) {
-        runCatching {
-            context.applicationContext.contentResolver.openInputStream(uri)?.use {
+        var restartRequired = false
+        val result = runCatching {
+            val stagedDatabase = context.getDatabasePath(InternalDatabase.TEST_DB_NAME)
+            val stagedSettings = context.cacheDir.resolve("restore-$SETTINGS_FILENAME")
+            stagedDatabase.parentFile?.mkdirs()
+            deleteDatabaseFiles(stagedDatabase)
+            if (stagedSettings.exists() && !stagedSettings.delete()) {
+                throw IOException("Unable to clear staged settings")
+            }
+
+            var databaseFound = false
+            var settingsFound = false
+            val backupStream = context.applicationContext.contentResolver.openInputStream(uri)
+                ?: throw IOException("Unable to open backup")
+            backupStream.use {
                 it.zipInputStream().use { inputStream ->
                     var entry = inputStream.nextEntry
                     while (entry != null) {
                         when (entry.name) {
                             SETTINGS_FILENAME -> {
-                                (context.filesDir / "datastore" / SETTINGS_FILENAME).outputStream()
-                                    .use { outputStream ->
-                                        inputStream.copyTo(outputStream)
-                                    }
+                                if (settingsFound) throw IOException("Duplicate settings in backup")
+                                settingsFound = true
+                                stagedSettings.outputStream().use(inputStream::copyTo)
                             }
 
                             InternalDatabase.DB_NAME -> {
-                                Log.i(TAG, "Starting database restore")
-                                runBlocking(Dispatchers.IO) {
-                                    database.checkpoint()
-                                }
-                                database.close()
-
-                                Log.i(TAG, "Testing new database for compatibility...")
-                                val destFile = context.getDatabasePath(InternalDatabase.TEST_DB_NAME)
-                                destFile.parentFile?.apply {
-                                    if (!exists()) mkdirs()
-                                }
-                                FileOutputStream(destFile).use { outputStream ->
-                                    inputStream.copyTo(outputStream)
-                                }
-
-                                val status = try {
-                                    val t = InternalDatabase.newTestInstance(context, InternalDatabase.TEST_DB_NAME)
-                                    t.openHelper.writableDatabase.isDatabaseIntegrityOk
-                                    t.close()
-                                    true
-                                } catch (e: Exception) {
-                                    Log.e(TAG, "DB validation failed", e)
-                                    false
-                                }
-
-                                if (status) {
-                                    Log.i(TAG, "Found valid database, proceeding with restore")
-                                    destFile.inputStream().use { inputStream ->
-                                        FileOutputStream(database.openHelper.writableDatabase.path).use { outputStream ->
-                                            inputStream.copyTo(outputStream)
-                                        }
-                                    }
-                                } else {
-                                    Log.e(TAG, "Incompatible database, aborting restore")
-                                    Toast.makeText(
-                                        context,
-                                        context.getString(R.string.err_restore_incompatible_database),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                                if (databaseFound) throw IOException("Duplicate database in backup")
+                                databaseFound = true
+                                FileOutputStream(stagedDatabase).use(inputStream::copyTo)
                             }
                         }
                         entry = inputStream.nextEntry
@@ -121,19 +101,85 @@ class BackupRestoreViewModel @Inject constructor(
                 }
             }
 
+            if (!databaseFound || !validateStagedDatabase(stagedDatabase)) {
+                deleteDatabaseFiles(stagedDatabase)
+                if (stagedSettings.exists() && !stagedSettings.delete()) {
+                    Log.w(TAG, "Unable to delete staged settings after validation failure")
+                }
+                return@runCatching RestoreResult.INCOMPATIBLE
+            }
+
+            Log.i(TAG, "Validated database backup; starting restore")
+            val targetDatabase = File(
+                requireNotNull(database.openHelper.writableDatabase.path) {
+                    "Open database has no filesystem path"
+                }
+            )
+            runBlocking(Dispatchers.IO) { database.checkpoint() }
+            database.close()
+            restartRequired = true
+
+            deleteDatabaseSidecars(targetDatabase)
+            installRestoredDatabase(stagedDatabase, targetDatabase)
+
+            if (settingsFound) {
+                val settingsFile = context.filesDir / "datastore" / SETTINGS_FILENAME
+                settingsFile.parentFile?.mkdirs()
+                stagedSettings.inputStream().use { inputStream ->
+                    settingsFile.outputStream().use(inputStream::copyTo)
+                }
+            }
+            RestoreResult.SUCCESS
+        }
+
+        result.exceptionOrNull()?.let {
+            reportException(it)
+            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+        }
+        if (result.getOrNull() == RestoreResult.INCOMPATIBLE) {
+            Log.e(TAG, "Incompatible database, aborting restore")
+            Toast.makeText(
+                context,
+                context.getString(R.string.err_restore_incompatible_database),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        if (restartRequired) {
             val stopIntent = Intent(context, MusicService::class.java)
             context.stopService(stopIntent)
             val startIntent = Intent(context, MainActivity::class.java)
             startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(startIntent)
             exitProcess(0)
-        }.onFailure {
-            reportException(it)
-            Toast.makeText(context, it.message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun validateStagedDatabase(stagedDatabase: File): Boolean {
+        Log.i(TAG, "Testing restored database for compatibility")
+        var probe: MusicDatabase? = null
+        return try {
+            probe = InternalDatabase.newTestInstance(context, InternalDatabase.TEST_DB_NAME)
+            val integrityOk = probe.openHelper.writableDatabase.isDatabaseIntegrityOk
+            if (integrityOk) {
+                runBlocking(Dispatchers.IO) { probe.checkpoint() }
+            }
+            integrityOk
+        } catch (e: Exception) {
+            Log.e(TAG, "DB validation failed", e)
+            false
+        } finally {
+            probe?.close()
+            if (stagedDatabase.exists()) {
+                runCatching { deleteDatabaseSidecars(stagedDatabase) }
+                    .onFailure { Log.w(TAG, "Unable to delete staged database sidecars", it) }
+            }
         }
     }
 
     companion object {
         const val SETTINGS_FILENAME = "settings.preferences_pb"
     }
+
+    private enum class RestoreResult { SUCCESS, INCOMPATIBLE }
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="create_folder">Создать папку</string>
+    <string name="rename_folder">Переименовать папку</string>
+    <string name="delete_folder">Удалить папку</string>
+    <string name="delete_folder_confirm">Удалить папку «%1$s»? Плейлисты из неё будут перемещены в родительскую папку.</string>
+    <string name="move_to_folder">Переместить в папку</string>
+    <string name="root_folder">Все плейлисты</string>
+    <string name="previous_folder">Назад</string>
+</resources>

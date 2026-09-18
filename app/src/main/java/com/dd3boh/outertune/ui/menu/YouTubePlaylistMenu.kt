@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
+import androidx.compose.material.icons.automirrored.rounded.DriveFileMove
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material.icons.rounded.Radio
@@ -54,6 +55,7 @@ import com.dd3boh.outertune.ui.component.items.YouTubeListItem
 import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
 import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
 import com.dd3boh.outertune.ui.dialog.DefaultDialog
+import com.dd3boh.outertune.ui.dialog.MovePlaylistDialog
 import com.dd3boh.outertune.utils.getDownloadState
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.PlaylistItem
@@ -89,6 +91,9 @@ fun YouTubePlaylistMenu(
         mutableStateOf(false)
     }
     var showDeletePlaylistDialog by remember {
+        mutableStateOf(false)
+    }
+    var showMovePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
     }
 
@@ -256,6 +261,15 @@ fun YouTubePlaylistMenu(
             )
         }
 
+        if (dbPlaylist != null) {
+            GridMenuItem(
+                icon = Icons.AutoMirrored.Rounded.DriveFileMove,
+                title = R.string.move_to_folder,
+            ) {
+                showMovePlaylistDialog = true
+            }
+        }
+
         GridMenuItem(
             icon = Icons.Rounded.Share,
             title = R.string.share
@@ -275,6 +289,17 @@ fun YouTubePlaylistMenu(
         ) {
             showDeletePlaylistDialog = true
         }
+    }
+
+    if (showMovePlaylistDialog) {
+        MovePlaylistDialog(
+            onMove = { destination ->
+                dbPlaylist?.let {
+                    database.query { movePlaylistToFolder(it.id, destination) }
+                }
+            },
+            onDismiss = { showMovePlaylistDialog = false },
+        )
     }
 
     /**

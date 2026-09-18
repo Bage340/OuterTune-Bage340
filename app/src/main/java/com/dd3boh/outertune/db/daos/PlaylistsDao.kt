@@ -14,6 +14,8 @@ import com.dd3boh.outertune.constants.PlaylistFilter
 import com.dd3boh.outertune.constants.PlaylistSortType
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.db.entities.PlaylistFolderEntity
+import com.dd3boh.outertune.utils.PlaylistFolders
 import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.extensions.reversed
@@ -28,6 +30,87 @@ import kotlinx.coroutines.flow.map
 
 @Dao
 interface PlaylistsDao {
+
+    @Query("SELECT * FROM playlist_folder ORDER BY path COLLATE NOCASE")
+    fun playlistFolders(): Flow<List<PlaylistFolderEntity>>
+
+    @Query("SELECT path FROM playlist_folder")
+    fun playlistFolderPaths(): List<String>
+
+    @Query("SELECT * FROM playlist")
+    fun playlistEntities(): List<PlaylistEntity>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    fun insert(folder: PlaylistFolderEntity)
+
+    @Query("DELETE FROM playlist_folder WHERE path = :path")
+    fun deletePlaylistFolderRow(path: String)
+
+    @Query("UPDATE playlist SET path = :path WHERE id = :playlistId")
+    fun setPlaylistPath(playlistId: String, path: String): Int
+
+    @Query("UPDATE playlist SET name = :name WHERE id = :playlistId")
+    fun renamePlaylist(playlistId: String, name: String)
+
+    @Transaction
+    fun createPlaylistFolder(parent: String, name: String): Boolean {
+        if (!PlaylistFolders.validName(name)) return false
+        val base = PlaylistFolders.canonical(parent)
+        val paths = playlistFolderPaths()
+        if (base != PlaylistFolders.ROOT && PlaylistFolders.resolve(base, paths) == null) return false
+        val path = PlaylistFolders.child(base, name)
+        if (PlaylistFolders.resolve(path, paths) != null) return false
+        insert(PlaylistFolderEntity(path))
+        return true
+    }
+
+    @Transaction
+    fun movePlaylistToFolder(playlistId: String, destination: String): Boolean {
+        val path = PlaylistFolders.canonical(destination)
+        val resolvedPath = if (path == PlaylistFolders.ROOT) path
+        else PlaylistFolders.resolve(path, playlistFolderPaths()) ?: return false
+        return setPlaylistPath(playlistId, resolvedPath) == 1
+    }
+
+    fun renamePlaylistFolder(path: String, name: String): Boolean {
+        val source = PlaylistFolders.canonical(path)
+        return relocatePlaylistFolder(source, PlaylistFolders.parent(source), name)
+    }
+
+    fun movePlaylistFolder(path: String, destinationParent: String): Boolean =
+        relocatePlaylistFolder(path, destinationParent, PlaylistFolders.name(path))
+
+    @Transaction
+    fun relocatePlaylistFolder(path: String, destinationParent: String, newName: String): Boolean {
+        val source = PlaylistFolders.canonical(path)
+        val plan = PlaylistFolders.relocationPlan(
+            source = source,
+            destinationParent = destinationParent,
+            paths = playlistFolderPaths(),
+            newName = newName,
+        ) ?: return false
+        if (plan.isEmpty()) return true
+
+        plan.values.forEach { insert(PlaylistFolderEntity(it)) }
+        val target = plan.getValue(source)
+        playlistEntities().filter { PlaylistFolders.contains(source, it.path) }.forEach {
+            setPlaylistPath(it.id, PlaylistFolders.relocate(it.path, source, target))
+        }
+        plan.keys.sortedByDescending { it.length }.forEach(::deletePlaylistFolderRow)
+        return true
+    }
+
+    /** Remove organization only; every playlist in the subtree survives in the parent. */
+    @Transaction
+    fun deletePlaylistFolder(path: String): Boolean {
+        val source = PlaylistFolders.resolve(path, playlistFolderPaths()) ?: return false
+        if (source == PlaylistFolders.ROOT) return false
+        playlistEntities().filter { PlaylistFolders.contains(source, it.path) }.forEach {
+            setPlaylistPath(it.id, PlaylistFolders.pathAfterDelete(it.path, source))
+        }
+        playlistFolderPaths().filter { PlaylistFolders.contains(source, it) }.forEach(::deletePlaylistFolderRow)
+        return true
+    }
 
     // region Gets
     @Transaction
@@ -163,9 +246,9 @@ interface PlaylistsDao {
     @Update
     fun update(map: PlaylistSongMap)
 
-    @Update
     fun update(playlistEntity: PlaylistEntity, playlistItem: PlaylistItem) {
-        update(playlistEntity.copy(
+        updatePlaylistMetadata(
+            id = playlistEntity.id,
             name = playlistItem.title,
             browseId = playlistItem.id,
             isEditable = playlistItem.isEditable,
@@ -174,8 +257,16 @@ interface PlaylistsDao {
             playEndpointParams = playlistItem.playEndpoint?.params,
             shuffleEndpointParams = playlistItem.shuffleEndpoint?.params,
             radioEndpointParams = playlistItem.radioEndpoint?.params
-        ))
+        )
     }
+
+    @Query("""UPDATE playlist SET name = :name, browseId = :browseId,
+        isEditable = :isEditable, thumbnailUrl = :thumbnailUrl, remoteSongCount = :remoteSongCount,
+        playEndpointParams = :playEndpointParams, shuffleEndpointParams = :shuffleEndpointParams,
+        radioEndpointParams = :radioEndpointParams WHERE id = :id""")
+    fun updatePlaylistMetadata(id: String, name: String, browseId: String?, isEditable: Boolean,
+        thumbnailUrl: String?, remoteSongCount: Int?, playEndpointParams: String?,
+        shuffleEndpointParams: String?, radioEndpointParams: String?)
 
     @Transaction
     fun addSongToPlaylist(playlist: Playlist, songIds: List<String>) {

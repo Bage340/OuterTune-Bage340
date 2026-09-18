@@ -118,11 +118,12 @@ fun AutoPlaylistGridItem(
 fun PlaylistListItem(
     playlist: Playlist,
     modifier: Modifier = Modifier,
+    subtitle: String? = null,
     showBadges: Boolean = false,
     trailingContent: @Composable RowScope.() -> Unit = {},
 ) = ListItem(
     title = playlist.playlist.name,
-    subtitle =
+    subtitle = subtitle ?:
         if (playlist.songCount == 0 && playlist.playlist.remoteSongCount != null)
             getNSongsString(playlist.playlist.remoteSongCount)
         else
