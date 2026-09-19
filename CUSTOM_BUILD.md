@@ -1,7 +1,7 @@
 # OuterTune 0.11.1 custom revision
 
-The application ID remains `com.dd3boh.outertune`. The current test revision uses
-`versionName = 0.11.1` and `versionCode = 91`.
+The application ID remains `com.dd3boh.outertune`. The current iterative test release uses
+`versionName = 0.11.1` and `versionCode = 92`.
 
 ## Source history
 
@@ -68,5 +68,8 @@ If a Source error persists, collect its extended diagnostics. Equal IDs with a
 missing local path indicate a storage/index problem; differing IDs require further
 canonical-ID investigation. No title-based alias matching or database migration is introduced.
 
-Do not create a new tag or GitHub Release until the user confirms these phone checks.
-Build and unit tests alone do not establish that intermittent live YouTube failures are resolved.
+## v92 release notes
+
+- v92 raises the install revision so this build can be installed over the v91 test APK.
+- It carries the same functional changes as v91; use this prerelease for phone testing.
+- Follow-up APKs for this iterative release must use a higher `versionCode` so Android accepts in-place updates.
