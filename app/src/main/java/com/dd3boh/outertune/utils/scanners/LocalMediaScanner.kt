@@ -20,6 +20,7 @@ import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastMapNotNull
 import androidx.datastore.preferences.core.edit
 import androidx.documentfile.provider.DocumentFile
+import androidx.documentfile.provider.TreeDocumentFileOt
 import com.dd3boh.outertune.constants.SCANNER_DEBUG
 import com.dd3boh.outertune.constants.SYNC_SCANNER
 import com.dd3boh.outertune.constants.ScannerImpl
@@ -1172,7 +1173,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                         throw ScannerAbortException("Could not read selected scan directory: $path")
                     }
                     val songsHere = ArrayList<DocumentFile>()
-                    scanDfRecursive(file, songsHere) {
+                    scanDfRecursive(file, songsHere, failFast = true) {
                         // Allow: audio mime, or certain audio exts
                         // Disallow: x-mpegurl (m3u)
                         val mime = it.type ?: return@scanDfRecursive false
@@ -1209,14 +1210,15 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             dir: DocumentFile,
             result: ArrayList<DocumentFile>,
             scanHidden: Boolean = false,
+            failFast: Boolean = false,
             validator: ((DocumentFile) -> Boolean)? = null
         ): DocumentFile? {
-            val files = dir.listFiles()
+            val files = dir.listFilesForScan(failFast)
             for (file in files) {
                 if (!scanHidden && file.name?.startsWith(".") == true) continue
-                if (file.isDirectory && (scanHidden || !file.listFiles().any { it.name == ".nomedia" })) {
+                if (file.isDirectory && (scanHidden || !file.listFilesForScan(failFast).any { it.name == ".nomedia" })) {
                     // look into subdirs
-                    scanDfRecursive(file, result, scanHidden, validator)
+                    scanDfRecursive(file, result, scanHidden, failFast, validator)
                 } else {
                     // add if file matches
                     if (validator == null || validator(file)) {
@@ -1229,6 +1231,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 }
             }
             return null
+        }
+
+        private fun DocumentFile.listFilesForScan(failFast: Boolean): Array<DocumentFile> {
+            return if (failFast && this is TreeDocumentFileOt) listFilesOrThrow() else listFiles()
         }
 
         /**

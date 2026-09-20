@@ -89,6 +89,7 @@ import com.dd3boh.outertune.ui.dialog.InfoLabel
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
 import com.dd3boh.outertune.ui.utils.clearDtCache
 import com.dd3boh.outertune.utils.lmScannerCoroutine
+import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.destroyScanner
@@ -101,6 +102,7 @@ import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.scanners.absoluteFilePathFromUri
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -229,8 +231,18 @@ fun ColumnScope.LocalScannerFrag() {
                             }
 
                             delay(1000)
+                        } catch (e: CancellationException) {
+                            handleManualScanException(e) { reportException(it) }
                         } catch (e: ScannerAbortException) {
                             scannerFailure = true
+
+                            snackbarHostState.showSnackbar(
+                                message = "$scanFailMessage: ${e.message}",
+                                withDismissAction = true,
+                                duration = SnackbarDuration.Short
+                            )
+                        } catch (e: Exception) {
+                            scannerFailure = handleManualScanException(e) { reportException(it) }
 
                             snackbarHostState.showSnackbar(
                                 message = "$scanFailMessage: ${e.message}",
@@ -265,8 +277,18 @@ fun ColumnScope.LocalScannerFrag() {
                             }
 
                             delay(1000)
+                        } catch (e: CancellationException) {
+                            handleManualScanException(e) { reportException(it) }
                         } catch (e: ScannerAbortException) {
                             scannerFailure = true
+
+                            snackbarHostState.showSnackbar(
+                                message = "$scanFailMessage: ${e.message}",
+                                withDismissAction = true,
+                                duration = SnackbarDuration.Short
+                            )
+                        } catch (e: Exception) {
+                            scannerFailure = handleManualScanException(e) { reportException(it) }
 
                             snackbarHostState.showSnackbar(
                                 message = "$scanFailMessage: ${e.message}",
@@ -475,11 +497,11 @@ fun ColumnScope.LocalScannerFrag() {
                 ActivityResultContracts.OpenDocumentTree()
             ) { uri ->
                 if (uri == null) return@rememberLauncherForActivityResult
-                if (tempScanPaths.any { it.toString() == uri.toString() }) return@rememberLauncherForActivityResult
 
                 val contentResolver = context.contentResolver
                 val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
                 contentResolver.takePersistableUriPermission(uri, takeFlags)
+                if (tempScanPaths.any { it.toString() == uri.toString() }) return@rememberLauncherForActivityResult
                 tempScanPaths.add(uri)
             }
 
@@ -627,5 +649,14 @@ fun ColumnScope.LocalScannerExtraFrag() {
 @Composable
 private fun LocalScannerExtraFragPreview() {
     Column { LocalScannerExtraFrag() }
+}
+
+internal fun handleManualScanException(
+    exception: Exception,
+    report: (Exception) -> Unit,
+): Boolean {
+    if (exception is CancellationException) throw exception
+    report(exception)
+    return true
 }
 

@@ -115,6 +115,14 @@ class TreeDocumentFileOt(
     }
 
     override fun listFiles(): Array<DocumentFile> {
+        return queryChildren(failFast = false)
+    }
+
+    fun listFilesOrThrow(): Array<DocumentFile> {
+        return queryChildren(failFast = true)
+    }
+
+    private fun queryChildren(failFast: Boolean): Array<DocumentFile> {
         val resolver = context.contentResolver
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
             _uri, DocumentsContract.getDocumentId(_uri)
@@ -141,6 +149,7 @@ class TreeDocumentFileOt(
                 resultNames.add(documentName)
             }
         } catch (e: Exception) {
+            if (failFast) throw e
             Log.w(TAG, "Failed query: $e")
         } finally {
             closeQuietly(c)
