@@ -10,9 +10,13 @@ import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SongTempData
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -104,6 +108,42 @@ class ScanDatabaseAtomicityTest {
 
         assertTrue(failure is ScannerAbortException)
         assertEquals(listOf("existing"), database.allLocalDbSongs().map { it.song.id })
+    }
+
+    @Test
+    fun concurrentScannerTransactionsHideRolledBackRowsAndSerializeNextCommit() = runBlocking {
+        val firstEntered = CompletableDeferred<Unit>()
+        val releaseRollback = CompletableDeferred<Unit>()
+        val secondRequested = CompletableDeferred<Unit>()
+        val secondEntered = CompletableDeferred<Unit>()
+
+        val first = async(Dispatchers.Default) {
+            runCatching {
+                database.withScannerTransaction {
+                    insert(localSong("rolled-back", "/music/rolled-back.mp3").song.song)
+                    firstEntered.complete(Unit)
+                    releaseRollback.await()
+                    throw ScannerAbortException("forced concurrent rollback")
+                }
+            }.exceptionOrNull()
+        }
+        firstEntered.await()
+
+        val second = async(Dispatchers.Default) {
+            secondRequested.complete(Unit)
+            database.withScannerTransaction {
+                secondEntered.complete(Unit)
+                insert(localSong("committed", "/music/committed.mp3").song.song)
+            }
+        }
+        secondRequested.await()
+        assertFalse(secondEntered.isCompleted)
+
+        releaseRollback.complete(Unit)
+        assertTrue(first.await() is ScannerAbortException)
+        second.await()
+
+        assertEquals(listOf("committed"), database.allLocalDbSongs().map { it.song.id })
     }
 
     private fun localSong(id: String, path: String): SongTempData {

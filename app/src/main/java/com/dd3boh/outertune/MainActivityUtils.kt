@@ -50,6 +50,12 @@ import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
+internal fun updatedStartupLastLocalScan(
+    previousTimestamp: Long,
+    scanTimestamp: Long,
+    localLibraryEnabled: Boolean,
+    localScanSucceeded: Boolean,
+): Long = if (!localLibraryEnabled || localScanSucceeded) scanTimestamp else previousTimestamp
 
 /**
  * Directly navigate to a YouTube page given an YouTube url
@@ -183,7 +189,12 @@ suspend fun scanInit(
     downloadUtil.resumeDownloadsOnStart()
     if (!localLibEnable) {
         context.dataStore.edit { settings ->
-            settings[LastLocalScanKey] = timeNow
+            settings[LastLocalScanKey] = updatedStartupLastLocalScan(
+                previousTimestamp = lastLocalScan,
+                scanTimestamp = timeNow,
+                localLibraryEnabled = localLibEnable,
+                localScanSucceeded = false,
+            )
         }
         playerConnection?.service?.initQueue()
         Log.i(MAIN_TAG, "Downloads scan completed. Local media is disabled.")
@@ -241,11 +252,19 @@ suspend fun scanInit(
                 destroyScanner(SCANNER_OWNER_LM)
             }
 
+            val updatedTimestamp = updatedStartupLastLocalScan(
+                previousTimestamp = lastLocalScan,
+                scanTimestamp = timeNow,
+                localLibraryEnabled = localLibEnable,
+                localScanSucceeded = localScanSucceeded,
+            )
+            if (updatedTimestamp != lastLocalScan) {
+                context.dataStore.edit { settings ->
+                    settings[LastLocalScanKey] = updatedTimestamp
+                }
+            }
             if (localScanSucceeded) {
                 // post scan actions
-                context.dataStore.edit { settings ->
-                    settings[LastLocalScanKey] = timeNow
-                }
                 playerConnection?.service?.initQueue()
                 Log.i(MAIN_TAG, "Local media and downloads scan completed")
             } else {
