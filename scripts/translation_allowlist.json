@@ -1,0 +1,19 @@
+{
+  "allowed_untranslated": [
+    "Android",
+    "Bluetooth",
+    "FFmpeg",
+    "FLAC",
+    "ID3",
+    "M3U",
+    "MP3",
+    "MPEG",
+    "MediaStore",
+    "MPRIS",
+    "OuterTune",
+    "TagLib",
+    "YouTube",
+    "YouTube Music",
+    "Wi-Fi"
+  ]
+}

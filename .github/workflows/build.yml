@@ -34,6 +34,11 @@ jobs:
       - name: Accept Android SDK licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
 
+      - name: Validate localized resources
+        run: |
+          python -m unittest scripts.tests.test_check_translations
+          python scripts/check_translations.py
+
       - name: Test, lint, and build unsigned APK
         run: ./gradlew testCoreDebugUnitTest lintCoreUserdebug assembleCoreUserdebug --stacktrace -DskipFormatKtlint
 
