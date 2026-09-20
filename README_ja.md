@@ -1,145 +1,69 @@
-# OuterTune
+# OuterTune-Bage340
 
-[![OuterTune app icon](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/outertune.webp)](https://github.com/yuuichi-s/OuterTune/blob/dev/assets/outertune.webp)
+[![OuterTune アプリアイコン](assets/outertune.webp)](assets/outertune.webp)
 
+[![最新プレリリース](https://img.shields.io/github/v/release/Bage340/OuterTune-Bage340?include_prereleases&sort=semver)](https://github.com/Bage340/OuterTune-Bage340/releases)
+[![ビルド](https://github.com/Bage340/OuterTune-Bage340/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/Bage340/OuterTune-Bage340/actions/workflows/build.yml)
+[![ライセンス](https://img.shields.io/github/license/Bage340/OuterTune-Bage340)](LICENSE)
 
-[![Latest release](https://img.shields.io/github/v/release/yuuichi-s/OuterTune?include_prereleases)](https://github.com/yuuichi-s/OuterTune/releases)
-[![License](https://img.shields.io/github/license/yuuichi-s/OuterTune)](https://www.gnu.org/licenses/gpl-3.0)
+[English](README.md) | [Русский](README_ru.md) | [日本語](README_ja.md)
 
-[English](README.md) | [日本語](README_ja.md)
+[OuterTune](https://github.com/OuterTune/OuterTune) をベースにした、独立した公開フォークです。Android 向けの YouTube Music クライアントとローカル音楽プレイヤーとして、YouTube Music と端末内音楽の再生を維持しつつ、再生、ダウンロード、ローカルライブラリ向けの選択的な修正と互換性のあるバックポートを取り込みます。アプリの UI は複数言語に対応しています。
 
-Android向け Material 3 YouTube Music クライアント & ローカル音楽プレイヤー
+> [!IMPORTANT]
+> このリポジトリは独立しており、公式の OuterTune プロジェクトまたは公式メンテナーチャネルでは**ありません**。アップストリームのプロジェクト、履歴、独自リリースについては [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune) をご覧ください。
 
-> [!NOTE]
-> これは [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune) をベースにしたフォークです。
->
-> - 現時点では配布手段を用意していませんが、今後用意する可能性があります。
->
-> 利用したい場合は、ご自分でビルドできます。多くの方には `core` ビルドをおすすめします。
->
-> ```bash
-> # core debug build
-> ./gradlew assembleCoreDebug
-> ```
->
-> 詳しい手順は [CONTRIBUTING.md](https://github.com/yuuichi-s/OuterTune/blob/dev/CONTRIBUTING.md) をご覧ください。
+## このフォークが提供するもの
 
-## このフォークで改善していること
+- YouTube Music の検索・再生、プレイリスト、アカウント同期、歌詞、任意のオフラインダウンロード
+- YouTube Music のコンテンツと並行して利用できるローカル音声ファイルの再生
+- ローカルライブラリのスキャン、閲覧、フィルタリング、M3U のインポート／エクスポート
+- Android 向け Material 3 UI、複数の再生キュー、Android Auto、音声エフェクト、多言語リソース
+- 信頼性に関する対象を絞った改善と選択的なバックポート。対象範囲はこのリポジトリの履歴と pull request に記録されます
 
-このフォークでは、[OuterTune/OuterTune](https://github.com/OuterTune/OuterTune) をベースに、YouTube Music の再生安定性、歌詞表示、操作性、ローカル音楽再生まわりを中心に改善しています。
+機能の利用可否は、端末、アカウント、ネットワーク、地域、プロバイダー、ビルドフレーバーにより異なります。YouTube Music を利用できない地域があります。必要な場合は、適法かつ適切な範囲でプロキシまたは VPN を使用してください。
 
-### YouTube Music の再生・表示
+## インストールまたはビルド
 
-- アルバムの楽曲が表示されない問題、プレイリスト表示時のクラッシュ、検索結果の取得失敗などを修正
-- YouTube Music の再生を妨げる「Source error 2004」を解消
-- サムネイル画像の解像度を改善
-- プレイリストやアルバムを開く際、データの更新中に起こり得たクラッシュを修正
-- m3u プレイリストの取り込み時のクラッシュを修正し、YouTube 楽曲との照合を改善
+現在のソースバージョンは **0.11.1（バージョンコード 92）** です。検証中のためプレリリースとして扱います。リリースが公開されている場合は、このリポジトリの [Releases](https://github.com/Bage340/OuterTune-Bage340/releases) ページにある APK のみを使用してください。テストビルドのアーティファクトは、利用可能な場合にこのリポジトリの [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) の実行結果へ添付されますが、公開リリースの代わりにはなりません。
 
-### 歌詞表示
+ソースからビルドするには、サブモジュールを含めてこのリポジトリをクローンし、Android Studio または Gradle Wrapper を使用します。
 
-- LrcLib とキャプショントラックを利用し、歌詞取得の精度と表示速度を改善
-- 再生画面の操作バーに歌詞切替ボタンを追加
-- SimpMusic と BetterLyrics を歌詞プロバイダーとして追加
-- 有効なプロバイダーへタイムアウト付きで並列に問い合わせ
-- 歌詞パネルを閉じている間も再生サービスで歌詞を取得
+```bash
+git clone --recurse-submodules https://github.com/Bage340/OuterTune-Bage340.git
+cd OuterTune-Bage340
 
-### アプリの操作とメニュー
+# core デバッグ APK
+./gradlew assembleCoreDebug
 
-- ボトムナビゲーションの挙動を調整し、タブ移動や再タップ時の動作を自然に変更
-- フォルダー画面の検索バー、並び順、リスト更新の問題を修正
-- タブ画面上部に常時表示していた検索バーを、検索・履歴・統計・設定などをまとめたアイコン列に変更
-- ミニプレーヤーを左右にスワイプして前後の曲へ移動する操作を追加
+# 追加の FFmpeg デコーダーパッケージを含む full デバッグ APK
+./gradlew assembleFullDebug
+```
 
-### ローカル音楽再生
-
-- ローカル楽曲のタグ読み取り、リンク処理、ギャップレス再生を改善
-- アルバム画面に表示される楽曲数の誤りを修正
-- 端末内の楽曲・アルバム・アーティスト・プレイリストを、絞り込みと検索で閲覧できる「ローカル」タブを追加
-
-### 表示・設定
-
-- タブレット向けUIを改善
-- Android 14 以降ではシステムのコントラスト設定を自動検出
-- カスタムアクセントカラーを追加
-- 「オーディオフォーカスを維持」するプレイヤー設定を追加
-- サインイン時、ホーム画面に YouTube Music の最近のアクティビティをカード表示で追加
-- プレイヤーのキューを開くハンドルに現在のキュー名を表示
-- アカウントアイコンを、サインイン中のアカウントのプロフィール画像に変更
-- 設定画面を再編し、「外観」と「インターフェイス」を「外観と操作」に統合、「プライバシー」を最上位に追加
-
-### 再生・ダウンロード
-
-- フェードアウトして再生を完全に停止する睡眠タイマーを追加
-- Wi-Fi 接続時のみダウンロードするトグルを追加
-
-### 内部ライブラリ・ビルド環境
-
-- Kotlin、KSP、NewPipeExtractor、Ktor、Android Gradle Plugin、Gradle などを更新
-
-## 機能
-
-OuterTune は [InnerTune](https://github.com/z-huang/InnerTune) を強化したフォークです。ローカル音楽プレイヤーと YouTube Music クライアントの両機能を備えています。
-
-- YouTube Music クライアント機能
-    * 楽曲のダウンロード（オフライン再生）
-    * 広告なし・バックグラウンド再生によるシームレスな再生
-    * アカウント同期
-        + アプリからリモートアカウントへのプレイリスト完全同期は現在一時的に利用不可
-- ローカル音声ファイルの再生（MP3、OGG、FLACなど）
-    * ローカル楽曲と YouTube Music の楽曲を同時に再生可能
-    * MediaStore の壊れたメタデータ抽出器の代わりにカスタムタグ抽出器を使用（`\` 区切りのタグなども正しく表示）
-- スタイリッシュな Material 3 デザイン
-- 複数キュー
-- 同期歌詞、および単語単位・カラオケ形式の歌詞に対応（LRC、TTMLなど）
-- 音量正規化、テンポ・ピッチ調整、その他各種オーディオエフェクト
-- Android Auto 対応
-- Android 8（Oreo）以降をサポート
-
-> [!NOTE]
-> Android 8（Oreo）以降をサポートしています。Android 7.x（Nougat）でも動作する可能性はありますが、正式サポート対象外です。
+Windows では `./gradlew` の代わりに `./gradlew.bat` または `gradlew.bat` を実行してください。前提条件、フレーバーの違い、コントリビュートの手順は [CONTRIBUTING.md](CONTRIBUTING.md) をご覧ください。
 
 ## スクリーンショット
 
-[![メインプレイヤー画面](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/main-interface.jpg)](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/main-interface.jpg)
+![メインプレイヤー画面](assets/main-interface.jpg)
 
-[![プレイヤー画面](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/player.jpg)](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/player.jpg)
+![プレイヤー画面](assets/player.jpg)
 
-[![YouTube Music との同期](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/ytm-sync.jpg)](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/ytm-sync.jpg)
+![YouTube Music との同期](assets/ytm-sync.jpg)
 
-[全画像ギャラリー](https://github.com/yuuichi-s/OuterTune/tree/dev/assets/gallery)
+[画像ギャラリーを開く](assets/gallery)
 
-> [!WARNING]
-> YouTube Music が利用できない地域では、プロキシまたは VPN を使用しない限りこのアプリは使用できません。
+## サポートとコントリビュート
 
-## ビルド & コントリビュート
+- このフォーク固有の不具合は、このリポジトリの [Issues](https://github.com/Bage340/OuterTune-Bage340/issues) に報告してください。
+- pull request を作成する前に [CONTRIBUTING.md](CONTRIBUTING.md) を確認し、変更したビルドフレーバーをテストしてください。
+- アップストリームプロジェクトから取り込んだ変更には、該当する場合に元の著者と帰属を保持します。
 
-ご自身でビルドしたい方は[ビルドおよびコントリビュートに関するノート](CONTRIBUTING.md)をご覧ください。
+## 帰属とライセンス
 
-### 翻訳の投稿
+OuterTune-Bage340 は [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune) を基にしており、OuterTune は [z-huang/InnerTune](https://github.com/z-huang/InnerTune) のフォークです。各プロジェクトのコントリビューター、およびソースツリーでクレジットされているプロジェクトとライブラリに感謝します。
 
-OuterTune の翻訳には Weblate を使用しています。詳細や翻訳の投稿は[Weblate ページ](https://hosted.weblate.org/projects/yuuichi-s-outertune/)をご覧ください。
-
-[![翻訳ステータス](https://hosted.weblate.org/widget/yuuichi-s-outertune/multi-auto.svg)](https://hosted.weblate.org/projects/yuuichi-s-outertune/)
-
-世界中の方々に OuterTune をお届けするためにご協力いただきありがとうございます。
-
-## ヘルプ & サポート
-
-- **このフォーク固有のバグ**については、[このリポジトリの Issue](https://github.com/yuuichi-s/OuterTune/issues) を作成してください。
-
-## クレジット
-
-すべてのコントリビューターに感謝します。[こちら](https://github.com/OuterTune/OuterTune/graphs/contributors)からご確認いただけます。
-
-このフォークの素晴らしいベースを提供してくださった [z-huang/InnerTune](https://github.com/z-huang/InnerTune) なしには実現できませんでした。
-
-ローカル音楽プレイヤーの理想的な体験のインスピレーションをくれた [Musicolet](https://play.google.com/store/apps/details?id=in.krosbits.musicolet)。
-
-精神的サポートと伝説の歌詞パーサーを提供してくれた [Gramophone](https://github.com/FoedusProgramme/Gramophone)。
+このフォークは [GNU General Public License v3.0](LICENSE) の下で配布されています。変更版を再配布する場合は、リポジトリ内のライセンスと該当する通知を保持してください。
 
 ## 免責事項
 
-本プロジェクトおよびその内容は、YouTube、Google LLC またはその関連会社・子会社と一切関係なく、資金提供、承認、推薦も受けていません。
-
-本プロジェクトで使用されている商標、サービスマーク、商号、その他の知的財産権はそれぞれの権利者に帰属します。
+このプロジェクトは、YouTube、Google LLC、OuterTune/OuterTune、およびそれぞれの関連会社から、提携、資金提供、認可、推奨を受けておらず、その他の関係もありません。商標およびその他の知的財産権は、それぞれの権利者に帰属します。

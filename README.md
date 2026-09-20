@@ -1,151 +1,69 @@
 # OuterTune-Bage340
 
-[![OuterTune app icon](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/outertune.webp)](https://github.com/yuuichi-s/OuterTune/blob/dev/assets/outertune.webp)
+[![OuterTune app icon](assets/outertune.webp)](assets/outertune.webp)
 
+[![Latest prerelease](https://img.shields.io/github/v/release/Bage340/OuterTune-Bage340?include_prereleases&sort=semver)](https://github.com/Bage340/OuterTune-Bage340/releases)
+[![Build](https://github.com/Bage340/OuterTune-Bage340/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/Bage340/OuterTune-Bage340/actions/workflows/build.yml)
+[![License](https://img.shields.io/github/license/Bage340/OuterTune-Bage340)](LICENSE)
 
-[![Latest release](https://img.shields.io/github/v/release/yuuichi-s/OuterTune?include_prereleases)](https://github.com/yuuichi-s/OuterTune/releases)
-[![License](https://img.shields.io/github/license/yuuichi-s/OuterTune)](https://www.gnu.org/licenses/gpl-3.0)
+[English](README.md) | [Русский](README_ru.md) | [日本語](README_ja.md)
 
-[English](README.md) | [日本語](README_ja.md)
+An independent public fork of [OuterTune](https://github.com/OuterTune/OuterTune): an Android YouTube Music client and local music player. This fork preserves both YouTube Music and on-device playback while carrying selected fixes and compatible backports for playback, downloads, and local-library support. The app UI is multilingual.
 
-An independent GPL-3.0 fork of OuterTune that combines YouTube Music with local music playback.
+> [!IMPORTANT]
+> This repository is independent and is **not** the official OuterTune project or an official OuterTune maintainer channel. For the upstream project, history, and its own releases, see [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune).
 
-> [!NOTE]
-> This is an independent fork based on [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune). It is not the official OuterTune project.
->
-> OuterTune-Bage340 preserves YouTube Music support and adds playback/download reliability fixes while selectively backporting compatible improvements from the official local-focused branch. Its features can therefore differ from official OuterTune even when the version baseline is the same.
->
-> Test builds are distributed as CI artifacts. GitHub Releases are published only after a revision has been tested and explicitly approved.
->
-> If you would like to use it, you can build the app yourself. For most people, we recommend the `core` build:
->
-> ```bash
-> # core debug build
-> ./gradlew assembleCoreDebug
-> ```
->
-> For step-by-step instructions, see [CONTRIBUTING.md](https://github.com/yuuichi-s/OuterTune/blob/dev/CONTRIBUTING.md).
+## What this fork provides
 
-## What This Fork Improves
+- YouTube Music browsing, streaming, playlists, account synchronization, lyrics, and optional offline downloads
+- Playback of local audio files alongside YouTube Music content
+- Local-library scanning, browsing, filtering, and M3U import/export
+- A Material 3 Android interface, multiple playback queues, Android Auto, audio effects, and multilingual resources
+- Targeted reliability work and selected backports, with scope documented in this repository's history and pull requests
 
-This fork builds on [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune) with a focus on YouTube Music playback stability, lyrics, navigation, and local music playback.
+Feature availability can vary with device, account, network, region, provider, and build flavor. YouTube Music is unavailable in some regions; use of a proxy or VPN may be necessary where lawful and appropriate.
 
-### YouTube Music playback and display
+## Install or build
 
-- Fixed albums with missing tracks, crashes while opening playlists, and failed search result parsing
-- Fixed the "Source error 2004" issue that could block YouTube Music playback
-- Improved YouTube Music thumbnail resolution
-- Fixed a crash that could occur when opening playlists or albums while their data was being updated
-- Fixed m3u playlist import crashes and improved YouTube song matching
+The current source version is **0.11.1 (version code 92)** and is treated as a prerelease while it is being validated. When a release is published, use only the APKs on this repository's [Releases](https://github.com/Bage340/OuterTune-Bage340/releases) page. Test-build artifacts, when available, are attached to this repository's [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) runs and are not a substitute for a published release.
 
-### Lyrics
+To build from source, clone this repository with submodules and use Android Studio or the Gradle wrapper:
 
-- Uses LrcLib and caption tracks to improve lyrics matching and loading speed
-- Adds a lyrics toggle button to the now-playing action bar
-- Added SimpMusic and BetterLyrics as lyrics providers
-- Queries enabled providers in parallel with timeouts
-- Fetches lyrics in the playback service even while the lyrics panel is closed
+```bash
+git clone --recurse-submodules https://github.com/Bage340/OuterTune-Bage340.git
+cd OuterTune-Bage340
 
-### Navigation and menus
+# Core debug APK
+./gradlew assembleCoreDebug
 
-- Adjusted bottom navigation so tab switching and re-tapping the active tab behave more naturally
-- Fixed issues with the search bar, sorting, and list refreshes on the Folders screen
-- Replaced the persistent search bar on tab screens with a top icon row (search, history, stats, settings, and more)
-- Added swipe-to-skip to the mini player
+# Full debug APK, including the additional FFmpeg decoder package
+./gradlew assembleFullDebug
+```
 
-### Local music playback
-
-- Improved tag reading, song linking, and gapless playback for local music
-- Fixed the album song count shown on album screens
-- Added a Local tab for browsing on-device songs, albums, artists, and playlists with filters and search
-
-### Display and settings
-
-- Improved the tablet UI
-- Automatically detects the system contrast setting on Android 14 and later
-- Added custom accent colors
-- Added a "keep audio focus" player setting
-- Added a home screen grid showing your recent YouTube Music activity when signed in
-- Added the current queue's name to the player's queue handle
-- Replaced the account icon with the signed-in account's profile image
-- Reorganized the settings screens, merging Appearance and Interface into "Appearance and controls" and adding a top-level Privacy screen
-
-### Playback and downloads
-
-- Added a sleep timer that fades out and fully stops playback
-- Added a Wi-Fi-only download toggle
-
-### Internal libraries and build tooling
-
-- Updated Kotlin, KSP, NewPipeExtractor, Ktor, Android Gradle Plugin, Gradle, and related tooling
-
-## Features
-
-OuterTune is a supercharged fork of [InnerTune](https://github.com/z-huang/InnerTune). This app is both a local media player, and a YouTube Music client.
-
-- YouTube Music client features
-  * Song downloading (offline playback)
-  * Seamless playback: no ads & background playback
-  * Account synchronization
-    + Full playlist sync from the app to the remote account is temporarily unavailable
-- Local audio file playback (ex. MP3, OGG, FLAC, etc.)
-  * Play local and YouTube Music songs at the same time
-  * Uses a custom tag extractor instead of MediaStore's broken metadata extractor! (e.g tags delimited with \ now show up properly)
-- Sleek Material3 design
-- Multiple queues
-- Synchronized lyrics, and support for word by word/Karaoke lyrics formats (e.g LRC, TTML)
-- Audio normalization, tempo/pitch adjustment, and various other audio effects
-- Android Auto support
-- Support for Android 8 (Oreo) and higher
-
-> [!NOTE]
-> Android 8 (Oreo) and higher is supported. While the app may work on Android 7.x (Nougat), we do not officially support this version
+On Windows, run `./gradlew` as `./gradlew.bat` or `gradlew.bat`. See [CONTRIBUTING.md](CONTRIBUTING.md) for prerequisites, flavor details, and contribution guidance.
 
 ## Screenshots
 
-[![Main player interface](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/main-interface.jpg)](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/main-interface.jpg)
+![Main player interface](assets/main-interface.jpg)
 
-[![Player interface](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/player.jpg)](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/player.jpg)
+![Player interface](assets/player.jpg)
 
-[![Sync with YouTube Music](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/ytm-sync.jpg)](https://github.com/yuuichi-s/OuterTune/raw/dev/assets/ytm-sync.jpg)
+![YouTube Music synchronization](assets/ytm-sync.jpg)
 
-[Full image gallery](https://github.com/yuuichi-s/OuterTune/tree/dev/assets/gallery)
+[View the full image gallery](assets/gallery)
 
-> [!WARNING]
-> If you're in a region where YouTube Music is not supported, you won't be able to use this app ***unless*** you have a proxy or VPN to connect to a YTM supported region.
+## Support and contributions
 
-## Building & Contributing
+- Report bugs specific to this fork through this repository's [Issues](https://github.com/Bage340/OuterTune-Bage340/issues).
+- Before opening a pull request, follow [CONTRIBUTING.md](CONTRIBUTING.md) and test the affected build flavor.
+- Changes from upstream projects retain their original authorship and attribution where applicable.
 
-Just wish to build the app yourself, please see the [building and contribution notes](CONTRIBUTING.md).
+## Attribution and license
 
-### Submitting Translations
+OuterTune-Bage340 is derived from [OuterTune/OuterTune](https://github.com/OuterTune/OuterTune), itself a fork of [z-huang/InnerTune](https://github.com/z-huang/InnerTune). Thanks to their contributors and to the projects and libraries credited in the source tree.
 
-We use Weblate to translate OuterTune. For more details or to submit translations, visit our [Weblate page](https://hosted.weblate.org/projects/yuuichi-s-outertune/).
-
-[![Translation status](https://hosted.weblate.org/widget/yuuichi-s-outertune/multi-auto.svg)](https://hosted.weblate.org/projects/yuuichi-s-outertune/)
-
-Thank you very much for helping to make OuterTune accessible to many people worldwide.
-
-## Help & Support
-
-- For bugs **specific to this fork**, please open an [Issue in this repository](https://github.com/yuuichi-s/OuterTune/issues).
-
-## Attribution
-
-Thanks to all our contributors! Check them out [here](https://github.com/OuterTune/OuterTune/graphs/contributors)
-
-[z-huang/InnerTune](https://github.com/z-huang/InnerTune) for providing an awesome base for this fork, none of this
-would have been possible without it.
-
-[Musicolet](https://play.google.com/store/apps/details?id=in.krosbits.musicolet) for inspiration of a local music player
-experience done right.
-
-[Gramophone](https://github.com/FoedusProgramme/Gramophone) for emotional support, and a legendary lyrics parser
+This fork is distributed under the [GNU General Public License v3.0](LICENSE). The license and applicable notices in the repository apply to this fork and must be preserved when redistributing modified versions.
 
 ## Disclaimer
 
-This project and its contents are not affiliated with, funded, authorized, endorsed by, or in any
-way associated with YouTube, Google LLC or any of its affiliates and subsidiaries.
-
-Any trademark, service mark, trade name, or other intellectual property rights used in this project
-are owned by the respective owners.
+This project is not affiliated with, funded, authorized, endorsed by, or otherwise associated with YouTube, Google LLC, OuterTune/OuterTune, or their respective affiliates. Trademarks and other intellectual-property rights belong to their respective owners.
