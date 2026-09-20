@@ -11,7 +11,9 @@ from pathlib import Path
 
 
 RESOURCE_FILES = ("strings.xml", "strings-ot.xml")
-LOCALE_DIRECTORY = re.compile(r"^values-(?:[a-z]{2,3}(?:-r[A-Z]{2})?|b\+[A-Za-z]{2,3}(?:\+[A-Za-z0-9]+)*)$")
+LOCALE_DIRECTORY = re.compile(
+    r"^values-(?:[a-z]{2,3}(?:-r[A-Z]{2})?|b\+[A-Za-z]{2,3}(?:\+[A-Za-z0-9]+)*)(?:-[A-Za-z0-9]+)*$"
+)
 FORMAT_TOKEN = re.compile(
     r"%(?:(?P<position>\d+)\$)?(?P<flags>[-#+ 0,(<]*)?(?:\d+)?(?:\.\d+)?(?:(?P<datetime>[tT])(?P<datetime_conversion>[a-zA-Z])|(?P<conversion>[a-zA-Z]))"
 )
@@ -104,10 +106,22 @@ def format_signature(value):
     tokens = []
     next_position = 1
     previous_position = None
-    for match in FORMAT_TOKEN.finditer(value):
+    index = 0
+    while index < len(value):
+        if value[index] != "%":
+            index += 1
+            continue
+        if value.startswith("%%", index):
+            index += 2
+            continue
+        match = FORMAT_TOKEN.match(value, index)
+        if match is None:
+            index += 1
+            continue
         conversion = match.group("conversion")
         datetime_prefix = match.group("datetime")
-        if conversion in {"%", "n"}:
+        if conversion == "n":
+            index = match.end()
             continue
         if datetime_prefix:
             conversion = f"{datetime_prefix.lower()}{match.group('datetime_conversion').lower()}"
@@ -123,6 +137,7 @@ def format_signature(value):
             next_position += 1
         previous_position = position
         tokens.append((position, conversion))
+        index = match.end()
     return sorted(Counter(tokens).items())
 
 

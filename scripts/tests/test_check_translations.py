@@ -129,6 +129,17 @@ class TranslationAuditTest(unittest.TestCase):
             {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
         )
 
+    def test_escaped_percent_never_creates_a_placeholder(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><string name=\"message\">%d%% of users</string></resources>",
+            "<resources><string name=\"message\">%d%% des utilisateurs</string></resources>",
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(report["defects"], [])
+
     def test_reports_plural_without_other_quantity(self):
         res_directory, allowlist = self.make_tree(
             "<resources><plurals name=\"songs\"><item quantity=\"one\">%d song</item><item quantity=\"other\">%d songs</item></plurals></resources>",
@@ -175,6 +186,30 @@ class TranslationAuditTest(unittest.TestCase):
             human_output.stdout,
             "Translation audit: 1 locales, 1 canonical keys, 0 defects.\n",
         )
+
+    def test_audits_locale_directory_with_later_qualifiers(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><string name=\"welcome\">Welcome</string></resources>",
+            "<resources><string name=\"welcome\">Bienvenue</string></resources>",
+            extra_directories={
+                "values-en-rUS-night": "<resources><string name=\"welcome\">Welcome</string></resources>",
+                "values-night": "<not valid XML",
+            },
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertEqual(report["locale_count"], 2)
+        self.assertEqual(
+            {locale["locale"] for locale in report["locales"]},
+            {"values-fr", "values-en-rUS-night"},
+        )
+        self.assertIn(
+            ("untranslated-english", "values-en-rUS-night", "welcome"),
+            {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
+        )
+        self.assertNotIn("values-night", {item["locale"] for item in report["defects"]})
 
     def test_reports_duplicate_named_resources(self):
         res_directory, allowlist = self.make_tree(
