@@ -58,6 +58,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -203,6 +205,28 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         refreshExisting: Boolean = false,
         noDisable: Boolean = false
     ) {
+        database.withScannerTransaction {
+            syncDBInTransaction(
+                database = database,
+                newSongs = newSongs,
+                matchStrength = matchStrength,
+                strictFileNames = strictFileNames,
+                strictFilePaths = strictFilePaths,
+                refreshExisting = refreshExisting,
+                noDisable = noDisable,
+            )
+        }
+    }
+
+    private suspend fun syncDBInTransaction(
+        database: MusicDatabase,
+        newSongs: java.util.ArrayList<SongTempData>,
+        matchStrength: ScannerMatchCriteria,
+        strictFileNames: Boolean,
+        strictFilePaths: Boolean,
+        refreshExisting: Boolean = false,
+        noDisable: Boolean = false,
+    ) {
         if (scannerState.value > 0) {
             Log.i(TAG, "------------ SYNC: Scanner in use. Aborting Local Library Sync ------------")
             return
@@ -236,6 +260,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         // sync
         var runs = 0
         finalSongs.forEach { song ->
+            currentCoroutineContext().ensureActive()
             Log.v(TAG, "s --> ${song.song.song.title}, ${song.song.song.localPath}")
             runs++
             if (SCANNER_DEBUG && runs % mod == 0) {
@@ -274,7 +299,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 // don't run if we will update these values in rescan anyways
                 // always ensure inLibrary and local path values are valid
                 if (!refreshExisting && (oldSong.inLibrary == null || oldSong.localPath == null)) {
-                    database.transaction {
+                    with(database) {
                         update(songToUpdate)
 
                         // update format
@@ -299,7 +324,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 var albumToDo: Pair<AlbumEntity?, AlbumEntity>? = null
 
                 // update artists and genre
-                database.transaction {
+                with(database) {
                     // get any existing matches
                     song.song.artists.forEachIndexed { index, it ->
                         val dbQuery = localArtistsByNameFuzzy(it.name).sortedBy { item -> item.name.length }
@@ -375,7 +400,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 if (SCANNER_DEBUG)
                     Log.v(TAG, "NOT found in database, adding song: ${song.song.title}")
 
-                database.transaction {
+                with(database) {
                     insert(song.song.toMediaMetadata())
                     song.format?.let {
                         upsert(it.copy(id = song.song.id))
@@ -390,6 +415,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             finalize(database)
             disableSongs(finalSongs.map { it.song }, database)
         }
+        currentCoroutineContext().ensureActive()
         scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Local Library Sync ------------")
     }
@@ -516,19 +542,29 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             song?.song?.let { finalSongs.add(song) }
         }
 
-        if (finalSongs.isNotEmpty()) {
-            scannerState.value = 0
-            syncDB(database, finalSongs, matchCriteria, strictFileNames, strictFilePaths, noDisable = true)
-            scannerState.value = 2
-        } else {
-            Log.i(TAG, "Not syncing, no valid songs found!")
-        }
+        database.withScannerTransaction {
+            if (finalSongs.isNotEmpty()) {
+                scannerState.value = 0
+                syncDBInTransaction(
+                    database,
+                    finalSongs,
+                    matchCriteria,
+                    strictFileNames,
+                    strictFilePaths,
+                    noDisable = true,
+                )
+                scannerState.value = 2
+            } else {
+                Log.i(TAG, "Not syncing, no valid songs found!")
+            }
 
-        scannerProgressCurrent.value = scannerProgressProbe.value
-        // we handle disabling songs here instead
-        scannerState.value = 3
-        disableSongsByPath(converted, database)
-        finalize(database)
+            scannerProgressCurrent.value = scannerProgressProbe.value
+            // we handle disabling songs here instead
+            scannerState.value = 3
+            disableSongsByPath(converted, database)
+            finalize(database)
+            currentCoroutineContext().ensureActive()
+        }
 
         scannerState.value = 0
         Log.i(TAG, "------------ SYNC: Finished Quick (additive delta) Library Sync ------------")
@@ -887,23 +923,31 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         }
 
         scannerProgressCurrent.value = finalSongs.size
-        if (finalSongs.isNotEmpty()) {
-            /**
-             * TODO: Delete all local format entity before scan
-             */
-            scannerState.value = 0
-            syncDB(
-                database, finalSongs, matchCriteria, strictFileNames, strictFilePaths,
-                refreshExisting = refreshExisting, noDisable = true
-            )
+        database.withScannerTransaction {
+            if (finalSongs.isNotEmpty()) {
+                /**
+                 * TODO: Delete all local format entity before scan
+                 */
+                scannerState.value = 0
+                syncDBInTransaction(
+                    database,
+                    finalSongs,
+                    matchCriteria,
+                    strictFileNames,
+                    strictFilePaths,
+                    refreshExisting = refreshExisting,
+                    noDisable = true,
+                )
 
-        } else {
-            Log.i(TAG, "Not syncing, no valid songs found!")
+            } else {
+                Log.i(TAG, "Not syncing, no valid songs found!")
+            }
+            // we handle disabling songs here instead
+            scannerState.value = 3
+            disableSongsByPath(mediaStoreSongs.mapNotNull { it.song.song.localPath }, database)
+            finalize(database)
+            currentCoroutineContext().ensureActive()
         }
-        // we handle disabling songs here instead
-        scannerState.value = 3
-        disableSongsByPath(mediaStoreSongs.mapNotNull { it.song.song.localPath }, database)
-        finalize(database)
         scannerState.value = 0
 
 
@@ -919,6 +963,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         // disable if not in directory anymore
         for (song in allSongs) {
+            currentCoroutineContext().ensureActive()
+            if (scannerRequestCancel) {
+                throw ScannerAbortException("Scanner canceled while disabling missing local songs")
+            }
             if (song.song.localPath == null) {
                 continue
             }
@@ -928,9 +976,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             if (newSongs.none { it == song.song.localPath }) {
                 if (SCANNER_DEBUG)
                     Log.v(TAG, "Disabling song ${song.song.localPath}")
-                database.transaction {
-                    disableLocalSong(song.song.id)
-                }
+                database.disableLocalSong(song.song.id)
             }
         }
         Log.i(TAG, "Finished (disableSongsByPath) job")
@@ -945,6 +991,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         // disable if not in directory anymore
         for (song in allSongs) {
+            currentCoroutineContext().ensureActive()
+            if (scannerRequestCancel) {
+                throw ScannerAbortException("Scanner canceled while disabling missing local songs")
+            }
             if (song.song.localPath == null) {
                 continue
             }
@@ -972,6 +1022,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         Log.d(TAG, "Start finalize (duplicate removal) job. Number of candidates: ${dupes.size}")
         while (index < dupes.size) {
+            currentCoroutineContext().ensureActive()
+            if (scannerRequestCancel) {
+                throw ScannerAbortException("Scanner canceled during local database cleanup")
+            }
             // collect all the duplicates
             val contenders = ArrayList<Pair<SongEntity, Int>>()
             val localPath = dupes[index].localPath
@@ -991,6 +1045,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         // remove duplicated local artists
         val dbArtists: MutableList<Artist> = database.localArtistsByName().toMutableList()
         while (dbArtists.isNotEmpty()) {
+            currentCoroutineContext().ensureActive()
+            if (scannerRequestCancel) {
+                throw ScannerAbortException("Scanner canceled during local database cleanup")
+            }
             // gather same artists (precondition: artists are ordered by name
             val tmp = ArrayList<Artist>()
             val oldestArtist: Artist = dbArtists.removeAt(0)
@@ -1000,20 +1058,20 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
 
             if (tmp.size > 1) {
-                try {
-                    // merge all duplicate artists into the oldest one
-                    tmp.removeAt(0)
-                    tmp.sortBy { it.artist.bookmarkedAt }
-                    tmp.forEach { swapArtists(it.artist, oldestArtist.artist, database) }
-                } catch (e: Exception) {
-                    reportException(e)
-                }
+                // merge all duplicate artists into the oldest one
+                tmp.removeAt(0)
+                tmp.sortBy { it.artist.bookmarkedAt }
+                tmp.forEach { swapArtistsImmediately(it.artist, oldestArtist.artist, database) }
             }
         }
 
         // remove duplicated local albums
         val dbAlbums: MutableList<AlbumEntity> = database.allLocalAlbumsByName().toMutableList()
         while (dbAlbums.isNotEmpty()) {
+            currentCoroutineContext().ensureActive()
+            if (scannerRequestCancel) {
+                throw ScannerAbortException("Scanner canceled during local database cleanup")
+            }
             // gather same artists (precondition: artists are ordered by name
             val tmp = ArrayList<AlbumEntity>()
             val oldestAlbum: AlbumEntity = dbAlbums.removeAt(0)
@@ -1023,20 +1081,20 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
 
             if (tmp.size > 1) {
-                try {
-                    // merge all duplicate artists into the oldest one
-                    tmp.removeAt(0)
-                    tmp.sortBy { it.bookmarkedAt }
-                    tmp.forEach { swapAlbums(it, oldestAlbum, database) }
-                } catch (e: Exception) {
-                    reportException(e)
-                }
+                // merge all duplicate artists into the oldest one
+                tmp.removeAt(0)
+                tmp.sortBy { it.bookmarkedAt }
+                tmp.forEach { swapAlbumsImmediately(it, oldestAlbum, database) }
             }
         }
 
         // remove duplicated genres
         val dbGenres: MutableList<GenreEntity> = database.allLocalGenresByName().toMutableList()
         while (dbGenres.isNotEmpty()) {
+            currentCoroutineContext().ensureActive()
+            if (scannerRequestCancel) {
+                throw ScannerAbortException("Scanner canceled during local database cleanup")
+            }
             // gather same artists (precondition: artists are ordered by name
             val tmp = ArrayList<GenreEntity>()
             val oldestGenre: GenreEntity = dbGenres.removeAt(0)
@@ -1046,14 +1104,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
 
             if (tmp.size > 1) {
-                try {
-                    // merge all duplicate artists into the oldest one
-                    tmp.removeAt(0)
-                    tmp.sortBy { it.bookmarkedAt }
-                    tmp.forEach { swapGenres(it, oldestGenre, database) }
-                } catch (e: Exception) {
-                    reportException(e)
-                }
+                // merge all duplicate artists into the oldest one
+                tmp.removeAt(0)
+                tmp.sortBy { it.bookmarkedAt }
+                tmp.forEach { swapGenresImmediately(it, oldestGenre, database) }
             }
         }
 
@@ -1462,58 +1516,67 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
          */
         fun swapArtists(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase) {
             database.transaction {
-                if (artistById(old.id) == null) {
-                    reportException(Exception("Attempting to swap with non-existent old artist in database with id: ${old.id}"))
-                    return@transaction
-                }
-                if (artistById(new.id) == null) {
-                    reportException(Exception("Attempting to swap with non-existent new artist in database with id: ${new.id}"))
-                    return@transaction
-                }
-
-                // update participation(s)
-                updateSongArtistMap(old.id, new.id)
-                updateAlbumArtistMap(old.id, new.id)
-
-                // nuke old artist
-                safeDeleteArtist(old.id)
+                swapArtistsImmediately(old, new, this)
             }
         }
 
         fun swapAlbums(old: AlbumEntity, new: AlbumEntity, database: MusicDatabase) {
             database.transaction {
-                if (albumById(old.id) == null) {
-                    reportException(Exception("Attempting to swap with non-existent old album in database with id: ${old.id}"))
-                    return@transaction
-                }
-                if (albumById(new.id) == null) {
-                    reportException(Exception("Attempting to swap with non-existent new album in database with id: ${new.id}"))
-                    return@transaction
-                }
-
-                // update participation(s)
-                updateSongAlbumMap(old.id, new.id)
-
-                // nuke old artist
-                safeDeleteAlbum(old.id)
+                swapAlbumsImmediately(old, new, this)
             }
         }
 
         fun swapGenres(old: GenreEntity, new: GenreEntity, database: MusicDatabase) {
             database.transaction {
+                swapGenresImmediately(old, new, this)
+            }
+        }
+
+        private fun swapArtistsImmediately(old: ArtistEntity, new: ArtistEntity, database: MusicDatabase) {
+            with(database) {
+                if (artistById(old.id) == null) {
+                    reportException(Exception("Attempting to swap with non-existent old artist in database with id: ${old.id}"))
+                    return
+                }
+                if (artistById(new.id) == null) {
+                    reportException(Exception("Attempting to swap with non-existent new artist in database with id: ${new.id}"))
+                    return
+                }
+
+                updateSongArtistMap(old.id, new.id)
+                updateAlbumArtistMap(old.id, new.id)
+                safeDeleteArtist(old.id)
+            }
+        }
+
+        private fun swapAlbumsImmediately(old: AlbumEntity, new: AlbumEntity, database: MusicDatabase) {
+            with(database) {
+                if (albumById(old.id) == null) {
+                    reportException(Exception("Attempting to swap with non-existent old album in database with id: ${old.id}"))
+                    return
+                }
+                if (albumById(new.id) == null) {
+                    reportException(Exception("Attempting to swap with non-existent new album in database with id: ${new.id}"))
+                    return
+                }
+
+                updateSongAlbumMap(old.id, new.id)
+                safeDeleteAlbum(old.id)
+            }
+        }
+
+        private fun swapGenresImmediately(old: GenreEntity, new: GenreEntity, database: MusicDatabase) {
+            with(database) {
                 if (genreById(old.id) == null) {
                     reportException(Exception("Attempting to swap with non-existent old album in database with id: ${old.id}"))
-                    return@transaction
+                    return
                 }
                 if (genreById(new.id) == null) {
                     reportException(Exception("Attempting to swap with non-existent new album in database with id: ${new.id}"))
-                    return@transaction
+                    return
                 }
 
-                // update participation(s)
                 updateSongGenreMap(old.id, new.id)
-
-                // nuke old genre
                 safeDeleteGenre(old.id)
             }
         }
