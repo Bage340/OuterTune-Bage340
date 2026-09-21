@@ -270,4 +270,15 @@
     <string name="scanner_type_tooltip">Системный сканер работает быстрее, но может некорректно извлекать некоторые метаданные по сравнению с другими методами. Обратите внимание, что смена сканера не приведёт к автоматическому обновлению метаданных уже существующих песен.</string>
     <string name="restore_lm_tooltip">При чистой установке приложения пользовательские пути загрузки и сканирования локальных медиафайлов могут не работать. Чтобы решить эту проблему, удалите их и добавьте заново.</string>
     <string name="off">Отключено</string>
+    <string name="keep_screen_on">Не выключать экран</string>
+    <string name="keep_screen_on_never">Никогда</string>
+    <string name="keep_screen_on_lyrics">Пока отображается текст песни</string>
+    <string name="keep_screen_on_player">Пока открыт проигрыватель</string>
+    <string name="create_folder">Создать папку</string>
+    <string name="rename_folder">Переименовать папку</string>
+    <string name="delete_folder">Удалить папку</string>
+    <string name="delete_folder_confirm">Удалить папку «%1$s»? Плейлисты из неё будут перемещены в родительскую папку.</string>
+    <string name="move_to_folder">Переместить в папку</string>
+    <string name="root_folder">Все плейлисты</string>
+    <string name="previous_folder">Назад</string>
 </resources>

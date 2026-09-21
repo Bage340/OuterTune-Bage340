@@ -388,4 +388,17 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="speed_medium">Medium</string>
     <string name="speed_fast">Fast</string>
     <string name="speed_very_fast">Very fast</string>
+
+<!-- Player display and playlist folders -->
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="keep_screen_on_never">Never</string>
+    <string name="keep_screen_on_lyrics">While lyrics are visible</string>
+    <string name="keep_screen_on_player">While the player is open</string>
+    <string name="create_folder">Create folder</string>
+    <string name="rename_folder">Rename folder</string>
+    <string name="delete_folder">Delete folder</string>
+    <string name="delete_folder_confirm">Delete folder “%1$s”? Its playlists will be moved to the parent folder.</string>
+    <string name="move_to_folder">Move to folder</string>
+    <string name="root_folder">All playlists</string>
+    <string name="previous_folder">Previous folder</string>
 </resources>
