@@ -65,6 +65,7 @@ fun SelectionMediaMetadataMenu(
     val playerConnection = LocalPlayerConnection.current ?: return
     val queueBoard by playerConnection.queueBoard.collectAsState()
     val syncUtils = LocalSyncUtils.current
+    val selectionQueueTitle = stringResource(R.string.queue_selection)
 
     val allInLibrary by remember(selection) { // exclude local songs
         mutableStateOf(selection.isNotEmpty() && selection.all { !it.isLocal && it.inLibrary != null })
@@ -119,7 +120,7 @@ fun SelectionMediaMetadataMenu(
             onDismiss()
             playerConnection.playQueue(
                 ListQueue(
-                    title = "Selection",
+                    title = selectionQueueTitle,
                     items = selection
                 )
             )
@@ -142,7 +143,7 @@ fun SelectionMediaMetadataMenu(
             onDismiss()
             playerConnection.playQueue(
                 ListQueue(
-                    title = "Selection",
+                    title = selectionQueueTitle,
                     items = selection,
                     startShuffled = true,
                 )

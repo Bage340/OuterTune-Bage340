@@ -101,7 +101,7 @@ class App : Application(), SingletonImageLoader.Factory {
                     dataStore[ProxyUrlKey]!!.toInetSocketAddress()
                 )
             } catch (e: Exception) {
-                Toast.makeText(this, "Failed to parse proxy url.", LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.failed_to_parse_proxy_url), LENGTH_SHORT).show()
                 reportException(e)
             }
         }
@@ -119,7 +119,7 @@ class App : Application(), SingletonImageLoader.Factory {
                         ?.takeIf { it != "null" } // Previously visitorData was sometimes saved as "null" due to a bug
                         ?: YouTube.visitorData().onFailure {
                             withContext(Dispatchers.Main) {
-                                Toast.makeText(this@App, "Failed to get visitorData.", LENGTH_SHORT).show()
+                                Toast.makeText(this@App, getString(R.string.failed_to_get_visitor_data), LENGTH_SHORT).show()
                             }
                             reportException(it)
                         }.getOrNull()?.also { newVisitorData ->

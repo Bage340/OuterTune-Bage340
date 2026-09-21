@@ -455,7 +455,7 @@ fun FolderScreen(
                     ) {
                         SongFolderItem(
                             folderTitle = "..",
-                            subtitle = "Previous folder",
+                            subtitle = stringResource(R.string.previous_folder),
                             modifier = Modifier
                                 .clickable {
                                     if (currDir.culmSongs.value > 0) {

@@ -170,7 +170,7 @@ fun ExperimentalSettings(
         )
 
         PreferenceEntry(
-            title = { Text("Flush local image cache") },
+            title = { Text(stringResource(R.string.flush_local_image_cache)) },
             icon = { Icon(Icons.Rounded.Delete, null) },
             onClick = {
                 context.imageLoader.memoryCache?.clear()

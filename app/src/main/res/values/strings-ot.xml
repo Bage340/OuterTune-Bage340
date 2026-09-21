@@ -30,6 +30,7 @@ while also allowing users to translate our app as well. New, specific strings to
     <string name="queues_title">Queues</string>
     <string name="create_queue">New queue</string>
     <string name="queue_searched_songs_ot">Search: </string>
+    <string name="queue_selection">Selection</string>
     <string name="song_added_to_queue">\"%s\" inserted into queue</string>
     <string name="song_added_to_queue_end">\"%s\" added to the end of queue</string>
     <string name="queues_empty">No queues</string>
@@ -304,6 +305,8 @@ while also allowing users to translate our app as well. New, specific strings to
 
 <!-- Privacy settings -->
     <string name="pause_remote_listen_history">Pause sharing listen history with YouTube Music</string>
+    <string name="failed_to_parse_proxy_url">Failed to parse proxy url.</string>
+    <string name="failed_to_get_visitor_data">Failed to get visitorData.</string>
 
 <!-- Backup and restore settings -->
     <string name="err_restore_incompatible_database">Could not restore incompatible database</string>
@@ -312,6 +315,7 @@ while also allowing users to translate our app as well. New, specific strings to
 
 <!-- Experimental settings -->
     <string name="experimental_settings_title">Experimental</string>
+    <string name="flush_local_image_cache">Flush local image cache</string>
     <string name="dev_settings_title">Enable developer settings</string>
     <string name="dev_settings_description">Reveals additional advanced settings intended for development use</string>
 
