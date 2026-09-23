@@ -141,6 +141,45 @@ class LocalMediaScannerTest {
     }
 
     @Test
+    fun quickScanWithUnresolvedUriPreservesExistingSongs() = runBlocking {
+        val a = copyAudio("a-before.flac", "a.flac")
+        val b = copyAudio("b.flac", "b.flac")
+        quick(a, b)
+        val before = database.allLocalDbSongs().map { it.song }.toSet()
+
+        assertThrows(ScannerAbortException::class.java) {
+            runBlocking {
+                scanner.quickSync(
+                    database,
+                    listOf(uri(b), Uri.parse("content://invalid.authority/unresolved")),
+                    ScannerMatchCriteria.LEVEL_2,
+                    strictFileNames = false,
+                    strictFilePaths = false,
+                )
+            }
+        }
+
+        assertEquals(before, database.allLocalDbSongs().map { it.song }.toSet())
+    }
+
+    @Test
+    fun fullScanWithFailedAudioExtractionPreservesExistingSongs() = runBlocking {
+        val a = copyAudio("a-before.flac", "a.flac")
+        val b = copyAudio("b.flac", "b.flac")
+        quick(a, b)
+        val before = database.allLocalDbSongs().map { it.song }.toSet()
+        val missing = File(directory, "missing.flac")
+
+        assertThrows(ScannerAbortException::class.java) {
+            runBlocking {
+                full(b, missing)
+            }
+        }
+
+        assertEquals(before, database.allLocalDbSongs().map { it.song }.toSet())
+    }
+
+    @Test
     fun authoritativeScanDoesNotModifyRemoteDownloadedSongOrPlaylistRelation() = runBlocking {
         val missing = copyAudio("a-before.flac", "a.flac")
         val remaining = copyAudio("b.flac", "b.flac")

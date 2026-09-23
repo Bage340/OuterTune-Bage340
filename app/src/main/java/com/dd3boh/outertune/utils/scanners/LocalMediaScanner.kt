@@ -452,7 +452,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         // get list of all songs in db, then get songs unknown to the database
         // TODO: duplicate songs with different paths will cycle through paths, causing it to be synced instead of ignored...
         val allSongs = database.allLocalSongs().fastMapNotNull { it.song.localPath }.toSet()
-        val converted = newSongs.fastMapNotNull { fileFromUri(context, it)?.absolutePath }
+        val converted = newSongs.map { uri ->
+            fileFromUri(context, uri)?.absolutePath
+                ?: throw ScannerAbortException("Could not access scanned file: $uri")
+        }
         requireSafeReconciliation(
             resultCount = converted.size,
             existingLocalSongCount = allSongs.size,
@@ -641,7 +644,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                                 }
                                 ret
                             } catch (e: InvalidAudioFileException) {
-                                null
+                                throw ScannerAbortException("Could not scan audio file: $uri", e)
                             }
                         }
                     )
