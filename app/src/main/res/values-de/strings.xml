@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
     <string name="home">Startseite</string>
-    <string name="songs">Songs</string>
+    <string name="songs">Titel</string>
     <string name="artists">Künstler</string>
     <string name="albums">Alben</string>
-    <string name="playlists">Playlists</string>
+    <string name="playlists">Wiedergabelisten</string>
     <plurals name="n_selected">
         <item quantity="one">%d ausgewählt</item>
         <item quantity="other">%d ausgewählt</item>
@@ -30,11 +30,11 @@
     <string name="filter_liked">Mag ich</string>
     <string name="filter_downloaded">Heruntergeladen</string>
     <string name="filter_all">Alles</string>
-    <string name="filter_songs">Songs</string>
+    <string name="filter_songs">Titel</string>
     <string name="filter_videos">Videos</string>
     <string name="filter_albums">Alben</string>
     <string name="filter_artists">Künstler</string>
-    <string name="filter_playlists">Playlists</string>
+    <string name="filter_playlists">Wiedergabelisten</string>
     <string name="filter_community_playlists">Community-Playlists</string>
     <string name="filter_featured_playlists">Ausgewählte Playlists</string>
     <string name="no_results_found">Keine Ergebnisse gefunden</string>
@@ -44,7 +44,7 @@
     <string name="playlist_is_empty">Die Playlist ist leer</string>
     <string name="retry">Erneut versuchen</string>
     <string name="radio">Radio</string>
-    <string name="shuffle">Shuffle</string>
+    <string name="shuffle">Zufallswiedergabe</string>
     <string name="reset">Zurücksetzen</string>
     <string name="details">Details</string>
     <string name="edit">Bearbeiten</string>

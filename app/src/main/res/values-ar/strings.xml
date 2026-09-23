@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="artists">فنانون</string>
     <string name="albums">ألبومات</string>
@@ -108,7 +108,7 @@
     <string name="duplicates_description_multiple">%d أغنية موجودة بالفعل في قائمة التشغيل الخاصة بك</string>
     <plurals name="n_song">
         <item quantity="zero">%d أغاني</item>
-        <item quantity="one">أغنية</item>
+        <item quantity="one">أغنية %d</item>
         <item quantity="two">أغنيتان</item>
         <item quantity="few">%d أغاني</item>
         <item quantity="many">%d أغنية</item>
@@ -116,7 +116,7 @@
     </plurals>
     <plurals name="n_artist">
         <item quantity="zero">%d فنانون</item>
-        <item quantity="one">فنان</item>
+        <item quantity="one">فنان %d</item>
         <item quantity="two">فنانان</item>
         <item quantity="few">%d فنانون</item>
         <item quantity="many">%d فنان</item>
@@ -124,7 +124,7 @@
     </plurals>
     <plurals name="n_playlist">
         <item quantity="zero">%d قوائم أغاني</item>
-        <item quantity="one">قائمة أغاني</item>
+        <item quantity="one">قائمة تشغيل %d</item>
         <item quantity="two">قائمتا أغاني</item>
         <item quantity="few">%d قوائم أغاني</item>
         <item quantity="many">%d قائمة أغاني</item>
@@ -132,7 +132,7 @@
     </plurals>
     <plurals name="n_week">
         <item quantity="zero">%d أسابيع</item>
-        <item quantity="one">أسبوع</item>
+        <item quantity="one">أسبوع %d</item>
         <item quantity="two">أسبوعان</item>
         <item quantity="few">%d أسابيع</item>
         <item quantity="many">%d أسبوع</item>
@@ -140,7 +140,7 @@
     </plurals>
     <plurals name="n_month">
         <item quantity="zero">%d شهور</item>
-        <item quantity="one">شهر</item>
+        <item quantity="one">شهر %d</item>
         <item quantity="two">شهران</item>
         <item quantity="few">%d شهور</item>
         <item quantity="many">%d شهر</item>
@@ -148,7 +148,7 @@
     </plurals>
     <plurals name="n_year">
         <item quantity="zero">%d أعوام</item>
-        <item quantity="one">عام</item>
+        <item quantity="one">سنة %d</item>
         <item quantity="two">عامان</item>
         <item quantity="few">%d أعوام</item>
         <item quantity="many">%d عام</item>
@@ -188,7 +188,7 @@
     <string name="default_">الافتراضي</string>
     <plurals name="minute">
         <item quantity="zero">%d دقيقة</item>
-        <item quantity="one">%d دقيقة</item>
+        <item quantity="one">دقيقة واحدة</item>
         <item quantity="two">%d دقيقة</item>
         <item quantity="few">%d دقائق</item>
         <item quantity="many">%d دقيقة</item>
@@ -251,7 +251,7 @@
     <string name="remove_from_playlist">امسح من قائمة الأغاني</string>
     <plurals name="n_album">
         <item quantity="zero">%d ألبومات</item>
-        <item quantity="one">ألبوم</item>
+        <item quantity="one">ألبوم %d</item>
         <item quantity="two">ألبومان</item>
         <item quantity="few">%d ألبومات</item>
         <item quantity="many">%d ألبوم</item>

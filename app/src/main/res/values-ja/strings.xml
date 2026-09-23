@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">ホーム</string>
     <string name="songs">曲</string>
@@ -125,24 +125,31 @@
     <string name="duplicates_description_multiple">%d の曲はすでに再生リストにあります</string>
     <plurals name="n_song">
         <item quantity="other">%d 曲</item>
+        <item quantity="one">%d 曲</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="other">%d 件のアーティスト</item>
+        <item quantity="one">%d アーティスト</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="other">%d 個のアルバム</item>
+        <item quantity="one">%d アルバム</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="other">%d 件の再生リスト</item>
+        <item quantity="one">%d プレイリスト</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="other">%d 週間</item>
+        <item quantity="one">%d 週間</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="other">%d か月</item>
+        <item quantity="one">%d 月間</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="other">%d 年</item>
+        <item quantity="one">%d 年間</item>
     </plurals>
     <string name="playlist_imported">再生リストをインポートしました</string>
     <string name="removed_song_from_playlist">再生リストから「%s」を削除しました</string>
@@ -153,6 +160,7 @@
     <string name="end_of_song">曲の終わり</string>
     <plurals name="minute">
         <item quantity="other">%d 分</item>
+        <item quantity="one">1分</item>
     </plurals>
     <string name="error_no_stream">ストリームが利用できません</string>
     <string name="error_no_internet">ネットワーク接続がありません</string>

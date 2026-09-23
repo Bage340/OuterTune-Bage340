@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="folders">文件夹</string>
     <string name="create_queue">新建队列</string>
@@ -95,9 +95,11 @@
     <string name="scanner_ytm_link_success">YouTube 音乐人链接任务已完成</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="other">已处理 %d 首歌曲</item>
+        <item quantity="one">已处理 %d 首歌曲</item>
     </plurals>
     <plurals name="scanner_n_song_found">
         <item quantity="other">找到 %d 首歌曲</item>
+        <item quantity="one">找到 %d 首歌曲</item>
     </plurals>
     <string name="scanner_sensitivity_title">配置扫描灵敏度</string>
     <string name="scanner_sensitivity_L1">匹配标题</string>
@@ -230,6 +232,7 @@
     <string name="oobe_downloads_title">歌曲下载</string>
     <plurals name="second">
         <item quantity="other">%d 秒</item>
+        <item quantity="one">%d 秒</item>
     </plurals>
     <string name="speed_slow">慢速</string>
     <string name="speed_medium">中速</string>
@@ -261,4 +264,52 @@
     <string name="oobe_cache_subtitle">设置歌曲缓存容量。此操作有助于解决网络或 YouTube API 播放时出现的问题</string>
     <string name="restore_lm_tooltip">对于全新安装的应用，自定义下载路径和本地媒体扫描路径可能无法正常工作。要解决此问题，请先移除这些路径，然后重新添加。</string>
     <string name="off">已关闭</string>
+    <string name="custom_accent_color">自定义强调色</string>
+    <string name="custom_accent_color_description">在整个应用中使用您选择的固定颜色作为强调色</string>
+    <string name="accent_color">强调色</string>
+    <string name="ignore_audio_focus">保持音频焦点</string>
+    <string name="ignore_audio_focus_desc">当其他应用获取音频焦点时继续播放。音乐不会因其他音频源（包括电话）而暂停。</string>
+    <string name="enable_betterlyrics">启用 BetterLyrics 歌词源</string>
+    <string name="enable_simpmusic">启用 SimpMusic 歌词源</string>
+    <string name="local_files">本地</string>
+    <string name="queue_selection">选择</string>
+    <string name="grp_appearance_controls">外观与控制</string>
+    <string name="grp_display">显示</string>
+    <string name="grp_now_playing">正在播放</string>
+    <string name="show_queue_title">在播放器上显示队列名称</string>
+    <string name="slider_style_title">滑块样式</string>
+    <string name="slider_style_squiggly">波浪形</string>
+    <string name="slider_style_default">默认</string>
+    <string name="slider_style_slim">纤细</string>
+    <string name="sleep_timer_fade">淡出</string>
+    <string name="sleep_timer_fade_duration">淡出时长</string>
+    <string name="sleep_timer_fade_duration_desc">停止前降低音量的时长（秒）</string>
+    <string name="sleep_timer_default_time">默认睡眠时间</string>
+    <string name="sleep_timer_minutes_short">分钟（%d）</string>
+    <string name="sleep_timer_second_unit">秒</string>
+    <string name="sleep_timer_stop">停止计时器</string>
+    <string name="sleep_timer_show_on_player">播放界面按钮</string>
+    <string name="sleep_timer_show_on_player_desc">在播放界面显示睡眠计时器按钮</string>
+    <string name="lyrics_prefetch_title">预先获取后续歌词</string>
+    <string name="lyrics_prefetch_description">预先获取播放队列中下一首歌曲的歌词</string>
+    <string name="lyrics_prefetch_count_title">预先获取的歌曲数量</string>
+    <string name="download_on_wifi_only_title">仅在 Wi-Fi 下下载</string>
+    <string name="download_on_wifi_only_description">不使用移动数据下载。在移动数据网络下加入队列的歌曲，将在连接 Wi-Fi 后自动开始下载</string>
+    <string name="download_waiting_for_wifi">连接 Wi-Fi 后将开始下载</string>
+    <string name="failed_to_parse_proxy_url">无法解析代理 URL。</string>
+    <string name="failed_to_get_visitor_data">无法获取 visitorData。</string>
+    <string name="flush_local_image_cache">清除本地图片缓存</string>
+    <string name="tap_artwork_to_show_lyrics_title">点击封面以显示歌词</string>
+    <string name="tap_artwork_to_show_lyrics_description">在播放器中点击封面时显示歌词</string>
+    <string name="keep_screen_on">保持屏幕常亮</string>
+    <string name="keep_screen_on_never">永不</string>
+    <string name="keep_screen_on_lyrics">显示歌词时</string>
+    <string name="keep_screen_on_player">播放器打开时</string>
+    <string name="create_folder">创建文件夹</string>
+    <string name="rename_folder">重命名文件夹</string>
+    <string name="delete_folder">删除文件夹</string>
+    <string name="delete_folder_confirm">删除文件夹“%1$s”？其中的播放列表将移至父文件夹。</string>
+    <string name="move_to_folder">移动到文件夹</string>
+    <string name="root_folder">所有播放列表</string>
+    <string name="previous_folder">上一级文件夹</string>
 </resources>

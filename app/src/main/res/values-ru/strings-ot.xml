@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="library">Библиотека</string>
     <string name="recent_activity">Недавняя активность</string>
@@ -281,4 +281,41 @@
     <string name="move_to_folder">Переместить в папку</string>
     <string name="root_folder">Все плейлисты</string>
     <string name="previous_folder">Назад</string>
+    <string name="custom_accent_color">Пользовательский цвет акцента</string>
+    <string name="custom_accent_color_description">Использовать выбранный цвет в качестве акцента во всем приложении</string>
+    <string name="accent_color">Цвет акцента</string>
+    <string name="ignore_audio_focus">Удерживать фокус аудио</string>
+    <string name="ignore_audio_focus_desc">Продолжать воспроизведение, если другое приложение перехватывает фокус аудио. Воспроизведение не будет приостанавливаться при поступлении звука из других источников, включая телефонные звонки.</string>
+    <string name="enable_betterlyrics">Включить источник текстов BetterLyrics</string>
+    <string name="enable_simpmusic">Включить источник текстов SimpMusic</string>
+    <string name="local_files">Локальные файлы</string>
+    <string name="queue_selection">Выбор</string>
+    <string name="grp_appearance_controls">Внешний вид и управление</string>
+    <string name="grp_display">Экран</string>
+    <string name="grp_now_playing">Сейчас играет</string>
+    <string name="show_queue_title">Показывать название очереди в плеере</string>
+    <string name="slider_style_title">Стиль ползунка</string>
+    <string name="slider_style_squiggly">Волнистая линия</string>
+    <string name="slider_style_default">По умолчанию</string>
+    <string name="slider_style_slim">Компактный режим</string>
+    <string name="sleep_timer_fade">Плавное затухание</string>
+    <string name="sleep_timer_fade_duration">Длительность затухания</string>
+    <string name="sleep_timer_fade_duration_desc">Время (в секундах) для снижения громкости перед остановкой</string>
+    <string name="sleep_timer_default_time">Время таймера сна по умолчанию</string>
+    <string name="sleep_timer_minutes_short">%d мин</string>
+    <string name="sleep_timer_second_unit">с</string>
+    <string name="sleep_timer_stop">Таймер остановки</string>
+    <string name="sleep_timer_show_on_player">Кнопка на экране плеера</string>
+    <string name="sleep_timer_show_on_player_desc">Показывать кнопку таймера сна на экране плеера</string>
+    <string name="lyrics_prefetch_title">Предварительная загрузка текста песен</string>
+    <string name="lyrics_prefetch_description">Заранее загружать текст для следующих песен в очереди</string>
+    <string name="lyrics_prefetch_count_title">Количество песен для предварительной загрузки</string>
+    <string name="download_on_wifi_only_title">Загружать только через Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Не скачивать через мобильную сеть. Загрузка песен, поставленных в очередь при использовании мобильной сети, начнется автоматически после подключения к Wi-Fi.</string>
+    <string name="download_waiting_for_wifi">Загрузка начнется после подключения к Wi-Fi</string>
+    <string name="failed_to_parse_proxy_url">Ошибка при разборе URL прокси-сервера.</string>
+    <string name="failed_to_get_visitor_data">Не удалось получить visitorData.</string>
+    <string name="flush_local_image_cache">Очистить локальный кэш изображений</string>
+    <string name="tap_artwork_to_show_lyrics_title">Нажмите на обложку, чтобы показать текст песни</string>
+    <string name="tap_artwork_to_show_lyrics_description">Показывать текст песни при нажатии на обложку в плеере</string>
 </resources>

@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
     <string name="home">Головна</string>
     <string name="songs">Музика</string>
     <string name="artists">Виконавці</string>
@@ -176,7 +176,7 @@
     <string name="sleep_timer">Таймер сну</string>
     <string name="end_of_song">Кінець пісні</string>
     <plurals name="minute">
-        <item quantity="one">%d хвилина</item>
+        <item quantity="one">1 хвилина</item>
         <item quantity="few">%d хвилини</item>
         <item quantity="many">%d хвилин</item>
         <item quantity="other">%d хвилин</item>

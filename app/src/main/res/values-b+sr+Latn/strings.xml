@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">Početna</string>
     <string name="songs">Pesme</string>
@@ -49,7 +49,7 @@
     <string name="playlist_is_empty">Plejlista je prazna</string>
     <string name="delete_playlist_confirm">Da li zaista želite da obrišete plejlistu \"%s\"?</string>
     <string name="retry">Probaj ponovo</string>
-    <string name="radio">Radio</string>
+    <string name="radio">Ràdio</string>
     <string name="shuffle">Promešaj</string>
     <string name="reset">Ponovo pokreni</string>
     <string name="details">Detalji</string>
@@ -113,7 +113,7 @@
         <item quantity="other">%d izvođača</item>
     </plurals>
     <plurals name="n_album">
-        <item quantity="one">%d album</item>
+        <item quantity="one">Àlbum %d</item>
         <item quantity="few">%d albuma</item>
         <item quantity="other">%d albuma</item>
     </plurals>
@@ -258,7 +258,7 @@
     <string name="sleep_timer">Merač vremena za spavanje</string>
     <string name="end_of_song">Kraj pesme</string>
     <plurals name="minute">
-        <item quantity="one">%d minut</item>
+        <item quantity="one">1 minut</item>
         <item quantity="few">%d minuta</item>
         <item quantity="other">%d minuta</item>
     </plurals>

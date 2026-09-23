@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="grp_interface">インターフェイス</string>
     <string name="playlist_add_local_to_synced_note">注: 同期/リモートの再生リストに端末内の曲の追加はできません。その他の組み合わせは有効です</string>
@@ -122,9 +122,11 @@
     <string name="scanner_ytm_link_success">YouTube アーティストのリンク作業が完了</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="other">%d 曲を処理済み</item>
+        <item quantity="one">%d 曲を処理しました</item>
     </plurals>
     <plurals name="scanner_n_song_found">
         <item quantity="other">%d 曲を発見</item>
+        <item quantity="one">%d 曲が見つかりました</item>
     </plurals>
     <string name="scanner_strict_file_name_title">ファイル名を厳格に扱う</string>
     <string name="scanner_strict_file_name_description">有効にすると、ファイル名は無視されません。例: Song.ogg は Song.flac とは異なる曲になります。スキャンの感度設定は引き続き適用されます</string>
@@ -273,6 +275,7 @@
     <string name="extra_details">詳細情報</string>
     <plurals name="second">
         <item quantity="other">%d 秒</item>
+        <item quantity="one">%d 秒</item>
     </plurals>
     <string name="seek_increment">シーク増加</string>
     <string name="ffmpeg_lgpl">本アプリはLGPLバージョン2.1でFFmpegのライブラリを使用</string>
@@ -287,4 +290,19 @@
     <string name="oobe_welcome_tip">快適に使用するには、テーマ、YouTubeアカウント、端末内メディア、ダウンロードなど自分向けにするための主な設定を簡単に設定することをお勧めします。</string>
     <string name="oobe_cache_subtitle">曲のキャッシュのサイズを選択。ネット接続やYouTube APIの再生に関する問題を軽減します</string>
     <string name="library_filter">ライブラリを絞り込み</string>
+    <string name="queue_selection">選択</string>
+    <string name="failed_to_parse_proxy_url">プロキシURLの解析に失敗しました。</string>
+    <string name="failed_to_get_visitor_data">visitorDataの取得に失敗しました。</string>
+    <string name="flush_local_image_cache">ローカル画像キャッシュをクリア</string>
+    <string name="keep_screen_on">画面を点灯したままにする</string>
+    <string name="keep_screen_on_never">しない</string>
+    <string name="keep_screen_on_lyrics">歌詞の表示中</string>
+    <string name="keep_screen_on_player">プレーヤーを開いている間</string>
+    <string name="create_folder">フォルダーを作成</string>
+    <string name="rename_folder">フォルダー名を変更</string>
+    <string name="delete_folder">フォルダーを削除</string>
+    <string name="delete_folder_confirm">フォルダー「%1$s」を削除しますか？含まれるプレイリストは親フォルダーに移動されます。</string>
+    <string name="move_to_folder">フォルダーへ移動</string>
+    <string name="root_folder">すべてのプレイリスト</string>
+    <string name="previous_folder">前のフォルダー</string>
 </resources>

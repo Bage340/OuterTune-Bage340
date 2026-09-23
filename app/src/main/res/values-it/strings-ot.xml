@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="song_added_to_queue">\"%s\" aggiunto alla coda</string>
     <string name="like_all">Mi piace tutto</string>
@@ -266,5 +266,53 @@
     <string name="scanner_strict_file_paths_description">Disabilita tutte le corrispondenze intelligenti dei metadati. Ciò può causare problemi se i file vengono spostati nella memoria locale, ma consente lo stesso brano in cartelle diverse</string>
     <string name="scanner_type_tooltip">Lo scanner di sistema è più veloce, ma potrebbe estrarre in modo errato alcuni metadati rispetto ad altri estrattori. Tieni presente che il cambio di scanner non ricaricherà automaticamente i metadati dei brani esistenti.</string>
     <string name="restore_lm_tooltip">Per le nuove installazioni dell\'app, i percorsi personalizzati di download e di scansione dei media locali potrebbero non funzionare. Per risolvere il problema, rimuovili e aggiungili nuovamente.</string>
-    <string name="off">Off</string>
+    <string name="off">Disattivato</string>
+    <string name="custom_accent_color">Colore di accento personalizzato</string>
+    <string name="custom_accent_color_description">Usa un colore fisso a tua scelta come accento in tutta l\'app</string>
+    <string name="accent_color">Colore di accento</string>
+    <string name="ignore_audio_focus">Mantieni il focus audio</string>
+    <string name="ignore_audio_focus_desc">Continua la riproduzione quando un\'altra app acquisisce il focus audio. La musica non verrà messa in pausa da altre sorgenti audio, incluse le chiamate.</string>
+    <string name="enable_betterlyrics">Attiva il fornitore di testi BetterLyrics</string>
+    <string name="enable_simpmusic">Attiva il fornitore di testi SimpMusic</string>
+    <string name="local_files">Locale</string>
+    <string name="grp_appearance_controls">Aspetto e controlli</string>
+    <string name="grp_display">Visualizzazione</string>
+    <string name="grp_now_playing">In riproduzione</string>
+    <string name="show_queue_title">Mostra il nome della coda nel lettore</string>
+    <string name="slider_style_title">Stile del cursore</string>
+    <string name="slider_style_squiggly">Ondulato</string>
+    <string name="slider_style_default">Predefinito</string>
+    <string name="slider_style_slim">Sottile</string>
+    <string name="sleep_timer_fade">Dissolvenza</string>
+    <string name="sleep_timer_fade_duration">Durata della dissolvenza</string>
+    <string name="sleep_timer_fade_duration_desc">Secondi durante i quali abbassare il volume prima dell\'arresto</string>
+    <string name="sleep_timer_default_time">Durata predefinita del timer</string>
+    <string name="sleep_timer_stop">Arresta il timer</string>
+    <string name="sleep_timer_show_on_player">Pulsante nella schermata del lettore</string>
+    <string name="sleep_timer_show_on_player_desc">Mostra un pulsante del timer di spegnimento nella schermata del lettore</string>
+    <string name="lyrics_prefetch_title">Precarica i prossimi testi</string>
+    <string name="lyrics_prefetch_description">Recupera in anticipo i testi dei prossimi brani nella coda</string>
+    <string name="lyrics_prefetch_count_title">Numero di brani da precaricare</string>
+    <string name="download_on_wifi_only_title">Scarica solo tramite Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Non scaricare tramite dati mobili. I brani messi in coda con i dati mobili inizieranno a scaricarsi automaticamente quando sarà disponibile il Wi-Fi</string>
+    <string name="download_waiting_for_wifi">Il download inizierà quando sarà disponibile una connessione Wi-Fi</string>
+    <string name="tap_artwork_to_show_lyrics_title">Tocca la copertina per mostrare il testo</string>
+    <string name="tap_artwork_to_show_lyrics_description">Mostra il testo quando tocchi la copertina nel lettore</string>
+    <string name="queue_selection">Selezione</string>
+    <string name="sleep_timer_minutes_short">%d min</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="failed_to_parse_proxy_url">Impossibile analizzare l\'URL del proxy.</string>
+    <string name="failed_to_get_visitor_data">Impossibile recuperare visitorData.</string>
+    <string name="flush_local_image_cache">Svuota cache locale delle immagini</string>
+    <string name="keep_screen_on">Mantieni schermo acceso</string>
+    <string name="keep_screen_on_never">Mai</string>
+    <string name="keep_screen_on_lyrics">Mentre il testo è visibile</string>
+    <string name="keep_screen_on_player">Mentre il lettore è aperto</string>
+    <string name="create_folder">Crea cartella</string>
+    <string name="rename_folder">Rinomina cartella</string>
+    <string name="delete_folder">Elimina cartella</string>
+    <string name="delete_folder_confirm">Eliminare la cartella “%1$s”? Le sue playlist verranno spostate nella cartella superiore.</string>
+    <string name="move_to_folder">Sposta nella cartella</string>
+    <string name="root_folder">Tutte le playlist</string>
+    <string name="previous_folder">Cartella precedente</string>
 </resources>

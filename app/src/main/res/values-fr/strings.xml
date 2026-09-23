@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">Accueil</string>
     <string name="songs">Titres</string>
@@ -35,7 +35,7 @@
     <string name="filter_videos">Vidéos</string>
     <string name="filter_albums">Albums</string>
     <string name="filter_artists">Artistes</string>
-    <string name="filter_playlists">Playlists</string>
+    <string name="filter_playlists">Listes de lecture</string>
     <string name="filter_community_playlists">Playlists de la communauté</string>
     <string name="filter_featured_playlists">Playlists mises en avant</string>
     <string name="filter_bookmarked">Favoris</string>
@@ -147,7 +147,7 @@
     <string name="sleep_timer">Minuterie de Sommeil</string>
     <string name="end_of_song">Fin du titre</string>
     <plurals name="minute">
-        <item quantity="one">%d minute</item>
+        <item quantity="one">1 minute</item>
         <item quantity="many">%d minutes</item>
         <item quantity="other">%d minutes</item>
     </plurals>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="folders">תיקיות</string>
     <string name="recent_activity">פעילות אחרונה</string>
@@ -40,7 +40,7 @@
     <string name="new_interface">ממשק פריסה חדש</string>
     <string name="player_background_blur">טשטוש</string>
     <string name="player_background_default">מעקב עיצוב</string>
-    <string name="player_background_gradient">Gradient</string>
+    <string name="player_background_gradient">מעבר הדרגתי</string>
     <string name="player_background_style">סגנון ניגון ברקע</string>
     <string name="show_liked_and_downloaded_playlist">הצג רשימות השמעה של שירים שהורדו או שנתנת להם לייק בספרייה</string>
     <string name="slim_navbar_description">הסר תוויות טקסט כדי להקטין את גובה סרגל הניווט</string>
@@ -76,7 +76,7 @@
     <string name="song_added_to_queue">\"%s\" נוסף לתור</string>
     <string name="song_added_to_queue_end">\"%s\" נוסף לסוף התור</string>
     <string name="delete_lyric_confirm">האם אתה באמת רוצה למחוק את המילים המאוחסנות עבור \"%s\"?</string>
-    <string name="slim_navbar_title">Slim navbar</string>
+    <string name="slim_navbar_title">סרגל ניווט צר</string>
     <string name="audio_offload_description">השתמש בנתיב השמעה של עומס (offload audio) להשמעת שמע. השבתת אפשרות זו עשויה להגביר את צריכת החשמל, אך יכולה להיות שימושית אם אתה נתקל בבעיות בהשמעת שמע או בעיבוד לאחר מכן.</string>
     <string name="library_empty">תוכן הספרייה שלך יופיע כאן</string>
     <string name="tap_show_more">הקש כדי להציג מידע נוסף</string>
@@ -234,17 +234,84 @@
     <string name="seek_increment">קפיצת זמן</string>
     <string name="audio_decoder_ffmpeg_only">העדפת מפענחי FFmpeg</string>
     <plurals name="scanner_n_song_found">
-        <item quantity="one">שיר נמצא</item>
+        <item quantity="one">נמצא השיר %d</item>
         <item quantity="two">%d שירים נמצאו</item>
-        <item quantity="other"/>
+        <item quantity="other">%d שירים נמצאו</item>
     </plurals>
     <string name="scanner_variant_rescan">סרוק מחדש את כל הספרייה וטען שוב את כל פרטי השירים</string>
     <string name="dl_size_used_extra">ייבוא נוסף: %s בשימוש</string>
     <plurals name="second">
-        <item quantity="one">שנייה אחת</item>
+        <item quantity="one">%d שנייה</item>
         <item quantity="two">%d שניות</item>
-        <item quantity="other"/>
+        <item quantity="other">%d שניות</item>
     </plurals>
     <string name="library_filter">מסנן ספרייה</string>
     <string name="off">מצב מושבת</string>
+    <string name="custom_accent_color">צבע הדגשה מותאם אישית</string>
+    <string name="custom_accent_color_description">שימוש בצבע קבוע לבחירתך כצבע ההדגשה בכל האפליקציה</string>
+    <string name="accent_color">צבע הדגשה</string>
+    <string name="ignore_audio_focus">שמירה על מיקוד השמע</string>
+    <string name="ignore_audio_focus_desc">המשך ההפעלה כאשר אפליקציה אחרת מקבלת מיקוד שמע. המוזיקה לא תושהה בגלל מקורות שמע אחרים, כולל שיחות טלפון.</string>
+    <string name="enable_betterlyrics">הפעלת ספק מילות השיר BetterLyrics</string>
+    <string name="enable_simpmusic">הפעלת ספק מילות השיר SimpMusic</string>
+    <string name="local_files">מקומי</string>
+    <string name="grp_appearance_controls">מראה ופקדים</string>
+    <string name="grp_display">תצוגה</string>
+    <string name="grp_more_settings">הגדרות נוספות</string>
+    <string name="grp_now_playing">מתנגן כעת</string>
+    <string name="show_queue_title">הצגת שם התור בנגן</string>
+    <string name="slider_style_title">סגנון המחוון</string>
+    <string name="slider_style_squiggly">גלי</string>
+    <string name="slider_style_default">ברירת מחדל</string>
+    <string name="slider_style_slim">דק</string>
+    <string name="action_logout_tooltip">כדי להתנתק לחלוטין, יש לצאת מחשבון YouTube בפורטל האינטרנט לפני השימוש בלחצן ההתנתקות הזה</string>
+    <string name="sleep_timer_fade">עמעום הדרגתי</string>
+    <string name="sleep_timer_fade_duration">משך העמעום</string>
+    <string name="sleep_timer_fade_duration_desc">מספר השניות להנמכת עוצמת הקול לפני העצירה</string>
+    <string name="sleep_timer_default_time">משך ברירת המחדל של טיימר השינה</string>
+    <string name="sleep_timer_minutes_short">%d דק׳</string>
+    <string name="sleep_timer_second_unit">שנ׳</string>
+    <string name="sleep_timer_stop">עצירת הטיימר</string>
+    <string name="sleep_timer_show_on_player">לחצן במסך הנגן</string>
+    <string name="sleep_timer_show_on_player_desc">הצגת לחצן טיימר שינה במסך הנגן</string>
+    <string name="lyrics_prefetch_title">טעינה מראש של מילות השירים הבאים</string>
+    <string name="lyrics_prefetch_description">טעינה מראש של מילות השירים הבאים בתור</string>
+    <string name="lyrics_prefetch_count_title">מספר השירים לטעינה מראש</string>
+    <string name="auto_scanner_tooltip">בסריקה אוטומטית של מדיה מקומית, המטא־נתונים של שירים קיימים אינם נטענים מחדש. כדי לרענן גם את המטא־נתונים, יש להשתמש בסריקה הידנית כאשר האפשרות לסריקה מחדש מסומנת.</string>
+    <string name="scanner_auto_end">רענון המדיה המקומית והורדות השירים הושלם!</string>
+    <string name="scanner_auto_start">מרענן מדיה מקומית ותיקיות הורדת שירים…</string>
+    <plurals name="scanner_n_song_processed">
+        <item quantity="one">%d שיר עובד</item>
+        <item quantity="other">%d שירים עובדו</item>
+    </plurals>
+    <string name="scanner_strict_file_paths_title">התאמת נתיבי קבצים במקום מטא־נתונים</string>
+    <string name="scanner_strict_file_paths_description">השבתת כל ההתאמות החכמות של מטא־נתונים. הדבר עלול לגרום לבעיות אם קבצים מועברים באחסון המקומי, אך מאפשר לשמור את אותו שיר בתיקיות שונות</string>
+    <string name="download_on_wifi_only_title">הורדה באמצעות Wi-Fi בלבד</string>
+    <string name="download_on_wifi_only_description">אין להוריד באמצעות נתונים סלולריים. שירים שנוספו לתור בזמן שימוש בנתונים סלולריים יתחילו לרדת אוטומטית כאשר Wi-Fi יהיה זמין</string>
+    <string name="download_waiting_for_wifi">ההורדה תתחיל לאחר התחברות ל-Wi-Fi</string>
+    <string name="dl_size_used_cache">פנימי: %s בשימוש</string>
+    <string name="dl_size_used_main">חיצוני: %s בשימוש</string>
+    <string name="restore_lm_tooltip">בהתקנות חדשות של האפליקציה, ייתכן שנתיבי הורדה מותאמים אישית ונתיבי סריקת מדיה מקומית לא יפעלו. כדי לפתור זאת, יש להסיר אותם ולהוסיף אותם מחדש.</string>
+    <string name="tap_artwork_to_show_lyrics_title">הקשה על העטיפה להצגת מילות השיר</string>
+    <string name="tap_artwork_to_show_lyrics_description">הצגת מילות השיר בעת הקשה על העטיפה בנגן</string>
+    <string name="max_queues_title">מספר התורים המרבי</string>
+    <string name="oobe_welcome_tip">לחוויה מיטבית, מומלץ להשלים הגדרה מהירה ולהתאים אישית הגדרות מרכזיות כגון ערכת נושא, חשבון YouTube, מדיה מקומית והורדות.</string>
+    <string name="oobe_cache_title">מטמון שירים</string>
+    <string name="oobe_cache_subtitle">בחירת גודל מטמון השירים. הדבר עשוי לצמצם בעיות הפעלה הקשורות לאינטרנט או ל-API של YouTube</string>
+    <string name="queue_selection">בחירה</string>
+    <string name="scanner_type_tooltip">הסורק של המערכת מהיר יותר, אך עלול לחלץ באופן שגוי חלק מהמטא-דאטה בהשוואה למחלצים אחרים. שים לב: החלפת סורקים לא תטען מחדש באופן אוטומטי את המטא-דאטה של ​​שירים קיימים.</string>
+    <string name="failed_to_parse_proxy_url">נכשל בניתוח כתובת ה-Proxy.</string>
+    <string name="failed_to_get_visitor_data">נכשל בקבלת visitorData.</string>
+    <string name="flush_local_image_cache">רוקן מטמון תמונות מקומי</string>
+    <string name="keep_screen_on">השאר את המסך דולק</string>
+    <string name="keep_screen_on_never">לעולם לא</string>
+    <string name="keep_screen_on_lyrics">כשהמילים מוצגות</string>
+    <string name="keep_screen_on_player">כשהנגן פתוח</string>
+    <string name="create_folder">צור תיקייה</string>
+    <string name="rename_folder">שנה שם תיקייה</string>
+    <string name="delete_folder">מחק תיקייה</string>
+    <string name="delete_folder_confirm">למחוק את התיקייה "%1$s"? רשימות ההשמעה שלה יועברו לתיקיית האב.</string>
+    <string name="move_to_folder">העבר לתיקייה</string>
+    <string name="root_folder">כל רשימות ההשמעה</string>
+    <string name="previous_folder">תיקייה קודמת</string>
 </resources>

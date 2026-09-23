@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="err_stop_on_error">Ein Fehler ist aufgetreten. Wiedergabe angehalten</string>
     <string name="queue_searched_songs_ot">Suche:</string>
@@ -232,7 +232,7 @@
     <string name="action_next">Weiter</string>
     <string name="action_skip">Überspringen</string>
     <string name="action_cancel">Abbrechen</string>
-    <string name="info">Information</string>
+    <string name="info">Informationen</string>
     <string name="speed_very_slow">Sehr langsam</string>
     <string name="speed_slow">Langsam</string>
     <string name="speed_medium">Mittel</string>
@@ -256,4 +256,60 @@
     <string name="oobe_cache_subtitle">Wählen Sie eine Song-Cache-Größe. Dies kann dazu beitragen, Probleme bei der Wiedergabe über das Internet oder die YouTube-API zu reduzieren.</string>
     <string name="library_filter">Bibliotheksfilter</string>
     <string name="off">Aus</string>
+    <string name="custom_accent_color">Benutzerdefinierte Akzentfarbe</string>
+    <string name="custom_accent_color_description">Eine feste Farbe Ihrer Wahl als Akzent in der gesamten App verwenden</string>
+    <string name="accent_color">Akzentfarbe</string>
+    <string name="ignore_audio_focus">Audio-Fokus beibehalten</string>
+    <string name="ignore_audio_focus_desc">Wiedergabe fortsetzen, wenn eine andere App den Audio-Fokus übernimmt. Die Musik pausiert nicht bei anderen Audioquellen, einschließlich Telefonanrufen.</string>
+    <string name="enable_betterlyrics">BetterLyrics-Liedtextanbieter aktivieren</string>
+    <string name="enable_simpmusic">SimpMusic-Liedtextanbieter aktivieren</string>
+    <string name="local_files">Lokal</string>
+    <string name="queue_selection">Auswahl</string>
+    <string name="grp_appearance_controls">Erscheinungsbild und Steuerung</string>
+    <string name="grp_display">Anzeige</string>
+    <string name="grp_now_playing">Aktuelle Wiedergabe</string>
+    <string name="show_queue_title">Namen der Wiedergabeliste im Player anzeigen</string>
+    <string name="slider_style_title">Regler-Stil</string>
+    <string name="slider_style_squiggly">Wellenlinie</string>
+    <string name="slider_style_default">Standard</string>
+    <string name="slider_style_slim">Kompakt</string>
+    <string name="action_logout_tooltip">Um sich vollständig abzumelden, melden Sie sich bitte im Webportal von Ihrem YouTube-Konto ab, bevor Sie diese Abmelde-Schaltfläche verwenden.</string>
+    <string name="sleep_timer_fade">Ausblenden</string>
+    <string name="sleep_timer_fade_duration">Dauer des Ausblendens</string>
+    <string name="sleep_timer_fade_duration_desc">Sekunden zum Absenken der Lautstärke vor dem Stoppen</string>
+    <string name="sleep_timer_default_time">Standard-Zeit für den Sleep-Timer</string>
+    <string name="sleep_timer_minutes_short">%d Min.</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="sleep_timer_stop">Timer stoppen</string>
+    <string name="sleep_timer_show_on_player">Schaltfläche im Player-Bildschirm</string>
+    <string name="sleep_timer_show_on_player_desc">Schaltfläche für den Sleep-Timer im Player-Bildschirm anzeigen</string>
+    <string name="lyrics_prefetch_title">Liedtexte vorab laden</string>
+    <string name="lyrics_prefetch_description">Liedtexte für die nächsten Titel in der Warteschlange vorab abrufen</string>
+    <string name="lyrics_prefetch_count_title">Anzahl der Titel, für die Liedtexte vorab geladen werden sollen</string>
+    <string name="auto_scanner_tooltip">Beim automatischen Scan lokaler Medien werden die Metadaten bereits vorhandener Titel nicht neu geladen. Verwenden Sie den manuellen Scanner mit aktivierter Option zum erneuten Scannen, wenn Sie auch die Metadaten aktualisieren möchten.</string>
+    <string name="scanner_auto_end">Aktualisierung der lokalen Medien und Song-Downloads abgeschlossen!</string>
+    <string name="scanner_auto_start">Lokale Medien und Song-Download-Ordner werden aktualisiert…</string>
+    <string name="scanner_strict_file_paths_title">Dateipfade statt Metadaten abgleichen</string>
+    <string name="scanner_strict_file_paths_description">Deaktiviert den automatischen Abgleich von Metadaten. Dies kann zu Problemen führen, wenn Dateien im lokalen Speicher verschoben werden, ermöglicht jedoch, dass derselbe Song in verschiedenen Ordnern vorhanden ist.</string>
+    <string name="scanner_type_tooltip">Der System-Scanner arbeitet schneller, extrahiert jedoch im Vergleich zu anderen Scannern möglicherweise einige Metadaten fehlerhaft. Bitte beachten Sie, dass ein Wechsel des Scanners die Metadaten vorhandener Songs nicht automatisch neu lädt.</string>
+    <string name="download_on_wifi_only_title">Nur über WLAN herunterladen</string>
+    <string name="download_on_wifi_only_description">Kein Download über mobile Daten. Songs, die während einer Verbindung über mobile Daten in die Warteschlange aufgenommen wurden, werden automatisch heruntergeladen, sobald eine WLAN-Verbindung besteht.</string>
+    <string name="download_waiting_for_wifi">Download erfolgt bei WLAN-Verbindung</string>
+    <string name="failed_to_parse_proxy_url">Proxy-URL konnte nicht analysiert werden.</string>
+    <string name="failed_to_get_visitor_data">visitorData konnte nicht abgerufen werden.</string>
+    <string name="restore_lm_tooltip">Bei Neuinstallationen der App funktionieren benutzerdefinierte Pfade für Downloads und das Scannen lokaler Medien möglicherweise nicht. Entfernen Sie diese und fügen Sie sie erneut hinzu, um das Problem zu beheben.</string>
+    <string name="flush_local_image_cache">Lokalen Bild-Cache leeren</string>
+    <string name="tap_artwork_to_show_lyrics_title">Auf das Cover tippen, um Liedtexte anzuzeigen</string>
+    <string name="tap_artwork_to_show_lyrics_description">Liedtexte beim Tippen auf das Cover im Player anzeigen</string>
+    <string name="keep_screen_on">Bildschirm eingeschaltet lassen</string>
+    <string name="keep_screen_on_never">Nie</string>
+    <string name="keep_screen_on_lyrics">Während Liedtexte angezeigt werden</string>
+    <string name="keep_screen_on_player">Während der Player geöffnet ist</string>
+    <string name="create_folder">Ordner erstellen</string>
+    <string name="rename_folder">Ordner umbenennen</string>
+    <string name="delete_folder">Ordner löschen</string>
+    <string name="delete_folder_confirm">Ordner „%1$s“ löschen? Die darin enthaltenen Wiedergabelisten werden in den übergeordneten Ordner verschoben.</string>
+    <string name="move_to_folder">In Ordner verschieben</string>
+    <string name="root_folder">Alle Wiedergabelisten</string>
+    <string name="previous_folder">Vorheriger Ordner</string>
 </resources>

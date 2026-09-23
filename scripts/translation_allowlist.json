@@ -15,5 +15,370 @@
     "YouTube",
     "YouTube Music",
     "Wi-Fi"
-  ]
+  ],
+  "allowed_untranslated_keys": {
+    "values-az": [
+      "android_auto",
+      "radio",
+      "wiki"
+    ],
+    "values-b+ca+ES+valencia": [
+      "android_auto",
+      "experimental_settings_title",
+      "grp_general",
+      "local_files",
+      "local_history",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-b+sr+Latn": [
+      "android_auto",
+      "grp_general",
+      "local_files",
+      "local_history",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-be": [
+      "android_auto"
+    ],
+    "values-bg": [
+      "android_auto"
+    ],
+    "values-bs": [
+      "android_auto",
+      "grp_lyrics_parser",
+      "grp_proxy",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-ca": [
+      "android_auto",
+      "experimental_settings_title",
+      "grp_general",
+      "local_files",
+      "local_history",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-cs": [
+      "android_auto",
+      "grp_proxy",
+      "n_album[one]",
+      "n_playlist[one]",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-de": [
+      "android_auto",
+      "bitrate",
+      "cache",
+      "codecs",
+      "details",
+      "equalizer",
+      "filter_videos",
+      "grp_layout",
+      "grp_lyrics_parser",
+      "grp_proxy",
+      "player",
+      "radio",
+      "sleep_timer_second_unit",
+      "sort_by_name",
+      "wiki"
+    ],
+    "values-el": [
+      "android_auto",
+      "wiki"
+    ],
+    "values-es": [
+      "android_auto",
+      "experimental_settings_title",
+      "grp_audio",
+      "grp_general",
+      "grp_proxy",
+      "local_files",
+      "local_history",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-es-rUS": [
+      "android_auto",
+      "experimental_settings_title",
+      "grp_audio",
+      "grp_general",
+      "grp_proxy",
+      "local_files",
+      "local_history",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-et": [
+      "android_auto",
+      "grp_lyrics_parser",
+      "n_album[one]",
+      "player_background_gradient",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit"
+    ],
+    "values-fi": [
+      "android_auto",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-fil": [
+      "account",
+      "advanced",
+      "android_auto",
+      "attribution_title",
+      "audio_decoder_preference",
+      "bitrate",
+      "cache",
+      "default_",
+      "equalizer",
+      "error_timeout",
+      "filter_library",
+      "grp_interface",
+      "grp_layout",
+      "grp_lyrics_parser",
+      "grp_proxy",
+      "home",
+      "image_cache",
+      "lyrics_settings_title",
+      "n_album[one]",
+      "n_playlist[one]",
+      "oobe_ytm_logon_title",
+      "player_background_gradient",
+      "remote_history",
+      "sleep_timer",
+      "sleep_timer_fade",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "slider_style_default",
+      "slider_style_squiggly",
+      "sort_by_artist",
+      "squiggly",
+      "wiki"
+    ],
+    "values-fr": [
+      "albums",
+      "android_auto",
+      "attribution_title",
+      "cache",
+      "codecs",
+      "filter_albums",
+      "grp_audio",
+      "grp_interface",
+      "grp_proxy",
+      "local_files",
+      "minute[one]",
+      "minute[other]",
+      "n_album[one]",
+      "n_album[other]",
+      "n_playlist[one]",
+      "n_playlist[other]",
+      "options",
+      "playlists",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "volume",
+      "wiki"
+    ],
+    "values-hr": [
+      "android_auto",
+      "grp_proxy",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-hu": [
+      "android_auto",
+      "grp_proxy",
+      "n_album[one]",
+      "wiki"
+    ],
+    "values-in": [
+      "android_auto",
+      "grp_audio",
+      "grp_proxy",
+      "radio",
+      "sleep_timer_second_unit",
+      "volume",
+      "wiki"
+    ],
+    "values-it": [
+      "account",
+      "android_auto",
+      "bitrate",
+      "cache",
+      "grp_audio",
+      "grp_layout",
+      "grp_proxy",
+      "home",
+      "oobe_ytm_logon_title",
+      "privacy",
+      "radio",
+      "settings_debug",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "volume",
+      "wiki"
+    ],
+    "values-ja": [
+      "android_auto",
+      "wiki"
+    ],
+    "values-ko": [
+      "android_auto"
+    ],
+    "values-nb-rNO": [
+      "android_auto",
+      "attrib_zhuang",
+      "bitrate",
+      "grp_proxy",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "sort_by_artist",
+      "wiki"
+    ],
+    "values-nl": [
+      "account",
+      "albums",
+      "android_auto",
+      "bits_per_sample",
+      "cache",
+      "codecs",
+      "details",
+      "extra_details",
+      "filter_albums",
+      "grp_audio",
+      "grp_interface",
+      "grp_lyrics_parser",
+      "grp_proxy",
+      "n_album[one]",
+      "n_album[other]",
+      "n_week[one]",
+      "oobe_ytm_logon_title",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "volume",
+      "wiki"
+    ],
+    "values-pl": [
+      "android_auto",
+      "grp_proxy",
+      "radio",
+      "reset",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-pt": [
+      "android_auto",
+      "cache",
+      "experimental_settings_title",
+      "grp_interface",
+      "grp_proxy",
+      "local_files",
+      "local_history",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "volume",
+      "wiki"
+    ],
+    "values-pt-rBR": [
+      "android_auto",
+      "cache",
+      "grp_interface",
+      "grp_proxy",
+      "local_files",
+      "local_history",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "volume",
+      "wiki"
+    ],
+    "values-ro": [
+      "android_auto",
+      "cache",
+      "error_timeout",
+      "experimental_settings_title",
+      "grp_audio",
+      "grp_general",
+      "grp_proxy",
+      "local_files",
+      "local_history",
+      "player",
+      "radio",
+      "sleep_timer_second_unit",
+      "sort_by_artist",
+      "wiki"
+    ],
+    "values-ru": [
+      "android_auto",
+      "wiki"
+    ],
+    "values-sk": [
+      "android_auto",
+      "grp_proxy",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-sl": [
+      "android_auto",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "wiki"
+    ],
+    "values-sr": [
+      "android_auto"
+    ],
+    "values-sv": [
+      "android_auto",
+      "cache",
+      "equalizer",
+      "grp_layout",
+      "grp_proxy",
+      "info",
+      "radio",
+      "sleep_timer_minutes_short",
+      "sleep_timer_second_unit",
+      "slider_style_slim",
+      "sort_by_artist",
+      "wiki"
+    ],
+    "values-tr": [
+      "android_auto",
+      "wiki"
+    ],
+    "values-uk": [
+      "android_auto"
+    ],
+    "values-vi": [
+      "android_auto",
+      "grp_proxy",
+      "sleep_timer_minutes_short"
+    ],
+    "values-zh-rCN": [
+      "android_auto"
+    ],
+    "values-zh-rTW": [
+      "android_auto"
+    ]
+  }
 }

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="auto_playlist">Playlist Automatique</string>
     <string name="recent_activity">Activité récente</string>
@@ -59,7 +59,7 @@
     <string name="oobe_complete">OuterTune est configuré et prêt à l\'emploi. Explorez votre musique, découvrez de nouveaux morceaux et profitez pleinement de l\'expérience !</string>
     <string name="action_next">Suivant</string>
     <string name="action_skip">Passer</string>
-    <string name="info">Information</string>
+    <string name="info">Informations</string>
     <string name="folders">Dossiers</string>
     <string name="create_sync_playlist">Synchroniser la playlist</string>
     <string name="create_sync_playlist_description">Remarque : cela permet la synchronisation avec YouTube Music. Ce paramètre ne peut pas être modifié ultérieurement. Vous ne pouvez pas ajouter de titres locaux aux playlists synchronisées.</string>
@@ -288,4 +288,24 @@
     <string name="lyrics_prefetch_description">Récupérer à l\'avance les paroles des prochains titres de la file d\'attente</string>
     <string name="lyrics_prefetch_count_title">Nombre de titres dont les paroles doivent être préchargées</string>
     <string name="off">Désactivé</string>
+    <string name="grp_appearance_controls">Apparence et commandes</string>
+    <string name="grp_display">Affichage</string>
+    <string name="grp_now_playing">Lecture en cours</string>
+    <string name="tap_artwork_to_show_lyrics_title">Toucher la pochette pour afficher les paroles</string>
+    <string name="tap_artwork_to_show_lyrics_description">Afficher les paroles en touchant la pochette dans le lecteur</string>
+    <string name="queue_selection">Sélection</string>
+    <string name="failed_to_parse_proxy_url">Échec de l\'analyse de l\'URL du proxy.</string>
+    <string name="failed_to_get_visitor_data">Échec de la récupération des données visiteur.</string>
+    <string name="flush_local_image_cache">Vider le cache d\'images local</string>
+    <string name="keep_screen_on">Maintenir l\'écran allumé</string>
+    <string name="keep_screen_on_never">Jamais</string>
+    <string name="keep_screen_on_lyrics">Lorsque les paroles sont visibles</string>
+    <string name="keep_screen_on_player">Lorsque le lecteur est ouvert</string>
+    <string name="create_folder">Créer un dossier</string>
+    <string name="rename_folder">Renommer le dossier</string>
+    <string name="delete_folder">Supprimer le dossier</string>
+    <string name="delete_folder_confirm">Supprimer le dossier « %1$s » ? Ses playlists seront déplacées vers le dossier parent.</string>
+    <string name="move_to_folder">Déplacer vers le dossier</string>
+    <string name="root_folder">Toutes les playlists</string>
+    <string name="previous_folder">Dossier précédent</string>
 </resources>

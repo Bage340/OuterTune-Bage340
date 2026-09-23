@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="local_history">기기 파일</string>
     <string name="folders">폴더</string>
@@ -58,9 +58,11 @@
     <string name="scanner_ytm_link_success">유튜브 아티스트 연결 완료</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="other">%d개의 곡 처리중</item>
+        <item quantity="one">%d 곡 처리됨</item>
     </plurals>
     <plurals name="scanner_n_song_found">
         <item quantity="other">%d개의 곡 감지</item>
+        <item quantity="one">%d 곡 발견됨</item>
     </plurals>
     <string name="scanner_strict_file_name_title">엄격한 파일 이름 규칙</string>
     <string name="scanner_sensitivity_title">스캔 민감도 설정</string>
@@ -231,7 +233,8 @@
     <string name="att_translator">번역가 (%s)</string>
     <string name="m3u_import_failed">노래를 찾을 수 없습니다.M3U 파일이 유효하지 않거나 맞지 않는 음악 입니다</string>
     <plurals name="second">
-        <item quantity="other">초</item>
+        <item quantity="other">%d초</item>
+        <item quantity="one">%d초</item>
     </plurals>
     <string name="att_project_support">프로젝트 지원</string>
     <string name="local_files">로컬</string>
@@ -282,4 +285,24 @@
     <string name="oobe_cache_title">곡 캐시</string>
     <string name="oobe_cache_subtitle">곡 캐시 크기를 선택하세요. 인터넷 또는 YouTube API 재생 문제를 줄이는 데 도움이 될 수 있습니다</string>
     <string name="off">사용 안함</string>
+    <string name="queue_selection">선택</string>
+    <string name="grp_appearance_controls">외관 및 제어 장치</string>
+    <string name="grp_display">디스플레이</string>
+    <string name="grp_now_playing">재생 중</string>
+    <string name="failed_to_parse_proxy_url">프록시 URL을 구문 분석하지 못했습니다.</string>
+    <string name="failed_to_get_visitor_data">visitorData를 가져오지 못했습니다.</string>
+    <string name="flush_local_image_cache">로컬 이미지 캐시 비우기</string>
+    <string name="tap_artwork_to_show_lyrics_title">앨범 아트를 탭하여 가사 표시</string>
+    <string name="tap_artwork_to_show_lyrics_description">플레이어에서 앨범 아트를 탭할 때 가사 표시</string>
+    <string name="keep_screen_on">화면 켜짐 유지</string>
+    <string name="keep_screen_on_never">안 함</string>
+    <string name="keep_screen_on_lyrics">가사가 표시되는 동안</string>
+    <string name="keep_screen_on_player">플레이어가 열려 있는 동안</string>
+    <string name="create_folder">폴더 생성</string>
+    <string name="rename_folder">폴더 이름 변경</string>
+    <string name="delete_folder">폴더 삭제</string>
+    <string name="delete_folder_confirm">“%1$s” 폴더를 삭제하시겠습니까? 포함된 재생 목록은 상위 폴더로 이동됩니다.</string>
+    <string name="move_to_folder">폴더로 이동</string>
+    <string name="root_folder">모든 재생 목록</string>
+    <string name="previous_folder">이전 폴더</string>
 </resources>

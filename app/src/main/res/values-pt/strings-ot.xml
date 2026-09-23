@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="android_auto">Android Auto</string>
     <string name="folders">Pastas</string>
@@ -267,4 +267,52 @@
     <string name="dl_storage_tooltip">As descargas internas são gravadas no armazenamento privado da aplicação e não são acessíveis sem root.\n\nAs descargas externas são gravadas no armazenamento externo do seu dispositivo (ex: /sdcard ou em cartões micro SD) e podem serem acedidas e editadas diretamente com um gestor de ficheiros. Para a pasta de descargas externas, recomendamos selecionar uma pasta vazia especificamente para descarregar músicas, já que OuterTune pode modificar ou apagar ficheiros nesta pasta.\n\nPastas adicionais de importação são apenas para leitura e utilizadas para carregar faixas adicionais. OuterTune nunca alterará ou apagará ficheiros nestas pastas. Pode selecionar estas pastas na secção avançada.\n\nAo apagar descargas, apenas as músicas internas serão apagadas. As descargas externas e as pastas adicionais extra devem serem apagadas manualmente seja pelo menu da faixa ou manualmente com um gestor de ficheiros.\n\nReanalisar pastas de descargas: as faixas existentes em Descargas externas e Pastas adicionais de importação NÃO são atualizadas automaticamente. Se adicionar, remover ou alterar ficheiros manualmente com um gestor de ficheiros, terá que reanalisar as pastas para atualizar a base de dados. Esta opção está disponível na secção avançada.</string>
     <string name="restore_lm_tooltip">Para novas instalações da aplicação, os caminhos de ficheiros locais e/ou de descargas podem não funcionar. Se isso acontecer, experimente remover as pastas e adicionar novamente.</string>
     <string name="off">Desativado</string>
+    <string name="custom_accent_color">Cor de destaque personalizada</string>
+    <string name="custom_accent_color_description">Usar uma cor fixa de sua escolha como destaque em todo o aplicativo</string>
+    <string name="accent_color">Cor de destaque</string>
+    <string name="ignore_audio_focus">Manter foco de áudio</string>
+    <string name="ignore_audio_focus_desc">Continuar reproduzindo quando outro aplicativo assumir o foco de áudio. A música não pausará para outras fontes de áudio, incluindo chamadas telefônicas.</string>
+    <string name="enable_betterlyrics">Ativar provedor de letras BetterLyrics</string>
+    <string name="enable_simpmusic">Ativar provedor de letras SimpMusic</string>
+    <string name="local_files">Local</string>
+    <string name="queue_selection">Seleção</string>
+    <string name="grp_appearance_controls">Aparência e controles</string>
+    <string name="grp_display">Exibição</string>
+    <string name="grp_now_playing">Reproduzindo agora</string>
+    <string name="show_queue_title">Mostrar nome da fila no player</string>
+    <string name="slider_style_title">Estilo da barra de progresso</string>
+    <string name="slider_style_squiggly">Ondulado</string>
+    <string name="slider_style_default">Padrão</string>
+    <string name="slider_style_slim">Compacto</string>
+    <string name="sleep_timer_fade">Atenuação gradual (fade out)</string>
+    <string name="sleep_timer_fade_duration">Duração da atenuação</string>
+    <string name="sleep_timer_fade_duration_desc">Segundos para reduzir o volume antes de parar</string>
+    <string name="sleep_timer_default_time">Tempo padrão do temporizador de desligamento</string>
+    <string name="sleep_timer_minutes_short">%d min</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="sleep_timer_stop">Temporizador de parada</string>
+    <string name="sleep_timer_show_on_player">Botão na tela do reprodutor</string>
+    <string name="sleep_timer_show_on_player_desc">Mostrar botão do temporizador de desligamento na tela do reprodutor</string>
+    <string name="lyrics_prefetch_title">Pré-carregar letras seguintes</string>
+    <string name="lyrics_prefetch_description">Buscar antecipadamente as letras das próximas músicas da fila</string>
+    <string name="lyrics_prefetch_count_title">Número de músicas para pré-carregar</string>
+    <string name="download_on_wifi_only_title">Baixar apenas via Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Não baixar usando dados móveis. Músicas na fila enquanto se usa dados móveis começarão a baixar automaticamente assim que o Wi-Fi estiver disponível.</string>
+    <string name="download_waiting_for_wifi">O download será feito assim que houver conexão Wi-Fi.</string>
+    <string name="failed_to_parse_proxy_url">Falha ao analisar a URL do proxy.</string>
+    <string name="failed_to_get_visitor_data">Falha ao obter visitorData.</string>
+    <string name="flush_local_image_cache">Limpar cache local de imagens</string>
+    <string name="tap_artwork_to_show_lyrics_title">Toque na capa para exibir a letra</string>
+    <string name="tap_artwork_to_show_lyrics_description">Exibir letra ao tocar na capa no reprodutor</string>
+    <string name="keep_screen_on">Manter tela ligada</string>
+    <string name="keep_screen_on_never">Nunca</string>
+    <string name="keep_screen_on_lyrics">Enquanto a letra estiver visível</string>
+    <string name="keep_screen_on_player">Enquanto o reprodutor estiver aberto</string>
+    <string name="create_folder">Criar pasta</string>
+    <string name="rename_folder">Renomear pasta</string>
+    <string name="delete_folder">Excluir pasta</string>
+    <string name="delete_folder_confirm">Excluir a pasta “%1$s”? Suas playlists serão movidas para a pasta pai.</string>
+    <string name="move_to_folder">Mover para pasta</string>
+    <string name="root_folder">Todas as playlists</string>
+    <string name="previous_folder">Pasta anterior</string>
 </resources>

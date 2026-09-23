@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="library">Biblioteca</string>
     <string name="audio_offload_description">Usar o caminho de descarga de áudio para a reprodução. Ao ativar, o consumo de energia pode diminuir, mas pode levar a problemas com a reprodução ou pós-processamento. Essa configuração não tem efeito em codificadores ou dispositivos não suportados</string>
@@ -267,4 +267,52 @@
     <string name="scanner_type_tooltip">O busca do sistema é mais rápida, mas pode extrair alguns metadados incorretamente comparado a outros extratores. Observe que ao alterar buscadores, os metadados de músicas existentes não serão recarregados.</string>
     <string name="restore_lm_tooltip">Em instalações limpas do app, caminhos de busca de mídia local e download podem não funcionar. Para resolver isso, remova-os e adicione-os novamente.</string>
     <string name="off">Desativado</string>
+    <string name="grp_appearance_controls">Aparência e controles</string>
+    <string name="grp_display">Tela</string>
+    <string name="grp_now_playing">Tocando agora</string>
+    <string name="show_queue_title">Mostrar o nome da fila no reprodutor</string>
+    <string name="slider_style_title">Estilo do controle deslizante</string>
+    <string name="slider_style_squiggly">Ondulado</string>
+    <string name="slider_style_default">Padrão</string>
+    <string name="slider_style_slim">Pequeno</string>
+    <string name="sleep_timer_fade">Atenuação</string>
+    <string name="sleep_timer_fade_duration">Duração da atenuação</string>
+    <string name="sleep_timer_fade_duration_desc">Segundos para abaixar o volume antes de parar</string>
+    <string name="sleep_timer_default_time">Tempo padrão para desligar</string>
+    <string name="sleep_timer_stop">Desativar temporizador</string>
+    <string name="sleep_timer_show_on_player">Temporizador</string>
+    <string name="sleep_timer_show_on_player_desc">Mostrar botão do temporizador na tela do reprodutor</string>
+    <string name="lyrics_prefetch_title">Pré-carregar as letras das músicas</string>
+    <string name="lyrics_prefetch_description">Procurar as letras das próximas músicas antecipadamente</string>
+    <string name="lyrics_prefetch_count_title">Número de músicas para carregar antecipadamente</string>
+    <string name="custom_accent_color">Cor de destaque personalizada</string>
+    <string name="custom_accent_color_description">Usar uma cor fixa de sua escolha como destaque em todo o aplicativo</string>
+    <string name="accent_color">Cor de destaque</string>
+    <string name="ignore_audio_focus">Manter foco de áudio</string>
+    <string name="ignore_audio_focus_desc">Continuar reproduzindo quando outro aplicativo assumir o foco de áudio. A música não pausará para outras fontes de áudio, incluindo chamadas telefônicas.</string>
+    <string name="enable_betterlyrics">Ativar provedor de letras BetterLyrics</string>
+    <string name="enable_simpmusic">Ativar provedor de letras SimpMusic</string>
+    <string name="local_files">Local</string>
+    <string name="queue_selection">Seleção</string>
+    <string name="sleep_timer_minutes_short">%d min</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="download_on_wifi_only_title">Baixar apenas via Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Não baixar usando dados móveis. Músicas na fila enquanto se usa dados móveis começarão a baixar automaticamente assim que o Wi-Fi estiver disponível.</string>
+    <string name="download_waiting_for_wifi">O download ocorrerá ao conectar ao Wi-Fi</string>
+    <string name="failed_to_parse_proxy_url">Falha ao analisar a URL do proxy.</string>
+    <string name="failed_to_get_visitor_data">Falha ao obter visitorData.</string>
+    <string name="flush_local_image_cache">Limpar cache local de imagens</string>
+    <string name="tap_artwork_to_show_lyrics_title">Toque na capa para exibir a letra</string>
+    <string name="tap_artwork_to_show_lyrics_description">Exibir letra ao tocar na capa no reprodutor</string>
+    <string name="keep_screen_on">Manter tela ligada</string>
+    <string name="keep_screen_on_never">Nunca</string>
+    <string name="keep_screen_on_lyrics">Enquanto a letra estiver visível</string>
+    <string name="keep_screen_on_player">Enquanto o reprodutor estiver aberto</string>
+    <string name="create_folder">Criar pasta</string>
+    <string name="rename_folder">Renomear pasta</string>
+    <string name="delete_folder">Excluir pasta</string>
+    <string name="delete_folder_confirm">Excluir pasta “%1$s”? Suas playlists serão movidas para a pasta pai.</string>
+    <string name="move_to_folder">Mover para pasta</string>
+    <string name="root_folder">Todas as playlists</string>
+    <string name="previous_folder">Pasta anterior</string>
 </resources>

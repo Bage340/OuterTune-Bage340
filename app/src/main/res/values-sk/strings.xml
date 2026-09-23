@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">Domov</string>
     <string name="songs">Piesne</string>
@@ -139,13 +139,13 @@
         <item quantity="other">%d interpretov</item>
     </plurals>
     <plurals name="n_album">
-        <item quantity="one">%d album</item>
+        <item quantity="one">Album %d</item>
         <item quantity="few">%d albumy</item>
         <item quantity="many">%d albumov</item>
         <item quantity="other">%d albumov</item>
     </plurals>
     <plurals name="n_playlist">
-        <item quantity="one">%d playlist</item>
+        <item quantity="one">Zoznam skladieb %d</item>
         <item quantity="few">%d playlisty</item>
         <item quantity="many">%d playlistov</item>
         <item quantity="other">%d playlistov</item>
@@ -176,7 +176,7 @@
     <string name="sleep_timer">Časovač vypnutia</string>
     <string name="end_of_song">Koniec skladby</string>
     <plurals name="minute">
-        <item quantity="one">%d minúta</item>
+        <item quantity="one">1 minúta</item>
         <item quantity="few">%d minúty</item>
         <item quantity="many">%d minút</item>
         <item quantity="other">%d minút</item>

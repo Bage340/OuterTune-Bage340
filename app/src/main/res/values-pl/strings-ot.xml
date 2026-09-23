@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="queues_title">Kolejki</string>
     <string name="auto_playlist">Playlista automatyczna</string>
@@ -270,4 +270,52 @@
     <string name="scanner_type_tooltip">Systemowy skaner jest szybszy, ale może nieprawidłowo wypakowywać metadane w porównaniu z innym ekstraktorami. Zmienianie skanera nie przeładuje automatycznie metadanych istniejących piosenek.</string>
     <string name="restore_lm_tooltip">Dla świeżej instalacji aplikacji, niestandardowe pobrania oraz lokalne media mogą nie działa. By rozwiązać ten problem dodaj je z powrotem.</string>
     <string name="off">Wyłączono</string>
+    <string name="custom_accent_color">Niestandardowy kolor akcentu</string>
+    <string name="custom_accent_color_description">Używaj wybranego koloru jako akcentu w całej aplikacji</string>
+    <string name="accent_color">Kolor akcentu</string>
+    <string name="ignore_audio_focus">Utrzymuj priorytet dźwięku</string>
+    <string name="ignore_audio_focus_desc">Kontynuuj odtwarzanie, gdy inna aplikacja przejmie priorytet dźwięku. Odtwarzanie muzyki nie zostanie wstrzymane przez inne źródła dźwięku, w tym połączenia telefoniczne.</string>
+    <string name="enable_betterlyrics">Włącz dostawcę tekstów BetterLyrics</string>
+    <string name="enable_simpmusic">Włącz dostawcę tekstów SimpMusic</string>
+    <string name="local_files">Lokalnie</string>
+    <string name="queue_selection">Wybór</string>
+    <string name="grp_appearance_controls">Wygląd i sterowanie</string>
+    <string name="grp_display">Wyświetlanie</string>
+    <string name="grp_now_playing">Teraz odtwarzane</string>
+    <string name="show_queue_title">Pokaż nazwę kolejki w odtwarzaczu</string>
+    <string name="slider_style_title">Styl suwaka</string>
+    <string name="slider_style_squiggly">Falisty</string>
+    <string name="slider_style_default">Domyślne</string>
+    <string name="slider_style_slim">Wąski</string>
+    <string name="sleep_timer_fade">Wyciszanie</string>
+    <string name="sleep_timer_fade_duration">Czas wyciszania</string>
+    <string name="sleep_timer_fade_duration_desc">Czas (w sekundach) obniżania głośności przed zatrzymaniem</string>
+    <string name="sleep_timer_default_time">Domyślny czas wyłącznika czasowego</string>
+    <string name="sleep_timer_minutes_short">%d min.</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="sleep_timer_stop">Wyłącznik czasowy</string>
+    <string name="sleep_timer_show_on_player">Przycisk na ekranie odtwarzacza</string>
+    <string name="sleep_timer_show_on_player_desc">Pokaż przycisk wyłącznika czasowego na ekranie odtwarzacza</string>
+    <string name="lyrics_prefetch_title">Wstępne pobieranie tekstu kolejnych utworów</string>
+    <string name="lyrics_prefetch_description">Pobieraj z wyprzedzeniem teksty utworów z kolejki</string>
+    <string name="lyrics_prefetch_count_title">Liczba utworów do wstępnego pobrania</string>
+    <string name="download_on_wifi_only_title">Pobieraj tylko przez Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Nie pobieraj przez sieć komórkową. Utwory oczekujące na pobranie w sieci komórkowej zaczną się pobierać automatycznie po uzyskaniu dostępu do Wi-Fi.</string>
+    <string name="download_waiting_for_wifi">Pobieranie rozpocznie się po połączeniu z Wi-Fi.</string>
+    <string name="failed_to_parse_proxy_url">Błąd podczas analizy adresu URL serwera proxy.</string>
+    <string name="failed_to_get_visitor_data">Nie udało się pobrać danych użytkownika (visitorData).</string>
+    <string name="flush_local_image_cache">Wyczyść lokalną pamięć podręczną obrazów</string>
+    <string name="tap_artwork_to_show_lyrics_title">Stuknij okładkę, aby wyświetlić tekst utworu</string>
+    <string name="tap_artwork_to_show_lyrics_description">Wyświetlaj tekst utworu po stuknięciu okładki w odtwarzaczu</string>
+    <string name="keep_screen_on">Nie wygaszaj ekranu</string>
+    <string name="keep_screen_on_never">Nigdy</string>
+    <string name="keep_screen_on_lyrics">Gdy widoczny jest tekst utworu</string>
+    <string name="keep_screen_on_player">Gdy odtwarzacz jest otwarty</string>
+    <string name="create_folder">Utwórz folder</string>
+    <string name="rename_folder">Zmień nazwę folderu</string>
+    <string name="delete_folder">Usuń folder</string>
+    <string name="delete_folder_confirm">Usunąć folder „%1$s”? Zawarte w nim playlisty zostaną przeniesione do folderu nadrzędnego.</string>
+    <string name="move_to_folder">Przenieś do folderu</string>
+    <string name="root_folder">Wszystkie playlisty</string>
+    <string name="previous_folder">Poprzedni folder</string>
 </resources>

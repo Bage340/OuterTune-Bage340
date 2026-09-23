@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
     <string name="home">خانه</string>
     <string name="songs">ترانه‌ها</string>
     <string name="artists">هنرمندها</string>
@@ -139,7 +139,7 @@
     <string name="sleep_timer">شمارنده‌ی خواب</string>
     <string name="end_of_song">پایان ترانه</string>
     <plurals name="minute">
-        <item quantity="one">%d دقیقه</item>
+        <item quantity="one">۱ دقیقه</item>
         <item quantity="other">%d دقیقه</item>
     </plurals>
     <string name="error_no_stream">جریانی در دسترس نیست</string>

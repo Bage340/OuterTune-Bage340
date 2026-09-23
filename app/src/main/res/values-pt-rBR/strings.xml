@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">Início</string>
     <string name="songs">Músicas</string>
@@ -147,7 +147,7 @@
     <string name="sleep_timer">Timer para dormir</string>
     <string name="end_of_song">Fim da música</string>
     <plurals name="minute">
-        <item quantity="one">%d minuto</item>
+        <item quantity="one">1 minuto</item>
         <item quantity="many">%d de minutos</item>
         <item quantity="other">%d minutos</item>
     </plurals>

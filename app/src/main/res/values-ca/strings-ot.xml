@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="folders">Carpetes</string>
     <string name="library">Biblioteca</string>
@@ -79,7 +79,7 @@
     <string name="grp_library_and_content">Libreria i contingut</string>
     <string name="grp_localization">Localització</string>
     <string name="grp_lyrics_format">Formatejar</string>
-    <string name="grp_lyrics_parser">Parser</string>
+    <string name="grp_lyrics_parser">Analitzador</string>
     <string name="grp_lyrics_source">Fonts de lletres</string>
     <string name="grp_manual_scanner">Escàner manual</string>
     <string name="grp_more_settings">Més opcions</string>
@@ -267,4 +267,52 @@
         <item quantity="other">%d cançons processades</item>
     </plurals>
     <string name="off">Desactivat</string>
+    <string name="custom_accent_color">Color d\'accent personalitzat</string>
+    <string name="custom_accent_color_description">Utilitza un color fix de la teva elecció com a color d\'accent a tota l\'aplicació</string>
+    <string name="accent_color">Color d\'accent</string>
+    <string name="ignore_audio_focus">Mantén el focus d\'àudio</string>
+    <string name="ignore_audio_focus_desc">Continua reproduint quan una altra aplicació prengui el focus d\'àudio. La música no s\'aturarà per altres fonts d\'àudio, incloses les trucades telefòniques.</string>
+    <string name="enable_betterlyrics">Activa el proveïdor de lletres BetterLyrics</string>
+    <string name="enable_simpmusic">Activa el proveïdor de lletres SimpMusic</string>
+    <string name="local_files">Local</string>
+    <string name="queue_selection">Selecció</string>
+    <string name="grp_appearance_controls">Aspecte i controls</string>
+    <string name="grp_display">Visualització</string>
+    <string name="grp_now_playing">En reproducció</string>
+    <string name="show_queue_title">Mostra el nom de la cua al reproductor</string>
+    <string name="slider_style_title">Estil del lliscador</string>
+    <string name="slider_style_squiggly">Ondulat</string>
+    <string name="slider_style_default">Predeterminat</string>
+    <string name="slider_style_slim">Compacte</string>
+    <string name="sleep_timer_fade">Atenuació</string>
+    <string name="sleep_timer_fade_duration">Durada de l\'atenuació</string>
+    <string name="sleep_timer_fade_duration_desc">Segons per abaixar el volum abans d\'aturar-se</string>
+    <string name="sleep_timer_default_time">Temps de repòs predeterminat</string>
+    <string name="sleep_timer_minutes_short">%d min</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="sleep_timer_stop">Temporitzador d\'aturada</string>
+    <string name="sleep_timer_show_on_player">Botó a la pantalla del reproductor</string>
+    <string name="sleep_timer_show_on_player_desc">Mostra un botó de temporitzador de repòs a la pantalla del reproductor</string>
+    <string name="lyrics_prefetch_title">Obtenció anticipada de la lletra</string>
+    <string name="lyrics_prefetch_description">Obté amb antelació la lletra de les properes cançons de la cua</string>
+    <string name="lyrics_prefetch_count_title">Nombre de cançons per obtenir-ne la lletra anticipadament</string>
+    <string name="download_on_wifi_only_title">Baixa només amb Wi-Fi</string>
+    <string name="download_on_wifi_only_description">No descarreguis amb dades mòbils. Les cançons en cua mentre s\'utilitzen dades mòbils començaran a descarregar-se automàticament quan hi hagi connexió Wi-Fi disponible.</string>
+    <string name="download_waiting_for_wifi">Es descarregarà un cop connectat a la Wi-Fi</string>
+    <string name="failed_to_parse_proxy_url">No s\'ha pogut analitzar l\'URL del servidor intermediari (proxy).</string>
+    <string name="failed_to_get_visitor_data">No s\'han pogut obtenir les dades del visitant (visitorData).</string>
+    <string name="flush_local_image_cache">Buida la memòria cau d\'imatges local</string>
+    <string name="tap_artwork_to_show_lyrics_title">Toca la imatge de l\'àlbum per mostrar la lletra</string>
+    <string name="tap_artwork_to_show_lyrics_description">Mostra la lletra en tocar la imatge de l\'àlbum al reproductor</string>
+    <string name="keep_screen_on">Mantén la pantalla encesa</string>
+    <string name="keep_screen_on_never">Mai</string>
+    <string name="keep_screen_on_lyrics">Mentre la lletra sigui visible</string>
+    <string name="keep_screen_on_player">Mentre el reproductor estigui obert</string>
+    <string name="create_folder">Crea una carpeta</string>
+    <string name="rename_folder">Canvia el nom de la carpeta</string>
+    <string name="delete_folder">Suprimeix la carpeta</string>
+    <string name="delete_folder_confirm">Vols suprimir la carpeta «%1$s»? Les seves llistes de reproducció es mouran a la carpeta superior.</string>
+    <string name="move_to_folder">Mou a la carpeta</string>
+    <string name="root_folder">Totes les llistes de reproducció</string>
+    <string name="previous_folder">Carpeta anterior</string>
 </resources>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="albums">Albumi</string>
     <string name="songs">Pjesme</string>
@@ -39,7 +39,7 @@
         <item quantity="other">%d umjetnika</item>
     </plurals>
     <plurals name="n_album">
-        <item quantity="one">%d album</item>
+        <item quantity="one">Album %d</item>
         <item quantity="few">%d albuma</item>
         <item quantity="other">%d albuma</item>
     </plurals>
@@ -181,7 +181,7 @@
     <string name="duplicates">Duplikati</string>
     <string name="playlist_imported">Spiska uvezena</string>
     <plurals name="minute">
-        <item quantity="one">%d minut</item>
+        <item quantity="one">1 minut</item>
         <item quantity="few">%d minute</item>
         <item quantity="other">%d minuta</item>
     </plurals>

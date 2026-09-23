@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="android_auto">اعدادات النضام التلقائية</string>
     <string name="folders">المجلدات</string>
@@ -20,19 +20,19 @@
     <string name="oobe_welcome_message">مرحبًا بك في OuterTune</string>
     <plurals name="scanner_n_song_found">
         <item quantity="zero">صفر اغنية</item>
-        <item quantity="one">اغنية واحدة</item>
+        <item quantity="one">تم العثور على أغنية %d</item>
         <item quantity="two">اغنيتين</item>
         <item quantity="few">اغاني</item>
         <item quantity="many">اغاني</item>
-        <item quantity="other">اغنية</item>
+        <item quantity="other">تم العثور على أغاني %d</item>
     </plurals>
     <plurals name="scanner_n_song_processed">
         <item quantity="zero">اغاني معالجة</item>
-        <item quantity="one">اغنية معالجة</item>
+        <item quantity="one">%d أغنية تمت معالجتها</item>
         <item quantity="two">اغنيتين معالجة</item>
         <item quantity="few">عدة اغاني معالجة</item>
         <item quantity="many">اغاني معالجة</item>
-        <item quantity="other">اغاني</item>
+        <item quantity="other">تمت معالجة %d أغنية</item>
     </plurals>
     <string name="missing_media_permission_warning">أذونات التخزين مطلوبة للوسائط المحلية. انقر لمنح الإذن.</string>
     <string name="queues_title">قوائم الانتظار</string>
@@ -95,7 +95,7 @@
     <string name="like_autodownload">تنزيل الأغاني المعجب بها تلقائيًا</string>
     <string name="token_adv_login_description">هذه طريقة متقدمة لتسجيل الدخول. كبديل لبوابة الويب، يمكنك إدخال رمز تسجيل الدخول الخاص بك مباشرة أو تحديثه هنا. على سبيل المثال، يمكن أن يؤدي ذلك إلى تسريع تسجيل الدخول على أجهزة متعددة. يرجى ملاحظة أنه لن يتم قبول أي تنسيقات رمزية غير صالحة يفشل التطبيق في تحليلها.</string>
     <string name="token_shown">انقر مرة أخرى للنسخ أو التحرير</string>
-    <string name="sync_conflict_add_only">Keep all local content, add new remote content</string>
+    <string name="sync_conflict_add_only">الاحتفاظ بجميع المحتويات المحلية وإضافة محتويات جديدة عن بُعد</string>
     <string name="sync_conflict_overwrite">استبدال المحتوى المحلي بالمحتوى البعيد</string>
     <string name="sync_conflict_title">حل التعارض</string>
     <string name="sync_mode">وضع المزامنة</string>
@@ -221,4 +221,111 @@
     <string name="action_logout_tooltip">"لتسجيل خروج تام،المرجوا تسجيل الخروج من حساب YouTube  الخاص بك في the web portal  قبل استعمال زر تسجيل الخروج"</string>
     <string name="audio_decoder_ffmpeg_only">إعدادات المشغل</string>
     <string name="off">غير مفعَّل</string>
+    <string name="custom_accent_color">لون تمييز مخصص</string>
+    <string name="custom_accent_color_description">استخدام لون ثابت من اختيارك كلون للتمييز في جميع أنحاء التطبيق</string>
+    <string name="accent_color">لون التمييز</string>
+    <string name="ignore_audio_focus">الاحتفاظ بتركيز الصوت</string>
+    <string name="ignore_audio_focus_desc">مواصلة التشغيل عند استحواذ تطبيق آخر على تركيز الصوت. لن يتوقف تشغيل الموسيقى بسبب مصادر الصوت الأخرى، بما في ذلك المكالمات الهاتفية.</string>
+    <string name="enable_betterlyrics">تفعيل مزود كلمات الأغاني BetterLyrics</string>
+    <string name="enable_simpmusic">تفعيل مزود كلمات الأغاني SimpMusic</string>
+    <string name="local_files">محلي</string>
+    <string name="library_filter">تصفية المكتبة</string>
+    <string name="queue_selection">التحديد</string>
+    <string name="toggle_lyrics">تبديل عرض كلمات الأغاني</string>
+    <string name="grp_appearance_controls">المظهر وعناصر التحكم</string>
+    <string name="grp_display">العرض</string>
+    <string name="grp_now_playing">قيد التشغيل الآن</string>
+    <string name="show_queue_title">إظهار اسم قائمة الانتظار في المشغل</string>
+    <string name="slider_style_title">نمط شريط التمرير</string>
+    <string name="slider_style_squiggly">متموج</string>
+    <string name="slider_style_default">افتراضي</string>
+    <string name="slider_style_slim">نحيف</string>
+    <string name="audio_decoder_preference">وحدة فك ترميز الصوت</string>
+    <string name="audio_decoder_system_only">وحدات فك الترميز الخاصة بالنظام فقط</string>
+    <string name="audio_decoder_system_with_ffmpeg">إعطاء الأولوية لوحدات فك الترميز الخاصة بالنظام</string>
+    <string name="sleep_timer_fade">تلاشي الصوت</string>
+    <string name="sleep_timer_fade_duration">مدة التلاشي</string>
+    <string name="sleep_timer_fade_duration_desc">ثوانٍ لخفض مستوى الصوت قبل التوقف</string>
+    <string name="sleep_timer_default_time">وقت السكون الافتراضي</string>
+    <string name="sleep_timer_minutes_short">%d دقيقة</string>
+    <string name="sleep_timer_second_unit">ثانية</string>
+    <string name="sleep_timer_stop">مؤقت الإيقاف</string>
+    <string name="sleep_timer_show_on_player">زر شاشة المشغل</string>
+    <string name="sleep_timer_show_on_player_desc">إظهار زر مؤقت النوم على شاشة المشغل</string>
+    <string name="seek_increment">مقدار القفز عند التقديم أو التأخير</string>
+    <string name="lyrics_prefetch_title">جلب كلمات الأغاني القادمة مسبقاً</string>
+    <string name="lyrics_prefetch_description">جلب كلمات الأغاني التالية في قائمة الانتظار مسبقاً</string>
+    <string name="lyrics_prefetch_count_title">عدد الأغاني المراد جلب كلماتها مسبقاً</string>
+    <string name="auto_scanner_tooltip">بالنسبة للوسائط المحلية، لا يقوم المسح التلقائي بإعادة تحميل البيانات الوصفية (metadata) للأغاني الموجودة. استخدم أداة المسح اليدوي مع تفعيل خيار "إعادة المسح" إذا كنت ترغب أيضاً في تحديث البيانات الوصفية.</string>
+    <string name="scanner_auto_end">اكتمل تحديث الوسائط المحلية والأغاني التي تم تنزيلها!</string>
+    <string name="scanner_auto_start">جارٍ تحديث الوسائط المحلية ومجلدات تنزيل الأغاني...</string>
+    <string name="scanner_strict_file_paths_title">المطابقة بناءً على مسارات الملفات بدلاً من البيانات الوصفية</string>
+    <string name="scanner_strict_file_paths_description">يعطل جميع عمليات المطابقة الذكية للبيانات الوصفية. قد يسبب هذا مشكلات في حال نقل الملفات داخل وحدة التخزين المحلية، ولكنه يسمح بوجود الأغنية نفسها في مجلدات مختلفة.</string>
+    <string name="scanner_type_tooltip">يُعد ماسح النظام أسرع، ولكنه قد يستخرج بعض البيانات الوصفية بشكل غير دقيق مقارنة بأدوات الاستخراج الأخرى. يرجى ملاحظة أن تغيير الماسح الضوئي لن يؤدي إلى إعادة تحميل البيانات الوصفية للأغاني الموجودة تلقائياً.</string>
+    <string name="download_on_wifi_only_title">التنزيل عبر شبكة Wi-Fi فقط</string>
+    <string name="download_on_wifi_only_description">عدم التنزيل باستخدام بيانات الهاتف المحمول. ستبدأ الأغاني المضافة لقائمة الانتظار أثناء استخدام بيانات الهاتف في التنزيل تلقائياً بمجرد توفر شبكة Wi-Fi.</string>
+    <string name="download_waiting_for_wifi">سيتم التنزيل بمجرد الاتصال بشبكة Wi-Fi</string>
+    <string name="dl_storage_tooltip">تُحفظ التنزيلات الداخلية في وحدة التخزين الخاصة بالتطبيق ولا يمكن الوصول إليها دون صلاحيات الجذر (root).
+
+\n\nتُحفظ التنزيلات الخارجية في وحدة التخزين الخارجية لجهازك (مثل /sdcard أو بطاقات micro SD)، ويمكن الوصول إليها أو تعديلها مباشرةً باستخدام مدير الملفات. بالنسبة لمجلد التنزيلات الخارجية، نوصي باختيار مجلد فارغ مخصص لتنزيل الأغاني، حيث قد يقوم تطبيق OuterTune بتعديل أو حذف الملفات الموجودة في ذلك المجلد.
+
+\n\nمجلدات الاستيراد الإضافية هي مجلدات للقراءة فقط وتُستخدم لتحميل أغاني إضافية. لن يقوم OuterTune أبداً بتغيير أو حذف الملفات الموجودة في هذه المجلدات. يمكنك تحديد هذه المجلدات في القسم المتقدم.
+
+\n\nعند مسح التنزيلات، يتم حذف الأغاني الداخلية فقط. يجب إزالة التنزيلات الخارجية وأغاني الاستيراد الإضافية يدوياً، سواء من خلال قائمة الأغنية أو يدوياً عبر مدير الملفات.
+
+\n\nإعادة فحص مجلدات التنزيل: لا يتم تحديث الأغاني التي تم تنزيلها في مجلدي "التنزيلات الخارجية" و"الاستيراد الإضافي" تلقائياً. إذا قمت بإضافة ملفات أو إزالتها أو تغييرها يدوياً باستخدام مدير الملفات، فقد تحتاج إلى إعادة فحص مجلدات التنزيل لتحديث قاعدة بيانات التطبيق. يتوفر هذا الخيار في القسم المتقدم.</string>
+    <string name="restart_to_apply_changes">يلزم إعادة تشغيل التطبيق لتطبيق التغييرات.</string>
+    <string name="failed_to_parse_proxy_url">فشل تحليل رابط الوكيل (proxy URL).</string>
+    <string name="failed_to_get_visitor_data">فشل الحصول على بيانات الزائر (visitorData).</string>
+    <string name="err_restore_incompatible_database">تعذر استعادة قاعدة بيانات غير متوافقة.</string>
+    <string name="restore_lm_tooltip">عند تثبيت التطبيق لأول مرة، قد لا تعمل المسارات المخصصة للتنزيل ومسارات فحص الوسائط المحلية. لحل هذه المشكلة، قم بإزالتها وإضافتها مرة أخرى.</string>
+    <string name="flush_local_image_cache">مسح ذاكرة التخزين المؤقت للصور المحلية.</string>
+    <string name="tap_artwork_to_show_lyrics_title">اضغط على صورة الغلاف لعرض كلمات الأغنية.</string>
+    <string name="tap_artwork_to_show_lyrics_description">عرض كلمات الأغنية عند الضغط على صورة الغلاف في مشغل الموسيقى.</string>
+    <string name="max_queues_title">الحد الأقصى لعدد قوائم الانتظار.</string>
+    <string name="oobe_welcome_tip">للحصول على أفضل تجربة، نوصي بإجراء إعداد سريع لتخصيص الإعدادات الرئيسية مثل المظهر (السمة)، وحساب YouTube، والوسائط المحلية، والتنزيلات.</string>
+    <string name="oobe_ytm_integration">التكامل مع YouTube Music</string>
+    <string name="oobe_ytm_integration_description">الوصول السلس إلى مقاطعك الموسيقية المفضلة</string>
+    <string name="oobe_ad_free_exp">لا توجد إعلانات YouTube</string>
+    <string name="oobe_ad_free_exp_description">استمتع بتشغيل الموسيقى دون انقطاع</string>
+    <string name="oobe_local_music_support">دعم واسع للموسيقى المخزنة محلياً</string>
+    <string name="oobe_local_music_support_description">شغّل ملفاتك الموسيقية (مثل MP3 وOGG وFLAC وغيرها)</string>
+    <string name="oobe_cross_platform_sync">المزامنة عبر المنصات المختلفة</string>
+    <string name="oobe_cross_platform_sync_description">حافظ على تناسق مكتبتك الموسيقية عبر جميع أجهزتك</string>
+    <string name="oobe_interface_subtitle">خصّص مظهر OuterTune والمحتوى الذي يعرضه لك.</string>
+    <string name="oobe_ytm_logon_title">الحساب</string>
+    <string name="oobe_ytm_logon_subtitle">سجّل الدخول إلى حساب YouTube Music الخاص بك للمزامنة والوصول إلى محتوى الحساب الشخصي. هذا الخيار اختياري.</string>
+    <string name="oobe_local_media_title">الوسائط المحلية</string>
+    <string name="oobe_local_media_subtitle">اختر المجلدات التي تحتوي على موسيقاك؛ سنقوم بمسحها ضوئياً لاستيراد الأغاني.</string>
+    <string name="oobe_cache_title">ذاكرة التخزين المؤقت للأغاني</string>
+    <string name="oobe_cache_subtitle">اختر حجم ذاكرة التخزين المؤقت للأغاني. يساعد ذلك في تقليل مشاكل التشغيل المتعلقة بالإنترنت أو واجهة برمجة تطبيقات (API) YouTube.</string>
+    <string name="oobe_downloads_title">تنزيلات الأغاني</string>
+    <string name="oobe_downloads_subtitle">اختر المجلد الذي سيتم حفظ الأغاني التي تم تنزيلها فيه.</string>
+    <string name="oobe_complete_title">كل شيء جاهز!</string>
+    <string name="import_failed_songs">تعذر الاستيراد</string>
+    <string name="import_success_songs">تمت عملية الاستيراد بنجاح</string>
+    <string name="m3u_export">تصدير كملف M3U</string>
+    <string name="m3u_import_failed">"لم يتم العثور على أغانٍ. ملف M3U غير صالح أو لم يتم العثور على أغانٍ مطابقة"</string>
+    <string name="m3u_import_playlist">استيراد قائمة تشغيل (m3u)</string>
+    <string name="m3u_ytm_lookup">البحث في YouTube Music عن الأغاني غير الموجودة في قاعدة بيانات التطبيق</string>
+    <plurals name="second">
+        <item quantity="one">%d ثانية</item>
+        <item quantity="other">%d ثانية</item>
+    </plurals>
+    <string name="speed_very_slow">بطيء جداً</string>
+    <string name="speed_slow">بطيء</string>
+    <string name="speed_medium">متوسط</string>
+    <string name="speed_fast">سريع</string>
+    <string name="speed_very_fast">سريع جداً</string>
+    <string name="keep_screen_on">إبقاء الشاشة قيد التشغيل</string>
+    <string name="keep_screen_on_never">أبداً</string>
+    <string name="keep_screen_on_lyrics">أثناء عرض كلمات الأغنية</string>
+    <string name="keep_screen_on_player">أثناء فتح المشغل</string>
+    <string name="create_folder">إنشاء مجلد</string>
+    <string name="rename_folder">إعادة تسمية المجلد</string>
+    <string name="delete_folder">حذف المجلد</string>
+    <string name="delete_folder_confirm">حذف المجلد "%1$s"؟ سيتم نقل قوائم التشغيل الخاصة به إلى المجلد الرئيسي.</string>
+    <string name="move_to_folder">نقل إلى مجلد</string>
+    <string name="root_folder">جميع قوائم التشغيل</string>
+    <string name="previous_folder">المجلد السابق</string>
 </resources>

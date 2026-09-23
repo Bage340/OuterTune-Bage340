@@ -168,6 +168,20 @@ class TranslationAuditTest(unittest.TestCase):
             {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
         )
 
+    def test_reports_unescaped_android_apostrophe(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><string name=\"status\">It\\'s ready</string></resources>",
+            "<resources><string name=\"status\">C'est prêt</string></resources>",
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn(
+            ("invalid-android-escape", "values-fr", "status"),
+            {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
+        )
+
     def test_allows_reviewed_proper_noun_and_ignores_nonlocale_values_directory(self):
         res_directory, allowlist = self.make_tree(
             "<resources><string name=\"brand\">OuterTune</string><string name=\"internal\" translatable=\"false\">Internal</string></resources>",
@@ -187,7 +201,27 @@ class TranslationAuditTest(unittest.TestCase):
             "Translation audit: 1 locales, 1 canonical keys, 0 defects.\n",
         )
 
-    def test_audits_locale_directory_with_later_qualifiers(self):
+    def test_allows_reviewed_untranslated_key_only_for_exact_locale_and_key(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><string name=\"reviewed\">Radio</string><string name=\"unreviewed\">Radio</string></resources>",
+            "<resources><string name=\"reviewed\">Radio</string><string name=\"unreviewed\">Radio</string></resources>",
+            allowlist={
+                "allowed_untranslated": [],
+                "allowed_untranslated_keys": {"values-fr": ["reviewed"]},
+            },
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertNotEqual(completed.returncode, 0)
+        untranslated = {
+            (item["locale"], item["key"])
+            for item in report["defects"]
+            if item["code"] == "untranslated-english"
+        }
+        self.assertEqual(untranslated, {("values-fr", "unreviewed")})
+
+    def test_audits_locale_directory_with_later_qualifiers_and_allows_english_variants(self):
         res_directory, allowlist = self.make_tree(
             "<resources><string name=\"welcome\">Welcome</string></resources>",
             "<resources><string name=\"welcome\">Bienvenue</string></resources>",
@@ -199,13 +233,13 @@ class TranslationAuditTest(unittest.TestCase):
 
         completed, report = self.audit(res_directory, allowlist)
 
-        self.assertNotEqual(completed.returncode, 0)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(report["locale_count"], 2)
         self.assertEqual(
             {locale["locale"] for locale in report["locales"]},
             {"values-fr", "values-en-rUS-night"},
         )
-        self.assertIn(
+        self.assertNotIn(
             ("untranslated-english", "values-en-rUS-night", "welcome"),
             {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
         )

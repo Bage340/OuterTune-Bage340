@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">Beranda</string>
     <string name="songs">Lagu</string>
@@ -104,24 +104,31 @@
     <string name="error_artist_name_empty">Nama artis tidak boleh kosong.</string>
     <plurals name="n_song">
         <item quantity="other">%d lagu</item>
+        <item quantity="one">Lagu %d</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="other">%d artis</item>
+        <item quantity="one">Artis %d</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="other">%d album</item>
+        <item quantity="one">Album %d</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="other">%d daftar putar</item>
+        <item quantity="one">Daftar putar %d</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="other">%d minggu</item>
+        <item quantity="one">Minggu %d</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="other">%d bulan</item>
+        <item quantity="one">Bulan %d</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="other">%d tahun</item>
+        <item quantity="one">Tahun %d</item>
     </plurals>
     <string name="playlist_imported">Daftar putar yang diimpor</string>
     <string name="removed_song_from_playlist">Menghapus \"%s\" dari daftar putar</string>
@@ -132,6 +139,7 @@
     <string name="end_of_song">Akhir lagu</string>
     <plurals name="minute">
         <item quantity="other">%d menit</item>
+        <item quantity="one">1 menit</item>
     </plurals>
     <string name="error_no_stream">Tidak ada aliran yang tersedia</string>
     <string name="error_no_internet">Tidak ada sambungan jaringan</string>

@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
     <string name="home">ഹോം</string>
     <string name="songs">പാട്ടുകൾ</string>
     <string name="artists">കലാകാരന്മാർ</string>
@@ -101,7 +101,7 @@
     <string name="restart_to_take_effect">പ്രാബല്യത്തിൽ വരാൻ പുനരാരംഭിക്കുക</string>
     <string name="player_and_audio">പ്ലെയറും ഓഡിയോയും</string>
     <string name="audio_quality">ഓഡിയോ നിലവാരം</string>
-    <string name="audio_quality_auto">Auto</string>
+    <string name="audio_quality_auto">ഓട്ടോ</string>
     <string name="audio_quality_high">കൂടി</string>
     <string name="audio_quality_low">കുറഞ്ഞ്</string>
     <string name="persistent_queue">പെർസിസ്റ്റന്റ് കീ</string>

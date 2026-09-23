@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="history">Historie</string>
     <string name="home">Hjem</string>
@@ -90,7 +90,7 @@
         <item quantity="other">%d sanger</item>
     </plurals>
     <plurals name="n_artist">
-        <item quantity="one">%d artist</item>
+        <item quantity="one">Artist: %d</item>
         <item quantity="other">%d artister</item>
     </plurals>
     <string name="playlist_imported">Spilleliste importert</string>
@@ -200,7 +200,7 @@
     <string name="downloaded_songs">Nedlastede sanger</string>
     <string name="playlist_is_empty">Spillelisten er tom</string>
     <string name="remove_download_playlist_confirm">Vil du virkelig fjerne alle «%s» spillelistesanger fra lagringen av nedlastede sanger?</string>
-    <string name="start_radio">Start radio</string>
+    <string name="start_radio">Start radioen</string>
     <string name="add_to_queue">Legg til i køen</string>
     <string name="add_to_library">Legg til i biblioteket</string>
     <string name="play_next">Spill neste</string>
@@ -225,7 +225,7 @@
     <string name="save">Lagre</string>
     <string name="duplicates">Duplikater</string>
     <plurals name="n_album">
-        <item quantity="one">%d album</item>
+        <item quantity="one">Album: %d</item>
         <item quantity="other">%d album</item>
     </plurals>
     <plurals name="n_year">

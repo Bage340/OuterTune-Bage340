@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="swipe2Queue">Плъзнете за добавите в опашка</string>
     <string name="lyrics_multiline_title">Четене на многоредов текст</string>
@@ -264,4 +264,52 @@
     <string name="scanner_type_tooltip">Системният скенер е по-бърз, но може да извлече някои метаданни неправилно в сравнение с други инструменти за извличане. Моля, обърнете внимание, че превключването на скенери няма автоматично да презареди метаданните на съществуващите песни.</string>
     <string name="restore_lm_tooltip">За нови инсталации на приложението, персонализираното изтегляне и пътищата за сканиране на локални медии може да не работят. За да разрешите това, премахнете ги и ги добавете отново.</string>
     <string name="off">Изключено</string>
+    <string name="custom_accent_color">Персонализиран акцентен цвят</string>
+    <string name="custom_accent_color_description">Използване на избран от вас фиксиран цвят за акцент в цялото приложение</string>
+    <string name="accent_color">Акцентен цвят</string>
+    <string name="ignore_audio_focus">Запазване на аудио фокуса</string>
+    <string name="ignore_audio_focus_desc">Продължаване на възпроизвеждането, когато друго приложение поеме аудио фокуса. Музиката няма да спира при други аудио източници, включително телефонни разговори.</string>
+    <string name="enable_betterlyrics">Активиране на доставчика на текстове BetterLyrics</string>
+    <string name="enable_simpmusic">Активиране на доставчика на текстове SimpMusic</string>
+    <string name="local_files">Локално</string>
+    <string name="queue_selection">Избор</string>
+    <string name="grp_appearance_controls">Вид и контроли</string>
+    <string name="grp_display">Дисплей</string>
+    <string name="grp_now_playing">В момента се възпроизвежда</string>
+    <string name="show_queue_title">Показване на името на опашката в плейъра</string>
+    <string name="slider_style_title">Стил на плъзгача</string>
+    <string name="slider_style_squiggly">Вълнообразен</string>
+    <string name="slider_style_default">По подразбиране</string>
+    <string name="slider_style_slim">Компактен</string>
+    <string name="sleep_timer_fade">Постепенно намаляване на силата на звука</string>
+    <string name="sleep_timer_fade_duration">Продължителност на намаляването</string>
+    <string name="sleep_timer_fade_duration_desc">Секунди за намаляване на силата на звука преди спиране</string>
+    <string name="sleep_timer_default_time">Време за таймера за сън по подразбиране</string>
+    <string name="sleep_timer_minutes_short">%d мин.</string>
+    <string name="sleep_timer_second_unit">сек.</string>
+    <string name="sleep_timer_stop">Таймер за спиране</string>
+    <string name="sleep_timer_show_on_player">Бутон на екрана на плейъра</string>
+    <string name="sleep_timer_show_on_player_desc">Показване на бутон за таймера за сън на екрана на плейъра</string>
+    <string name="lyrics_prefetch_title">Предварително извличане на текста на песните</string>
+    <string name="lyrics_prefetch_description">Предварително извличане на текста за следващите песни в опашката</string>
+    <string name="lyrics_prefetch_count_title">Брой песни за предварително извличане</string>
+    <string name="download_on_wifi_only_title">Изтегляне само чрез Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Не изтегляй чрез мобилни данни. Песните, добавени в опашката при използване на мобилни данни, ще започнат да се изтеглят автоматично, щом се свържете с Wi-Fi.</string>
+    <string name="download_waiting_for_wifi">Ще се изтегли при свързване с Wi-Fi</string>
+    <string name="failed_to_parse_proxy_url">Грешка при разчитането на URL адреса на прокси сървъра.</string>
+    <string name="failed_to_get_visitor_data">Грешка при извличането на visitorData.</string>
+    <string name="flush_local_image_cache">Изчистване на локалния кеш за изображения</string>
+    <string name="tap_artwork_to_show_lyrics_title">Докоснете обложката, за да видите текста на песента</string>
+    <string name="tap_artwork_to_show_lyrics_description">Показване на текста при докосване на обложката в плейъра</string>
+    <string name="keep_screen_on">Поддържане на екрана включен</string>
+    <string name="keep_screen_on_never">Никога</string>
+    <string name="keep_screen_on_lyrics">Докато текстът е видим</string>
+    <string name="keep_screen_on_player">Докато плейърът е отворен</string>
+    <string name="create_folder">Създаване на папка</string>
+    <string name="rename_folder">Преименуване на папка</string>
+    <string name="delete_folder">Изтриване на папка</string>
+    <string name="delete_folder_confirm">Изтриване на папка „%1$s“? Плейлистите в нея ще бъдат преместени в родителската папка.</string>
+    <string name="move_to_folder">Преместване в папка</string>
+    <string name="root_folder">Всички плейлисти</string>
+    <string name="previous_folder">Предишна папка</string>
 </resources>

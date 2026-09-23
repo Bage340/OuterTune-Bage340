@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="playlist_synced">Playlista je sinkronizirana</string>
     <string name="undo">Poništi</string>
     <string name="lyrics_not_found">Tekst pjesama nije pronađen</string>
     <plurals name="minute">
-        <item quantity="one">%d minuta</item>
+        <item quantity="one">1 minuta</item>
         <item quantity="few">%d minute</item>
         <item quantity="other">%d minuta</item>
     </plurals>
@@ -264,7 +264,7 @@
     <string name="add_anyway">Dodaj svejedno</string>
     <string name="removed_song_from_playlist">Pjesma „%s“ je uklonjena iz playliste</string>
     <plurals name="n_album">
-        <item quantity="one">%d album</item>
+        <item quantity="one">Album %d</item>
         <item quantity="few">%d albuma</item>
         <item quantity="other">%d albuma</item>
     </plurals>

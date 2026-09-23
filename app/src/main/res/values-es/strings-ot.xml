@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="player_background_style">Estilo del fondo del reproductor</string>
     <string name="err_play_next_on_error">Ha ocurrido un error. Reproduciendo siguiente</string>
@@ -288,4 +288,24 @@
     <string name="download_on_wifi_only_description">No descargar mediante datos móviles. Las canciones puestas en cola mientras se usan datos móviles comenzarán a descargarse automáticamente cuando haya una conexión Wi-Fi disponible</string>
     <string name="download_waiting_for_wifi">Se descargará cuando haya una conexión Wi-Fi</string>
     <string name="off">Desactivado</string>
+    <string name="grp_appearance_controls">Apariencia y controles</string>
+    <string name="grp_display">Pantalla</string>
+    <string name="grp_now_playing">Reproduciendo ahora</string>
+    <string name="tap_artwork_to_show_lyrics_title">Toca la carátula para ver la letra</string>
+    <string name="tap_artwork_to_show_lyrics_description">Mostrar la letra al tocar la carátula en el reproductor</string>
+    <string name="queue_selection">Selección</string>
+    <string name="failed_to_parse_proxy_url">Error al analizar la URL del proxy.</string>
+    <string name="failed_to_get_visitor_data">Error al obtener visitorData.</string>
+    <string name="flush_local_image_cache">Vaciar caché de imágenes local</string>
+    <string name="keep_screen_on">Mantener pantalla encendida</string>
+    <string name="keep_screen_on_never">Nunca</string>
+    <string name="keep_screen_on_lyrics">Mientras la letra esté visible</string>
+    <string name="keep_screen_on_player">Mientras el reproductor esté abierto</string>
+    <string name="create_folder">Crear carpeta</string>
+    <string name="rename_folder">Cambiar nombre de carpeta</string>
+    <string name="delete_folder">Eliminar carpeta</string>
+    <string name="delete_folder_confirm">¿Eliminar la carpeta «%1$s»? Sus listas de reproducción se moverán a la carpeta principal.</string>
+    <string name="move_to_folder">Mover a carpeta</string>
+    <string name="root_folder">Todas las listas de reproducción</string>
+    <string name="previous_folder">Carpeta anterior</string>
 </resources>

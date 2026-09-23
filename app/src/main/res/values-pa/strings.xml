@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
     <string name="home">ਘਰ</string>
     <string name="songs">ਗੀਤ</string>
     <string name="artists">ਕਲਾਕਾਰ</string>
@@ -139,7 +139,7 @@
     <string name="sleep_timer">ਸਲੀਪ ਟਾਈਮਰ</string>
     <string name="end_of_song">ਗੀਤ ਸਮਾਪਤ</string>
     <plurals name="minute">
-        <item quantity="one">%d ਮਿੰਟ</item>
+        <item quantity="one">1 ਮਿੰਟ</item>
         <item quantity="other">%d ਮਿੰਟ</item>
     </plurals>
     <string name="error_no_stream">ਕੋਈ ਸਟ੍ਰੀਮ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</string>

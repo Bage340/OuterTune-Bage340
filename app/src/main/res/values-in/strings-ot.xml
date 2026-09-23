@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="android_auto">Android Auto</string>
     <string name="folders">Folder</string>
@@ -155,9 +155,11 @@
     <string name="scanner_ytm_link_success">Pekerjaan menautkan artis YouTube selesai</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="other">%d lagu diproses</item>
+        <item quantity="one">%d lagu diproses</item>
     </plurals>
     <plurals name="scanner_n_song_found">
         <item quantity="other">%d lagu ditemukan</item>
+        <item quantity="one">%d lagu ditemukan</item>
     </plurals>
     <string name="scanner_strict_file_name_title">Nama file ketat</string>
     <string name="scanner_strict_file_name_description">Saat diaktifkan, nama file TIDAK akan diabaikan. Contoh: Lagu.ogg akan dianggap sebagai lagu yang berbeda dari Lagu.flac. Preferensi sensitivitas pemindai akan tetap berlaku</string>
@@ -240,6 +242,7 @@
     <string name="seek_increment">Loncat waktu</string>
     <plurals name="second">
         <item quantity="other">%d detik</item>
+        <item quantity="one">%d detik</item>
     </plurals>
     <string name="library_filter">Filter koleksi</string>
     <string name="toggle_lyrics">Lirik</string>
@@ -261,4 +264,52 @@
     <string name="oobe_cache_title">Cache lagu</string>
     <string name="oobe_cache_subtitle">Pilih ukuran cache untuk lagu anda, ini bisa membantu mengurangi penggunaan internet atau masalah playback API YouTube</string>
     <string name="off">Nonaktif</string>
+    <string name="custom_accent_color">Warna aksen kustom</string>
+    <string name="custom_accent_color_description">Gunakan warna tetap pilihan Anda sebagai aksen di seluruh aplikasi</string>
+    <string name="accent_color">Warna aksen</string>
+    <string name="ignore_audio_focus">Pertahankan fokus audio</string>
+    <string name="ignore_audio_focus_desc">Tetap memutar saat aplikasi lain mengambil fokus audio. Musik tidak akan dijeda untuk sumber audio lain, termasuk panggilan telepon.</string>
+    <string name="enable_betterlyrics">Aktifkan penyedia lirik BetterLyrics</string>
+    <string name="enable_simpmusic">Aktifkan penyedia lirik SimpMusic</string>
+    <string name="local_files">Lokal</string>
+    <string name="queue_selection">Pilihan</string>
+    <string name="grp_appearance_controls">Tampilan dan kontrol</string>
+    <string name="grp_display">Layar</string>
+    <string name="grp_now_playing">Sedang diputar</string>
+    <string name="show_queue_title">Tampilkan nama antrean pada pemutar</string>
+    <string name="slider_style_title">Gaya penggeser</string>
+    <string name="slider_style_squiggly">Bergelombang</string>
+    <string name="slider_style_default">Standar</string>
+    <string name="slider_style_slim">Tipis</string>
+    <string name="sleep_timer_fade">Redup perlahan</string>
+    <string name="sleep_timer_fade_duration">Durasi peredupan</string>
+    <string name="sleep_timer_fade_duration_desc">Detik untuk menurunkan volume sebelum berhenti</string>
+    <string name="sleep_timer_default_time">Waktu tidur standar</string>
+    <string name="sleep_timer_minutes_short">%d menit</string>
+    <string name="sleep_timer_second_unit">s</string>
+    <string name="sleep_timer_stop">Hentikan pengatur waktu</string>
+    <string name="sleep_timer_show_on_player">Tombol layar pemutar</string>
+    <string name="sleep_timer_show_on_player_desc">Tampilkan tombol pengatur waktu tidur di layar pemutar</string>
+    <string name="lyrics_prefetch_title">Ambil lirik lagu berikutnya lebih awal</string>
+    <string name="lyrics_prefetch_description">Ambil lirik untuk lagu-lagu berikutnya dalam antrean lebih awal</string>
+    <string name="lyrics_prefetch_count_title">Jumlah lagu yang akan diambil lebih awal</string>
+    <string name="download_on_wifi_only_title">Unduh hanya melalui Wi-Fi</string>
+    <string name="download_on_wifi_only_description">Jangan mengunduh menggunakan data seluler. Lagu yang masuk antrean saat menggunakan data seluler akan mulai diunduh secara otomatis setelah Wi-Fi tersedia</string>
+    <string name="download_waiting_for_wifi">Akan diunduh setelah terhubung ke Wi-Fi</string>
+    <string name="failed_to_parse_proxy_url">Gagal mengurai URL proxy.</string>
+    <string name="failed_to_get_visitor_data">Gagal mendapatkan visitorData.</string>
+    <string name="flush_local_image_cache">Hapus cache gambar lokal</string>
+    <string name="tap_artwork_to_show_lyrics_title">Ketuk sampul untuk menampilkan lirik</string>
+    <string name="tap_artwork_to_show_lyrics_description">Tampilkan lirik saat mengetuk sampul di pemutar</string>
+    <string name="keep_screen_on">Biarkan layar tetap menyala</string>
+    <string name="keep_screen_on_never">Jangan pernah</string>
+    <string name="keep_screen_on_lyrics">Saat lirik ditampilkan</string>
+    <string name="keep_screen_on_player">Saat pemutar terbuka</string>
+    <string name="create_folder">Buat folder</string>
+    <string name="rename_folder">Ubah nama folder</string>
+    <string name="delete_folder">Hapus folder</string>
+    <string name="delete_folder_confirm">Hapus folder “%1$s”? Daftar putarnya akan dipindahkan ke folder induk.</string>
+    <string name="move_to_folder">Pindahkan ke folder</string>
+    <string name="root_folder">Semua daftar putar</string>
+    <string name="previous_folder">Folder sebelumnya</string>
 </resources>

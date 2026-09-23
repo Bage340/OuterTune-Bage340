@@ -194,6 +194,16 @@ def validate_locale(canonical, localized, locale, root_directory, allowlist, def
 
 
 def validate_value_pair(source, translation, locale, key, allowlist, defects):
+    if re.search(r"(?<!\\)'", translation):
+        defects.append(
+            defect(
+                "invalid-android-escape",
+                locale,
+                key,
+                "",
+                "apostrophe must be escaped as \\' in an Android string resource",
+            )
+        )
     if format_signature(source) != format_signature(translation):
         defects.append(
             defect(
@@ -204,7 +214,19 @@ def validate_value_pair(source, translation, locale, key, allowlist, defects):
                 "Android printf token position, type, or multiplicity differs from canonical",
             )
         )
-    if source == translation and source and source not in allowlist:
+    english_locale = (
+        locale == "values-en"
+        or locale.startswith("values-en-")
+        or locale.startswith("values-b+en+")
+    )
+    reviewed_key = key in allowlist["keys"].get(locale, set())
+    if (
+        source == translation
+        and source
+        and source not in allowlist["values"]
+        and not reviewed_key
+        and not english_locale
+    ):
         defects.append(
             defect("untranslated-english", locale, key, "", "value matches canonical English"))
 
@@ -257,7 +279,20 @@ def load_allowlist(path):
     values = contents.get("allowed_untranslated")
     if not isinstance(values, list) or not all(isinstance(value, str) for value in values):
         raise ValueError("allowed_untranslated must be a JSON array of strings")
-    return set(values)
+    keys = contents.get("allowed_untranslated_keys", {})
+    if not isinstance(keys, dict) or not all(
+        isinstance(locale, str)
+        and isinstance(locale_keys, list)
+        and all(isinstance(key, str) for key in locale_keys)
+        for locale, locale_keys in keys.items()
+    ):
+        raise ValueError(
+            "allowed_untranslated_keys must be a JSON object of locale names to string arrays"
+        )
+    return {
+        "keys": {locale: set(locale_keys) for locale, locale_keys in keys.items()},
+        "values": set(values),
+    }
 
 
 def print_human_report(report):

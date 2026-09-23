@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <string name="home">홈</string>
     <string name="songs">노래</string>
@@ -104,24 +104,31 @@
     <string name="error_artist_name_empty">아티스트 이름은 비워둘 수 없습니다.</string>
     <plurals name="n_song">
         <item quantity="other">%d곡</item>
+        <item quantity="one">%d 곡</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="other">%d 아티스트</item>
+        <item quantity="one">%d 아티스트</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="other">%d 앨범</item>
+        <item quantity="one">%d 앨범</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="other">%d 재생목록</item>
+        <item quantity="one">%d 재생 목록</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="other">%d주</item>
+        <item quantity="one">%d 주</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="other">%d개월</item>
+        <item quantity="one">%d 월</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="other">%d년</item>
+        <item quantity="one">%d 년</item>
     </plurals>
     <string name="playlist_imported">재생목록을 가져왔습니다</string>
     <string name="removed_song_from_playlist">재생목록에서 \"%s\"을(를) 삭제했습니다</string>
@@ -132,6 +139,7 @@
     <string name="end_of_song">노래 끝</string>
     <plurals name="minute">
         <item quantity="other">%d분</item>
+        <item quantity="one">1분</item>
     </plurals>
     <string name="error_no_stream">스트림을 찾을 수 없음</string>
     <string name="error_no_internet">네트워크 연결 없음</string>
