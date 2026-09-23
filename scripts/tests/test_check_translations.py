@@ -193,7 +193,7 @@ class TranslationAuditTest(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertEqual(report["defects"], [])
 
-    def test_locale_only_plural_quantity_does_not_inherit_english_wording_check(self):
+    def test_reports_untranslated_locale_only_plural_quantity(self):
         res_directory, allowlist = self.make_tree(
             "<resources><plurals name=\"minutes\"><item quantity=\"one\">1 minute</item><item quantity=\"other\">%d minutes</item></plurals></resources>",
             "<resources><plurals name=\"minutes\"><item quantity=\"one\">une minute</item><item quantity=\"many\">%d minutes</item><item quantity=\"other\">%d minutes françaises</item></plurals></resources>",
@@ -201,8 +201,11 @@ class TranslationAuditTest(unittest.TestCase):
 
         completed, report = self.audit(res_directory, allowlist)
 
-        self.assertEqual(completed.returncode, 0, completed.stderr)
-        self.assertEqual(report["defects"], [])
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn(
+            ("untranslated-english", "values-fr", "minutes[many]"),
+            {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
+        )
 
     def test_reports_unescaped_android_apostrophe(self):
         res_directory, allowlist = self.make_tree(

@@ -194,13 +194,10 @@ def validate_locale(canonical, localized, locale, root_directory, allowlist, def
                 allowlist,
                 defects,
                 dynamic_source=dynamic_source,
-                check_untranslated=quantity in source["values"],
             )
 
 
-def validate_value_pair(
-    source, translation, locale, key, allowlist, defects, dynamic_source=None, check_untranslated=True
-):
+def validate_value_pair(source, translation, locale, key, allowlist, defects, dynamic_source=None):
     if re.search(r"(?<!\\)'", translation):
         defects.append(
             defect(
@@ -233,8 +230,7 @@ def validate_value_pair(
     )
     reviewed_key = key in allowlist["keys"].get(locale, set())
     if (
-        check_untranslated
-        and source == translation
+        source == translation
         and source
         and source not in allowlist["values"]
         and not reviewed_key
