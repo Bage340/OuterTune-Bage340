@@ -304,7 +304,9 @@ fun ColumnScope.LocalScannerFrag() {
                     // post scan actions
                     playerConnection?.service?.initQueue()
 
-                    onLastLocalScanChange(LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())
+                    if (shouldRecordSuccessfulManualScan(scannerFailure)) {
+                        onLastLocalScanChange(LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli())
+                    }
                 }
             }
         ) {
@@ -577,6 +579,8 @@ fun ColumnScope.LocalScannerFrag() {
         }
     }
 }
+
+internal fun shouldRecordSuccessfulManualScan(scannerFailure: Boolean): Boolean = !scannerFailure
 
 @Composable
 fun ColumnScope.LocalScannerExtraFrag() {

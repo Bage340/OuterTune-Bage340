@@ -75,11 +75,13 @@ class TreeDocumentFileOt(
     }
 
     override fun isDirectory(): Boolean {
-        return DocumentsContractApi19Ot.isDirectory(context, _uri)
+        return _mime?.let { it == DocumentsContract.Document.MIME_TYPE_DIR }
+            ?: DocumentsContractApi19Ot.isDirectory(context, _uri)
     }
 
     override fun isFile(): Boolean {
-        return DocumentsContractApi19Ot.isFile(context, _uri)
+        return _mime?.let { it != DocumentsContract.Document.MIME_TYPE_DIR }
+            ?: DocumentsContractApi19Ot.isFile(context, _uri)
     }
 
     override fun isVirtual(): Boolean {
