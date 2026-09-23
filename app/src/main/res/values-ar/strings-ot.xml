@@ -19,19 +19,19 @@
     <string name="swipe_to_skip_description">تمكين السحب الأفقي في المشغل لتبديل الأغاني</string>
     <string name="oobe_welcome_message">مرحبًا بك في OuterTune</string>
     <plurals name="scanner_n_song_found">
-        <item quantity="zero">صفر اغنية</item>
+        <item quantity="zero">تم العثور على %d أغنية</item>
         <item quantity="one">تم العثور على أغنية %d</item>
-        <item quantity="two">اغنيتين</item>
-        <item quantity="few">اغاني</item>
-        <item quantity="many">اغاني</item>
+        <item quantity="two">تم العثور على %d أغنية</item>
+        <item quantity="few">تم العثور على %d أغانٍ</item>
+        <item quantity="many">تم العثور على %d أغنية</item>
         <item quantity="other">تم العثور على أغاني %d</item>
     </plurals>
     <plurals name="scanner_n_song_processed">
-        <item quantity="zero">اغاني معالجة</item>
+        <item quantity="zero">تمت معالجة %d أغنية</item>
         <item quantity="one">%d أغنية تمت معالجتها</item>
-        <item quantity="two">اغنيتين معالجة</item>
-        <item quantity="few">عدة اغاني معالجة</item>
-        <item quantity="many">اغاني معالجة</item>
+        <item quantity="two">تمت معالجة %d أغنية</item>
+        <item quantity="few">تمت معالجة %d أغانٍ</item>
+        <item quantity="many">تمت معالجة %d أغنية</item>
         <item quantity="other">تمت معالجة %d أغنية</item>
     </plurals>
     <string name="missing_media_permission_warning">أذونات التخزين مطلوبة للوسائط المحلية. انقر لمنح الإذن.</string>

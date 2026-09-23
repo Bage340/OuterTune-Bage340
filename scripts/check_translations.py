@@ -181,19 +181,26 @@ def validate_locale(canonical, localized, locale, root_directory, allowlist, def
         if source["kind"] == "string":
             validate_value_pair(source["value"], translation["value"], locale, key, allowlist, defects)
             continue
+        dynamic_source = next(
+            (value for value in source["values"].values() if format_signature(value)),
+            source["values"].get("other", ""),
+        )
         for quantity in sorted(translation["values"]):
-            if quantity in source["values"]:
-                validate_value_pair(
-                    source["values"][quantity],
-                    translation["values"][quantity],
-                    locale,
-                    f"{key}[{quantity}]",
-                    allowlist,
-                    defects,
-                )
+            validate_value_pair(
+                source["values"].get(quantity, dynamic_source),
+                translation["values"][quantity],
+                locale,
+                f"{key}[{quantity}]",
+                allowlist,
+                defects,
+                dynamic_source=dynamic_source,
+                check_untranslated=quantity in source["values"],
+            )
 
 
-def validate_value_pair(source, translation, locale, key, allowlist, defects):
+def validate_value_pair(
+    source, translation, locale, key, allowlist, defects, dynamic_source=None, check_untranslated=True
+):
     if re.search(r"(?<!\\)'", translation):
         defects.append(
             defect(
@@ -204,7 +211,12 @@ def validate_value_pair(source, translation, locale, key, allowlist, defects):
                 "apostrophe must be escaped as \\' in an Android string resource",
             )
         )
-    if format_signature(source) != format_signature(translation):
+    source_signature = format_signature(source)
+    translation_signature = format_signature(translation)
+    dynamic_signature = format_signature(dynamic_source) if dynamic_source is not None else []
+    if source_signature != translation_signature and not (
+        not source_signature and translation_signature == dynamic_signature
+    ):
         defects.append(
             defect(
                 "placeholder-mismatch",
@@ -221,7 +233,8 @@ def validate_value_pair(source, translation, locale, key, allowlist, defects):
     )
     reviewed_key = key in allowlist["keys"].get(locale, set())
     if (
-        source == translation
+        check_untranslated
+        and source == translation
         and source
         and source not in allowlist["values"]
         and not reviewed_key

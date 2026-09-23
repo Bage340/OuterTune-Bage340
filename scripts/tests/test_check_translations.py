@@ -168,6 +168,42 @@ class TranslationAuditTest(unittest.TestCase):
             {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
         )
 
+    def test_reports_placeholder_mismatch_in_locale_only_plural_quantity(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><plurals name=\"minutes\"><item quantity=\"one\">1 minute</item><item quantity=\"other\">%d minutes</item></plurals></resources>",
+            "<resources><plurals name=\"minutes\"><item quantity=\"one\">une minute</item><item quantity=\"few\">quelques minutes</item><item quantity=\"other\">%d minutes françaises</item></plurals></resources>",
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn(
+            ("placeholder-mismatch", "values-fr", "minutes[few]"),
+            {(item["code"], item["locale"], item["key"]) for item in report["defects"]},
+        )
+
+    def test_accepts_dynamic_one_when_canonical_one_is_literal(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><plurals name=\"minutes\"><item quantity=\"one\">1 minute</item><item quantity=\"other\">%d minutes</item></plurals></resources>",
+            "<resources><plurals name=\"minutes\"><item quantity=\"one\">%d minute française</item><item quantity=\"other\">%d minutes françaises</item></plurals></resources>",
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(report["defects"], [])
+
+    def test_locale_only_plural_quantity_does_not_inherit_english_wording_check(self):
+        res_directory, allowlist = self.make_tree(
+            "<resources><plurals name=\"minutes\"><item quantity=\"one\">1 minute</item><item quantity=\"other\">%d minutes</item></plurals></resources>",
+            "<resources><plurals name=\"minutes\"><item quantity=\"one\">une minute</item><item quantity=\"many\">%d minutes</item><item quantity=\"other\">%d minutes françaises</item></plurals></resources>",
+        )
+
+        completed, report = self.audit(res_directory, allowlist)
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(report["defects"], [])
+
     def test_reports_unescaped_android_apostrophe(self):
         res_directory, allowlist = self.make_tree(
             "<resources><string name=\"status\">It\\'s ready</string></resources>",

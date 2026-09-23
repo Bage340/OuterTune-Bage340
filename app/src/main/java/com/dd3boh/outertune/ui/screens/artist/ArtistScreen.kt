@@ -127,6 +127,9 @@ fun ArtistScreen(
     val menuState = LocalMenuState.current
     val coroutineScope = rememberCoroutineScope()
     val playerConnection = LocalPlayerConnection.current ?: return
+    val radioLabel = stringResource(R.string.radio)
+    val libraryLabel = stringResource(R.string.library)
+    val songsLabel = stringResource(R.string.songs)
 
     val swipeEnabled by rememberPreference(SwipeToQueueKey, true)
 
@@ -246,7 +249,7 @@ fun ArtistScreen(
                                     playerConnection.playQueue(
                                         YouTubeQueue(radioEndpoint),
                                         isRadio = true,
-                                        title = "Radio: ${artistPage.artist.title}"
+                                        title = "$radioLabel: ${artistPage.artist.title}"
                                     )
                                 },
                                 contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
@@ -322,7 +325,7 @@ fun ArtistScreen(
                                 onPlay = {
                                     playerConnection.playQueue(
                                         ListQueue(
-                                            title = "Library: ${libraryArtist?.artist?.name}",
+                                            title = libraryArtist?.artist?.name?.let { "$libraryLabel: $it" } ?: libraryLabel,
                                             items = librarySongs.map { it.toMediaMetadata() },
                                             startIndex = index
                                         )
@@ -434,7 +437,7 @@ fun ArtistScreen(
                                                 } else {
                                                     playerConnection.playQueue(
                                                         ListQueue(
-                                                            title = "Artist songs (preview): ${artistPage.artist.title}",
+                                                            title = "$songsLabel: ${artistPage.artist.title}",
                                                             items = section.items.map { (it as SongItem).toMediaMetadata() },
                                                             startIndex = section.items.indexOf(
                                                                 song

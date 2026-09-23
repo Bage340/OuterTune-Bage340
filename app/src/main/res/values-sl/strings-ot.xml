@@ -122,7 +122,7 @@
     <string name="sleep_timer">Časovnik spanja</string>
     <string name="end_of_song">Konec skladbe</string>
     <plurals name="minute">
-        <item quantity="one">1 minuta</item>
+        <item quantity="one">%d minuta</item>
         <item quantity="other">%d minut</item>
     </plurals>
     <string name="error_no_stream">Pretakanje ni na voljo</string>

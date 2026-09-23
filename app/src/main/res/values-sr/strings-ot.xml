@@ -394,7 +394,7 @@
     <string name="sleep_timer">Тајмер за искључивање</string>
     <string name="end_of_song">Крај песме</string>
     <plurals name="minute">
-        <item quantity="one">1 minut</item>
+        <item quantity="one">%d минут</item>
         <item quantity="other">%d минута</item>
     </plurals>
     <string name="error_no_stream">Није доступан ниједан стрим</string>
