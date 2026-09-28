@@ -21,7 +21,10 @@ object LrcLibLyricsProvider : LyricsProvider {
         title: String,
         artist: String,
         duration: Int,
-    ): LyricsFetchResult = LrcLib.getLyrics(title, artist, duration).toFetchResult()
+        album: String?,
+    ): LyricsFetchResult = LrcLib.lyrics(artist, title)
+        .map { selectLrcLibLyrics(it, title, artist, duration, album) }
+        .toFetchResult()
 
     override suspend fun getAllLyrics(
         id: String,

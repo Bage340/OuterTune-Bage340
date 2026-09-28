@@ -16,7 +16,7 @@ class SimpMusicSelectionTest {
         val tracks = listOf(
             LyricsData(duration = 200, syncedLyrics = "[00:01.00]synced", plainLyrics = "plain"),
         )
-        assertEquals("[00:01.00]synced", tracks.selectBestRaw(200))
+        assertEquals("[00:01.00]synced", tracks.selectBestRaw("wanted", 200))
     }
 
     @Test
@@ -24,7 +24,7 @@ class SimpMusicSelectionTest {
         val tracks = listOf(
             LyricsData(duration = 200, syncedLyrics = null, plainLyrics = "plain"),
         )
-        assertEquals("plain", tracks.selectBestRaw(200))
+        assertEquals("plain", tracks.selectBestRaw("wanted", 200))
     }
 
     @Test
@@ -33,7 +33,7 @@ class SimpMusicSelectionTest {
             LyricsData(duration = 100, syncedLyrics = "far-synced", plainLyrics = "far-plain"),
             LyricsData(duration = 205, syncedLyrics = "near-synced", plainLyrics = "near-plain"),
         )
-        assertEquals("near-synced", tracks.selectBestRaw(200))
+        assertEquals("near-synced", tracks.selectBestRaw("wanted", 200))
     }
 
     @Test
@@ -41,11 +41,11 @@ class SimpMusicSelectionTest {
         val tracks = listOf(
             LyricsData(duration = 200, syncedLyrics = null, plainLyrics = null),
         )
-        assertNull(tracks.selectBestRaw(200))
+        assertNull(tracks.selectBestRaw("wanted", 200))
     }
 
     @Test
     fun emptyReturnsNull() {
-        assertNull(emptyList<LyricsData>().selectBestRaw(200))
+        assertNull(emptyList<LyricsData>().selectBestRaw("wanted", 200))
     }
 }

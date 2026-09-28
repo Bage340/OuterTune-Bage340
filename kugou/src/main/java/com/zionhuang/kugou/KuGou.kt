@@ -81,7 +81,7 @@ object KuGou {
                 }
             }
         }
-        searchLyricsByKeyword(keyword, duration).candidates.forEach { candidate ->
+        matchingKeywordCandidates(searchLyricsByKeyword(keyword, duration).candidates, duration).forEach { candidate ->
             downloadLyrics(candidate.id, candidate.accesskey).content.decodeBase64ToString()
                 .normalize().let(callback)
         }
@@ -96,7 +96,7 @@ object KuGou {
                 if (candidate != null) return candidate
             }
         }
-        return searchLyricsByKeyword(keyword, duration).candidates.firstOrNull()
+        return matchingKeywordCandidates(searchLyricsByKeyword(keyword, duration).candidates, duration).firstOrNull()
     }
 
     suspend fun searchSongs(keyword: Keyword) =
@@ -186,4 +186,15 @@ object KuGou {
     private val BANNED_REGEX = ".+].+[:：].+".toRegex()
 
     private const val DURATION_TOLERANCE = 8
+}
+
+/** KuGou's keyword endpoint can return other recordings even when given a duration hint. */
+internal fun matchingKeywordCandidates(
+    candidates: List<SearchLyricsResponse.Candidate>,
+    durationSeconds: Int,
+): List<SearchLyricsResponse.Candidate> {
+    if (durationSeconds == -1) return candidates
+    val expectedMs = durationSeconds.toLong() * 1000
+    val toleranceMs = 8_000L
+    return candidates.filter { it.duration in (expectedMs - toleranceMs)..(expectedMs + toleranceMs) }
 }

@@ -46,11 +46,11 @@ class LyricsHelper @Inject constructor(
 ) {
     private val lyricsProviders =
         listOf(
-            SimpMusicLyricsProvider,
-            BetterLyricsProvider,
-            LrcLibLyricsProvider,
-            KuGouLyricsProvider,
             YouTubeLyricsProvider,
+            LrcLibLyricsProvider,
+            BetterLyricsProvider,
+            SimpMusicLyricsProvider,
+            KuGouLyricsProvider,
             YouTubeSubtitleLyricsProvider,
         )
     private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
@@ -81,22 +81,19 @@ class LyricsHelper @Inject constructor(
         val parserOptions = getParserOptions()
         val prefLocal = isLocalPreferred()
 
-        val dbLyrics = database.lyrics(mediaMetadata.id).let { it.first()?.lyrics }
+        val dbEntity = database.lyrics(mediaMetadata.id).first()
+        val dbLyrics = dbEntity?.lyrics
         val hasPositive = dbLyrics != null && dbLyrics != LYRICS_NOT_FOUND
-        if (hasPositive && !prefLocal) {
-            return LrcUtils.parseLyrics(dbLyrics, null, parserOptions, null)
-        }
-
-        val localLyrics: SemanticLyrics? = getLocalLyrics(mediaMetadata, parserOptions)
-
-        // fallback to secondary provider when primary is unavailable
-        if (prefLocal) {
-            if (localLyrics != null) {
-                return localLyrics
+        val localLyrics = if (prefLocal || !hasPositive) getLocalLyrics(mediaMetadata, parserOptions) else null
+        if (prefLocal && localLyrics != null) return localLyrics
+        if (hasPositive) {
+            var usable = dbLyrics
+            if (preferredFailureIn(dbEntity?.providerSignature) != null && shouldFetch(mediaMetadata.id)) {
+                fetchAndStoreRemote(mediaMetadata, LyricsFetchRole.MANUAL)
+                usable = database.lyrics(mediaMetadata.id).first()?.lyrics
+                    ?.takeUnless { it == LYRICS_NOT_FOUND } ?: dbLyrics
             }
-            if (hasPositive) {
-                return LrcUtils.parseLyrics(dbLyrics, null, parserOptions, null)
-            }
+            return LrcUtils.parseLyrics(usable, null, parserOptions, null)
         }
 
         // No usable positive cache in the preferred source. Fetch only when there is no row or the
@@ -150,32 +147,17 @@ class LyricsHelper @Inject constructor(
                 }
                 val result = getRemoteLyrics(mediaMetadata, role, selection)
                 val now = System.currentTimeMillis()
-                val entity = when (result) {
-                    is RemoteLyricsResult.Found ->
-                        LyricsEntity(
-                            id = mediaMetadata.id,
-                            lyrics = result.raw,
-                            provider = result.provider,
-                            lastCheckedAt = now,
-                            providerSignature = selection.signature,
-                        )
-
-                    RemoteLyricsResult.DefinitiveNotFound ->
-                        LyricsEntity(
-                            id = mediaMetadata.id,
-                            lyrics = LYRICS_NOT_FOUND,
-                            provider = null,
-                            lastCheckedAt = now,
-                            providerSignature = selection.signature,
-                        )
-
-                    RemoteLyricsResult.Indeterminate, RemoteLyricsResult.Skipped -> null
-                }
+                val entity = lyricsEntityForResult(mediaMetadata.id, result, selection.signature, now, existing)
                 if (entity != null) {
                     withContext(Dispatchers.IO) {
                         database.upsert(entity)
                     }
-                    Log.d(TAG, "saved: videoId=${mediaMetadata.id} role=${role.log} provider=${(result as? RemoteLyricsResult.Found)?.provider ?: "NOT_FOUND"}")
+                    Log.d(
+                        TAG,
+                        "saved: videoId=${mediaMetadata.id} role=${role.log} " +
+                            "provider=${entity.provider ?: "NOT_FOUND"} " +
+                            "preferredFailure=${preferredFailureIn(entity.providerSignature)}"
+                    )
                 } else {
                     Log.d(TAG, "not saved: videoId=${mediaMetadata.id} role=${role.log} result=${result::class.simpleName}")
                 }
@@ -207,7 +189,7 @@ class LyricsHelper @Inject constructor(
         artistName: String,
     ): LyricsFetchResult =
         try {
-            getLyrics(mediaMetadata.id, mediaMetadata.title, artistName, mediaMetadata.duration)
+            getLyrics(mediaMetadata.id, mediaMetadata.title, artistName, mediaMetadata.duration, mediaMetadata.album?.title)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -217,11 +199,9 @@ class LyricsHelper @Inject constructor(
     /**
      * Lookup lyrics from remote providers.
      *
-     * Every provider in [selection] runs at once. Results are judged as they arrive: the first synced
-     * result wins immediately and the remaining providers are cancelled; an unsynced result is kept as
-     * a fallback and used only if no synced result arrives before every provider finishes or the overall
-     * timeout is reached. Each provider has an individual timeout; the whole resolution is bounded by an
-     * overall cap.
+     * YouTube Music is tried first when enabled, and either a synced or plain result wins. On absence
+     * or bounded failure, the other eligible providers run concurrently: their first synced result wins,
+     * with a plain result held as fallback. Each lookup and the whole resolution have time limits.
      *
      * The possible outcomes are: [RemoteLyricsResult.Found] when a usable result was adopted,
      * [RemoteLyricsResult.DefinitiveNotFound] only when every provider reported a definitive absence,
@@ -244,8 +224,8 @@ class LyricsHelper @Inject constructor(
         lyricsProviders.filterNot { it in selection.providers }.forEach { provider ->
             Log.d(TAG, "${provider.name} SKIPPED (disabled) videoId=${mediaMetadata.id} role=${role.log}")
         }
-        val enabled = selection.providers
-        if (enabled.isEmpty()) {
+        val eligible = eligibleLyricsProviders(selection.providers, mediaMetadata.isLocal)
+        if (eligible.isEmpty()) {
             Log.d(TAG, "end: skipped videoId=${mediaMetadata.id} role=${role.log} total=0ms (no enabled providers)")
             return RemoteLyricsResult.Skipped
         }
@@ -253,8 +233,25 @@ class LyricsHelper @Inject constructor(
         // errorText = null so adoption sees an unparseable input as null/exception rather than a
         // synthesized UnsyncedLyrics; the user-facing errorText is only used by the display path.
         val verifyOptions = getParserOptions().copy(errorText = null)
+        val classifyFound: (String) -> FoundKind = { raw ->
+            val parsed = try {
+                LrcUtils.parseLyrics(raw, null, verifyOptions, null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                null
+            }
+            when (parsed) {
+                is SemanticLyrics.SyncedLyrics -> FoundKind.SYNCED
+                is SemanticLyrics.UnsyncedLyrics -> FoundKind.UNSYNCED
+                null -> FoundKind.UNPARSEABLE
+            }
+        }
+        val preferred = eligible.firstOrNull { it.id == YouTubeLyricsProvider.id }
+        val enabled = eligible.filterNot { it == preferred }
 
-        return coroutineScope {
+        suspend fun fallback(): RemoteLyricsResult = coroutineScope {
+            if (enabled.isEmpty()) return@coroutineScope RemoteLyricsResult.Skipped
             val channel = Channel<ProviderOutcome>(Channel.UNLIMITED)
             val fetchJobs = enabled.map { provider ->
                 launch {
@@ -295,22 +292,6 @@ class LyricsHelper @Inject constructor(
             }
 
             val aggregator = RemoteLyricsAggregator(enabled.size)
-            // Classify a Found result for adoption. errorText = null means an unparseable input surfaces
-            // as null or an exception rather than a synthesized UnsyncedLyrics.
-            val classifyFound: (String) -> FoundKind = { raw ->
-                val parsed = try {
-                    LrcUtils.parseLyrics(raw, null, verifyOptions, null)
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    null
-                }
-                when (parsed) {
-                    is SemanticLyrics.SyncedLyrics -> FoundKind.SYNCED
-                    is SemanticLyrics.UnsyncedLyrics -> FoundKind.UNSYNCED
-                    null -> FoundKind.UNPARSEABLE
-                }
-            }
             val deadline = start + OVERALL_TIMEOUT_MS
 
             try {
@@ -345,6 +326,22 @@ class LyricsHelper @Inject constructor(
             }
             result
         }
+        return withTimeoutOrNull(OVERALL_TIMEOUT_MS) {
+            if (preferred == null) {
+                fallback()
+            } else {
+                resolveWithPreferredProvider(
+                    providerName = preferred.name,
+                    fetchPreferred = {
+                        withTimeoutOrNull(PREFERRED_PROVIDER_TIMEOUT_MS) {
+                            preferred.fetchIsolated(mediaMetadata, artistName)
+                        } ?: LyricsFetchResult.Failed(java.net.SocketTimeoutException("YouTube lyrics timed out"))
+                    },
+                    fetchFallback = ::fallback,
+                    classifyFound = classifyFound,
+                )
+            }
+        } ?: RemoteLyricsResult.Indeterminate
     }
 
     /**
@@ -420,6 +417,9 @@ class LyricsHelper @Inject constructor(
         /** Per-provider timeout for a single remote lookup. */
         private const val PROVIDER_TIMEOUT_MS = 8000L
 
+        /** Two attempts leave time for fallback within the overall lookup deadline. */
+        private const val PREFERRED_PROVIDER_TIMEOUT_MS = 3000L
+
         /** Upper bound for resolving lyrics across all providers of a single song. */
         private const val OVERALL_TIMEOUT_MS = 12000L
     }
@@ -427,6 +427,46 @@ class LyricsHelper @Inject constructor(
 
 /** Time a negative cache (LYRICS_NOT_FOUND) is trusted before a fresh remote fetch is attempted. */
 const val NEGATIVE_CACHE_TTL_MS = 7L * 24 * 60 * 60 * 1000
+internal const val PREFERRED_FAILURE_RETRY_MS = 15L * 60 * 1000
+private const val RATE_LIMIT_RETRY_MS = 60L * 60 * 1000
+private const val PREFERRED_FAILURE_MARKER = "|preferred-failure="
+
+private fun preferredFailureIn(storedSignature: String?): LyricsFailureKind? {
+    val suffix = storedSignature?.substringAfterLast(PREFERRED_FAILURE_MARKER, missingDelimiterValue = "")
+    return LyricsFailureKind.values().firstOrNull { it.name == suffix }
+}
+
+/** Store an adopted fallback's preferred-source failure without changing the Room schema. */
+internal fun lyricsEntityForResult(
+    id: String,
+    result: RemoteLyricsResult,
+    signature: String,
+    now: Long,
+    existing: LyricsEntity? = null,
+): LyricsEntity? = when (result) {
+    is RemoteLyricsResult.Found -> LyricsEntity(
+        id = id,
+        lyrics = result.raw,
+        provider = result.provider,
+        lastCheckedAt = now,
+        providerSignature = if (result.preferredFailure == null) signature
+            else "$signature$PREFERRED_FAILURE_MARKER${result.preferredFailure.name}",
+    )
+
+    RemoteLyricsResult.DefinitiveNotFound ->
+        if (existing != null && existing.lyrics != LYRICS_NOT_FOUND && preferredFailureIn(existing.providerSignature) != null) {
+            existing.copy(lastCheckedAt = now, providerSignature = signature)
+        } else {
+            LyricsEntity(id, LYRICS_NOT_FOUND, lastCheckedAt = now, providerSignature = signature)
+        }
+
+    RemoteLyricsResult.Indeterminate ->
+        if (existing != null && preferredFailureIn(existing.providerSignature) != null) {
+            existing.copy(lastCheckedAt = now)
+        } else null
+
+    RemoteLyricsResult.Skipped -> null
+}
 
 /**
  * Pure decision for whether a remote fetch should run for one song.
@@ -445,7 +485,14 @@ internal fun shouldFetchLyrics(
 ): Boolean {
     if (forceRefresh) return true
     if (entity == null) return true
-    if (entity.lyrics != LYRICS_NOT_FOUND) return false
+    if (entity.lyrics != LYRICS_NOT_FOUND) {
+        val failure = preferredFailureIn(entity.providerSignature) ?: return false
+        val storedSignature = entity.providerSignature?.substringBeforeLast(PREFERRED_FAILURE_MARKER) ?: return true
+        val lastChecked = entity.lastCheckedAt ?: return true
+        if (storedSignature != signature || now < lastChecked) return true
+        val retryMs = if (failure == LyricsFailureKind.RATE_LIMIT) RATE_LIMIT_RETRY_MS else PREFERRED_FAILURE_RETRY_MS
+        return now - lastChecked >= retryMs
+    }
     val lastChecked = entity.lastCheckedAt ?: return true
     val storedSignature = entity.providerSignature ?: return true
     if (storedSignature != signature) return true
@@ -457,6 +504,11 @@ data class LyricsResult(
     val providerName: String,
     val lyrics: String,
 )
+
+/** A local file path is not a YouTube video ID, so ID-only services cannot match it safely. */
+internal fun eligibleLyricsProviders(providers: List<LyricsProvider>, isLocal: Boolean): List<LyricsProvider> =
+    if (isLocal) providers.filterNot { it.id in setOf("youtube", "youtube-subtitle", "simpmusic") }
+    else providers
 
 /**
  * Outcome reported by a single provider during parallel resolution.
@@ -489,7 +541,12 @@ data class ProviderSelection(
  * Aggregate outcome of resolving lyrics across every enabled provider for one song.
  */
 sealed interface RemoteLyricsResult {
-    data class Found(val provider: String, val raw: String, val synced: Boolean) : RemoteLyricsResult
+    data class Found(
+        val provider: String,
+        val raw: String,
+        val synced: Boolean,
+        val preferredFailure: LyricsFailureKind? = null,
+    ) : RemoteLyricsResult
     data object DefinitiveNotFound : RemoteLyricsResult
     data object Indeterminate : RemoteLyricsResult
     data object Skipped : RemoteLyricsResult

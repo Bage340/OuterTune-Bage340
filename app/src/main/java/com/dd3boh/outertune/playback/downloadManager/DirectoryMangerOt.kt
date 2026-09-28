@@ -4,11 +4,13 @@ import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
+import com.dd3boh.outertune.BuildConfig
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scanDfRecursive
 import com.dd3boh.outertune.utils.scanners.documentFileFromUri
 import java.io.IOException
 import java.io.InputStream
+import java.util.UUID
 
 class DownloadDirectoryManagerOt(private var context: Context, private var dir: Uri, extraDirs: List<Uri>) {
     val TAG = DownloadDirectoryManagerOt::class.simpleName.toString()
@@ -18,6 +20,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     private val fileIndexLock = Any()
     private var availableFiles: Set<DocumentFile> = emptySet()
     private var availableFilesById: Map<String, DocumentFile> = emptyMap()
+    private val previewChannel = BuildConfig.FLAVOR.startsWith("preview")
 
     init {
         doInit(context, dir, extraDirs)
@@ -86,19 +89,27 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
             throw IOException("Invalid directory")
         }
 
-        val fileName = "$displayName [$mediaId].mka"
-        val newFile = directory.createFile("audio/mka", fileName)
+        val fileName = buildDownloadFileName(displayName, mediaId, previewChannel)
+        // A final .mka name must appear only after the copy has completed. Otherwise a
+        // process kill leaves a non-empty partial file that a later scan mistakes for a download.
+        val newFile = directory.createFile("application/octet-stream", "pending-${UUID.randomUUID()}.partial")
 
-        newFile?.uri?.let { uri ->
-            val output = resolver.openOutputStream(uri) ?: run {
-                newFile.delete()
-                return null
+        newFile?.let { pendingFile ->
+            try {
+                val output = resolver.openOutputStream(pendingFile.uri)
+                    ?: throw IOException("Unable to open pending download file")
+                output.use { out ->
+                    input.copyTo(out)
+                }
+                if (!pendingFile.renameTo(fileName) || mediaIdFromDownloadFileName(pendingFile.name, previewChannel) != mediaId) {
+                    throw IOException("Unable to publish completed download file")
+                }
+                addToFileIndex(mediaId, pendingFile)
+                return pendingFile.uri
+            } catch (error: Exception) {
+                pendingFile.delete()
+                throw error
             }
-            output.use { out ->
-                input.copyTo(out)
-            }
-            addToFileIndex(mediaId, newFile)
-            return uri
         }
 
         return null
@@ -106,7 +117,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
 
     fun isExists(mediaId: String): DocumentFile? {
         val file = synchronized(fileIndexLock) { availableFilesById[mediaId] } ?: return null
-        if (file.exists()) return file
+        if (isUsableDownloadFile(file)) return file
         synchronized(fileIndexLock) {
             availableFiles = availableFiles - file
             availableFilesById = availableFilesById - mediaId
@@ -176,11 +187,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     }
 
     private fun replaceFileIndex(files: Collection<DocumentFile>) {
-        val candidates = files.filter { it.isFile }.mapNotNull { file ->
-            mediaIdFromDownloadFileName(file.name)?.let { mediaId -> mediaId to file }
-        }
-        // Keep a playable copy when main and extra download directories contain the same ID.
-        val indexedFiles = candidates.distinctBy { it.first }.toMap()
+        val indexedFiles = indexDownloadFiles(files, previewChannel)
         synchronized(fileIndexLock) {
             availableFiles = files.toSet()
             availableFilesById = indexedFiles
@@ -189,12 +196,48 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
 
 }
 
-internal fun mediaIdFromDownloadFileName(fileName: String?): String? {
+internal fun isUsableDownloadFile(file: DocumentFile): Boolean =
+    file.isFile && file.exists() && file.length() > 0L
+
+internal fun indexDownloadFiles(files: Collection<DocumentFile>, previewChannel: Boolean = false): Map<String, DocumentFile> =
+    files.asSequence()
+        .filter(::isUsableDownloadFile)
+        .mapNotNull { file -> mediaIdFromDownloadFileName(file.name, previewChannel)?.let { it to file } }
+        .distinctBy { it.first }
+        .toMap()
+
+private val SAFE_DOWNLOAD_MEDIA_ID = Regex("[A-Za-z0-9_-]{1,64}")
+private const val PREVIEW_FILE_ID_PREFIX = "otpreview-"
+
+internal fun buildDownloadFileName(displayName: String?, mediaId: String, previewChannel: Boolean = false): String {
+    require(SAFE_DOWNLOAD_MEDIA_ID.matches(mediaId)) { "Invalid download media ID" }
+    val fileId = if (previewChannel) PREVIEW_FILE_ID_PREFIX + mediaId else mediaId
+    val maxTitleLength = 120 - fileId.length - " [].mka".length
+    val title = displayName.orEmpty()
+        .map { character ->
+            when {
+                character in "\\/:*?\"<>|" || character.isISOControl() ||
+                    Character.getType(character) == Character.FORMAT.toInt() -> '_'
+                else -> character
+            }
+        }
+        .joinToString("")
+        .replace("..", "_")
+        .trim(' ', '.', '_')
+        .take(maxTitleLength)
+        .ifBlank { "Download" }
+    return "$title [$fileId].mka"
+}
+
+internal fun mediaIdFromDownloadFileName(fileName: String?, previewChannel: Boolean = false): String? {
     val name = fileName ?: return null
     if (!name.endsWith(".mka", ignoreCase = true)) return null
     val stem = name.dropLast(4)
     if (!stem.endsWith(']')) return null
     val openingBracket = stem.lastIndexOf(" [")
     if (openingBracket < 0 || openingBracket + 2 >= stem.lastIndex) return null
-    return stem.substring(openingBracket + 2, stem.lastIndex)
+    val fileId = stem.substring(openingBracket + 2, stem.lastIndex)
+    val mediaId = if (previewChannel) fileId.removePrefix(PREVIEW_FILE_ID_PREFIX) else fileId
+    if (previewChannel != fileId.startsWith(PREVIEW_FILE_ID_PREFIX)) return null
+    return mediaId.takeIf(SAFE_DOWNLOAD_MEDIA_ID::matches)
 }

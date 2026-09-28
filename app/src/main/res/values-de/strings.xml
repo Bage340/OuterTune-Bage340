@@ -279,4 +279,23 @@
     <string name="use_login_for_browse">Anmeldung zum Durchsuchen von Inhalten verwenden</string>
     <string name="use_login_for_browse_desc">Dies kann Einfluss darauf haben, welche Inhalte du siehst und zeigt zum Beispiel nur Premium-Alben an, wenn Sie mit einem Premium-Konto angemeldet sind</string>
     <string name="action_login">Anmelden</string>
+    <string name="playlist_library_added_result">Hinzugefügt: %1$d\nBereits in der Bibliothek: %2$d</string>
+    <string name="playlist_library_all_present">Alle Titel sind bereits in deiner Bibliothek.</string>
+    <string name="playlist_library_empty">Diese Playlist enthält keine Titel zum Hinzufügen.</string>
+    <string name="playlist_library_failed">Die Titel der Playlist konnten nicht zur Bibliothek hinzugefügt werden.</string>
+    <string name="playlist_library_in_progress">Titel der Playlist werden zur Bibliothek hinzugefügt…</string>
+    <string name="download_parallelism_title">Parallele Downloads</string>
+    <string name="download_parallelism_description">Lade bis zu 3 Songs gleichzeitig herunter. Bei mehr Downloads können Netzwerkfehler zunehmen.</string>
+    <string name="download_shared_directory_warning">Verwende für Stable und Preview unterschiedliche Downloadordner, damit beide Apps nicht in dieselben Dateien schreiben.</string>
+    <string name="transfer_export_playlist">Playlist exportieren</string>
+    <string name="transfer_export_library">Mediathek und Playlists exportieren</string>
+    <string name="transfer_import">Mediathek oder Playlist importieren</string>
+    <string name="transfer_choose_format">Exportformat auswählen</string>
+    <string name="transfer_in_progress">Übertragung wird verarbeitet…</string>
+    <string name="transfer_import_preview_title">Import überprüfen</string>
+    <string name="transfer_import_preview_counts">Gefundene Playlists: %1$d\nGefundene Titel: %2$d\nNeue Titel: %3$d\nVorhandene Titel: %4$d\nNicht zugeordnete lokale Titel: %5$d\nDoppelte Titel: %6$d\nUngültige Einträge: %7$d\n\nNeue Titel und Playlist-Einträge werden hinzugefügt. Vorhandene Elemente bleiben erhalten.</string>
+    <string name="transfer_import_confirm">Importieren</string>
+    <string name="transfer_exported">Export abgeschlossen</string>
+    <string name="transfer_imported">%1$d neue Titel und %2$d Playlist-Einträge importiert</string>
+    <string name="transfer_failed">Übertragung fehlgeschlagen</string>
 </resources>

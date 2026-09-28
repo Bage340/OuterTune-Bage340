@@ -279,4 +279,23 @@
     <string name="use_login_for_browse">İçerikleri görmek için Giriş yap\'ı kullanın</string>
     <string name="use_login_for_browse_desc">Bu gördüğünüz içerikleri etkileyebilir ve örnek olarak Premium\'a özel içerikleri Premium\'a sahip bir hesapla giriş yaptıysanız size sunabilir</string>
     <string name="action_login">Giriş Yap</string>
+    <string name="playlist_library_added_result">Eklendi: %1$d\nZaten kitaplıkta: %2$d</string>
+    <string name="playlist_library_all_present">Tüm şarkılar zaten kitaplığınızda.</string>
+    <string name="playlist_library_empty">Bu çalma listesinde eklenecek şarkı yok.</string>
+    <string name="playlist_library_failed">Çalma listesindeki şarkılar kitaplığa eklenemedi.</string>
+    <string name="playlist_library_in_progress">Çalma listesindeki şarkılar kitaplığa ekleniyor…</string>
+    <string name="download_parallelism_title">Paralel indirmeler</string>
+    <string name="download_parallelism_description">Aynı anda en fazla 3 şarkı indirin. Daha fazlası ağ hatalarını artırabilir.</string>
+    <string name="download_shared_directory_warning">İki uygulamanın da aynı dosyalara yazmasını önlemek için Stable ve Preview sürümlerinde farklı indirme klasörleri kullanın.</string>
+    <string name="transfer_export_playlist">Çalma listesini dışa aktar</string>
+    <string name="transfer_export_library">Kitaplığı ve çalma listelerini dışa aktar</string>
+    <string name="transfer_import">Kitaplığı veya çalma listesini içe aktar</string>
+    <string name="transfer_choose_format">Dışa aktarma biçimini seçin</string>
+    <string name="transfer_in_progress">Aktarım işleniyor…</string>
+    <string name="transfer_import_preview_title">İçe aktarmayı gözden geçir</string>
+    <string name="transfer_import_preview_counts">Bulunan çalma listeleri: %1$d\nBulunan parçalar: %2$d\nYeni parçalar: %3$d\nMevcut parçalar: %4$d\nÇözümlenemeyen yerel parçalar: %5$d\nYinelenen parçalar: %6$d\nGeçersiz girdiler: %7$d\n\nYeni parçalar ve çalma listesi öğeleri eklenecek. Mevcut öğeler korunacak.</string>
+    <string name="transfer_import_confirm">İçe aktar</string>
+    <string name="transfer_exported">Dışa aktarma tamamlandı</string>
+    <string name="transfer_imported">%1$d yeni parça ve %2$d çalma listesi öğesi içe aktarıldı</string>
+    <string name="transfer_failed">Aktarım başarısız oldu</string>
 </resources>

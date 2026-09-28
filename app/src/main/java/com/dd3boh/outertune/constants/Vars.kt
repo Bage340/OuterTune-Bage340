@@ -13,7 +13,7 @@ import com.dd3boh.outertune.BuildConfig
  * available. Tag extraction no longer depends on this — it uses TagLib in every flavor. This
  * flag now only gates the extended-codec playback decoder (e.g. ALAC/APE/WavPack/DSD).
  */
-const val ENABLE_FFMETADATAEX = BuildConfig.FLAVOR == "full"
+const val ENABLE_FFMETADATAEX = BuildConfig.FLAVOR_abi == "full"
 
 /**
  * Default audio decoder mode, depending on flavor.

@@ -276,4 +276,23 @@
     <string name="discord_information">OuterTune bruker KizzyRPC for å stille inn statusen på Discord-kontoen din. Dette innebærer bruk ave Discord Gateway-portneren, som kan anses som et brudd på Discords tjenestevilkår. Det finnes dog ingen kjente tilfelle av suspenderte brukerkonter på denne grunnen. Bruk på egen risiko. \n \nOuterTune henter bare inn symbolet ditt, og alt annet blir lagret lokalt.</string>
     <string name="preview">Forhåndsvisning</string>
     <string name="about">Om</string>
+    <string name="playlist_library_added_result">Lagt til: %1$d\nAllerede i biblioteket: %2$d</string>
+    <string name="playlist_library_all_present">Alle sangene er allerede i biblioteket ditt.</string>
+    <string name="playlist_library_empty">Denne spillelisten har ingen sanger å legge til.</string>
+    <string name="playlist_library_failed">Kunne ikke legge sangene fra spillelisten til i biblioteket.</string>
+    <string name="playlist_library_in_progress">Legger sangene fra spillelisten til i biblioteket…</string>
+    <string name="download_parallelism_title">Parallelle nedlastinger</string>
+    <string name="download_parallelism_description">Last ned opptil 3 sanger samtidig. Flere nedlastinger kan føre til flere nettverksfeil.</string>
+    <string name="download_shared_directory_warning">Bruk ulike nedlastingsmapper for Stable og Preview, slik at appene ikke skriver til de samme filene.</string>
+    <string name="transfer_export_playlist">Eksporter spilleliste</string>
+    <string name="transfer_export_library">Eksporter bibliotek og spillelister</string>
+    <string name="transfer_import">Importer bibliotek eller spilleliste</string>
+    <string name="transfer_choose_format">Velg eksportformat</string>
+    <string name="transfer_in_progress">Behandler overføring…</string>
+    <string name="transfer_import_preview_title">Se gjennom import</string>
+    <string name="transfer_import_preview_counts">Fant spillelister: %1$d\nFant spor: %2$d\nNye spor: %3$d\nEksisterende spor: %4$d\nUavklarte lokale spor: %5$d\nDupliserte spor: %6$d\nUgyldige oppføringer: %7$d\n\nNye spor og spillelisteoppføringer blir lagt til. Eksisterende elementer beholdes.</string>
+    <string name="transfer_import_confirm">Importer</string>
+    <string name="transfer_exported">Eksport fullført</string>
+    <string name="transfer_imported">Importerte %1$d nye spor og %2$d spillelisteoppføringer</string>
+    <string name="transfer_failed">Overføringen mislyktes</string>
 </resources>

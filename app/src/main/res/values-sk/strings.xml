@@ -297,4 +297,23 @@
     <string name="new_version_available">Nová verzia je dostupná</string>
     <string name="translation_models">Prekladové modely</string>
     <string name="clear_translation_models">Jasné modely prekladu</string>
+    <string name="playlist_library_added_result">Pridané: %1$d\nUž v knižnici: %2$d</string>
+    <string name="playlist_library_all_present">Všetky skladby už sú vo vašej knižnici.</string>
+    <string name="playlist_library_empty">V tomto zozname nie sú skladby na pridanie.</string>
+    <string name="playlist_library_failed">Skladby zo zoznamu sa nepodarilo pridať do knižnice.</string>
+    <string name="playlist_library_in_progress">Pridávanie skladieb zo zoznamu do knižnice…</string>
+    <string name="download_parallelism_title">Paralelné sťahovanie</string>
+    <string name="download_parallelism_description">Sťahujte až 3 skladby naraz. Viac skladieb môže zvýšiť počet chýb siete.</string>
+    <string name="download_shared_directory_warning">Pre stabilnú a preview verziu používajte rôzne priečinky sťahovania, aby obe aplikácie nezapisovali do rovnakých súborov.</string>
+    <string name="transfer_export_playlist">Exportovať playlist</string>
+    <string name="transfer_export_library">Exportovať knižnicu a playlisty</string>
+    <string name="transfer_import">Importovať knižnicu alebo playlist</string>
+    <string name="transfer_choose_format">Vybrať formát exportu</string>
+    <string name="transfer_in_progress">Spracúva sa prenos…</string>
+    <string name="transfer_import_preview_title">Skontrolovať import</string>
+    <string name="transfer_import_preview_counts">Nájdené playlisty: %1$d\nNájdené skladby: %2$d\nNové skladby: %3$d\nExistujúce skladby: %4$d\nNerozpoznané miestne skladby: %5$d\nDuplicitné skladby: %6$d\nNeplatné položky: %7$d\n\nNové skladby a položky playlistov sa pridajú. Existujúce položky zostanú zachované.</string>
+    <string name="transfer_import_confirm">Importovať</string>
+    <string name="transfer_exported">Export dokončený</string>
+    <string name="transfer_imported">Importovaných nových skladieb: %1$d; položiek playlistov: %2$d</string>
+    <string name="transfer_failed">Prenos zlyhal</string>
 </resources>

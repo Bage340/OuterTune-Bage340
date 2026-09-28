@@ -224,6 +224,8 @@
     <string name="albums">Àlbums</string>
     <string name="playlists">Llistes de reproducció</string>
     <plurals name="n_selected">
+        <item quantity="one">%d seleccionat</item>
+        <item quantity="many">%d seleccionats</item>
         <item quantity="other">%d seleccionat</item>
     </plurals>
     <string name="history">Historial</string>
@@ -343,30 +345,37 @@
     <string name="duplicates_description_multiple">%d cançons ja són a la teva llista de reproducció</string>
     <plurals name="n_song">
         <item quantity="one">%d cançó</item>
+        <item quantity="many">%d cançons</item>
         <item quantity="other">%d cançons</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="one">%d artista</item>
+        <item quantity="many">%d artistes</item>
         <item quantity="other">%d artistes</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d àlbum</item>
+        <item quantity="many">%d àlbums</item>
         <item quantity="other">%d àlbums</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="one">%d llista de reproducció</item>
+        <item quantity="many">%d llistes de reproducció</item>
         <item quantity="other">%d llistes de reproducció</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="one">%d setmana</item>
+        <item quantity="many">%d setmanes</item>
         <item quantity="other">%d setmanes</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="one">%d mes</item>
+        <item quantity="many">%d mesos</item>
         <item quantity="other">%d mesos</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="one">%d any</item>
+        <item quantity="many">%d anys</item>
         <item quantity="other">%d anys</item>
     </plurals>
     <string name="playlist_imported">Llista de reproducció importada</string>
@@ -378,6 +387,7 @@
     <string name="end_of_song">Final de la cançó</string>
     <plurals name="minute">
         <item quantity="one">1 minut</item>
+        <item quantity="many">%d minuts</item>
         <item quantity="other">%d minuts</item>
     </plurals>
     <string name="error_no_stream">No hi ha cap flux disponible</string>
@@ -601,4 +611,23 @@
     <string name="move_to_folder">Mou a la carpeta</string>
     <string name="root_folder">Totes les llistes de reproducció</string>
     <string name="previous_folder">Carpeta anterior</string>
+    <string name="playlist_library_added_result">Afegides: %1$d\nJa a la biblioteca: %2$d</string>
+    <string name="playlist_library_all_present">Totes les cançons ja són a la teua biblioteca.</string>
+    <string name="playlist_library_empty">Esta llista no té cançons per a afegir.</string>
+    <string name="playlist_library_failed">No s\'han pogut afegir les cançons de la llista a la biblioteca.</string>
+    <string name="playlist_library_in_progress">S\'estan afegint les cançons de la llista a la biblioteca…</string>
+    <string name="download_parallelism_title">Baixades simultànies</string>
+    <string name="download_parallelism_description">Baixa fins a 3 cançons alhora. Si en baixes més, poden augmentar els errors de xarxa.</string>
+    <string name="download_shared_directory_warning">Utilitza carpetes de baixada diferents per a les versions estable i de previsualització per a evitar que les dos aplicacions escriguen als mateixos fitxers.</string>
+    <string name="transfer_export_playlist">Exporta la llista de reproducció</string>
+    <string name="transfer_export_library">Exporta la biblioteca i les llistes de reproducció</string>
+    <string name="transfer_import">Importa una biblioteca o una llista de reproducció</string>
+    <string name="transfer_choose_format">Tria el format d\'exportació</string>
+    <string name="transfer_in_progress">S\'està processant la transferència…</string>
+    <string name="transfer_import_preview_title">Revisa la importació</string>
+    <string name="transfer_import_preview_counts">Llistes de reproducció trobades: %1$d\nPistes trobades: %2$d\nPistes noves: %3$d\nPistes existents: %4$d\nPistes locals sense resoldre: %5$d\nPistes duplicades: %6$d\nEntrades no vàlides: %7$d\n\nS\'afegiran les pistes noves i les entrades de les llistes. Es conservaran els elements existents.</string>
+    <string name="transfer_import_confirm">Importa</string>
+    <string name="transfer_exported">Exportació completada</string>
+    <string name="transfer_imported">S\'han importat %1$d pistes noves i %2$d entrades de llistes de reproducció</string>
+    <string name="transfer_failed">La transferència ha fallat</string>
 </resources>

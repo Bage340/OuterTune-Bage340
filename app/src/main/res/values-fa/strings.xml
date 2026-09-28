@@ -139,7 +139,7 @@
     <string name="sleep_timer">شمارنده‌ی خواب</string>
     <string name="end_of_song">پایان ترانه</string>
     <plurals name="minute">
-        <item quantity="one">۱ دقیقه</item>
+        <item quantity="one">%d دقیقه</item>
         <item quantity="other">%d دقیقه</item>
     </plurals>
     <string name="error_no_stream">جریانی در دسترس نیست</string>
@@ -237,4 +237,23 @@
     <string name="remove_from_queue">حذف از صف</string>
     <string name="tempo_and_pitch">تمپو و زیر و بمی صدا</string>
     <string name="duplicates">تکراری ها</string>
+    <string name="playlist_library_added_result">افزوده شد: %1$d\nاز قبل در کتابخانه: %2$d</string>
+    <string name="playlist_library_all_present">همهٔ آهنگ‌ها از قبل در کتابخانهٔ شما هستند.</string>
+    <string name="playlist_library_empty">این فهرست پخش آهنگی برای افزودن ندارد.</string>
+    <string name="playlist_library_failed">افزودن آهنگ‌های فهرست پخش به کتابخانه ممکن نشد.</string>
+    <string name="playlist_library_in_progress">در حال افزودن آهنگ‌های فهرست پخش به کتابخانه…</string>
+    <string name="download_parallelism_title">بارگیری‌های هم‌زمان</string>
+    <string name="download_parallelism_description">هم‌زمان حداکثر ۳ آهنگ بارگیری کنید. بارگیری تعداد بیشتر ممکن است خطاهای شبکه را افزایش دهد.</string>
+    <string name="download_shared_directory_warning">برای نسخه‌های پایدار و پیش‌نمایش از پوشه‌های بارگیری جداگانه استفاده کنید تا هر دو برنامه روی فایل‌های یکسان ننویسند.</string>
+    <string name="transfer_export_playlist">صادر کردن فهرست پخش</string>
+    <string name="transfer_export_library">صادر کردن کتابخانه و فهرست‌های پخش</string>
+    <string name="transfer_import">وارد کردن کتابخانه یا فهرست پخش</string>
+    <string name="transfer_choose_format">انتخاب قالب خروجی</string>
+    <string name="transfer_in_progress">در حال پردازش انتقال…</string>
+    <string name="transfer_import_preview_title">بازبینی وارد کردن</string>
+    <string name="transfer_import_preview_counts">فهرست‌های پخش پیدا‌شده: %1$d\nآهنگ‌های پیدا‌شده: %2$d\nآهنگ‌های جدید: %3$d\nآهنگ‌های موجود: %4$d\nآهنگ‌های محلی حل‌نشده: %5$d\nآهنگ‌های تکراری: %6$d\nموارد نامعتبر: %7$d\n\nآهنگ‌های جدید و موارد فهرست پخش افزوده می‌شوند. موارد موجود حفظ می‌شوند.</string>
+    <string name="transfer_import_confirm">وارد کردن</string>
+    <string name="transfer_exported">خروجی‌گیری کامل شد</string>
+    <string name="transfer_imported">%1$d آهنگ جدید و %2$d مورد فهرست پخش وارد شد</string>
+    <string name="transfer_failed">انتقال ناموفق بود</string>
 </resources>

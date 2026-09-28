@@ -279,4 +279,23 @@
     <string name="new_version_available">പുതിയ വേർഷൻ ലഭ്യമാണ്</string>
     <string name="translation_models">വിവർത്തന പദ്ധതികൾ</string>
     <string name="clear_translation_models">വിവർത്തന പദ്ധതികൾ കളയുക</string>
+    <string name="playlist_library_added_result">ചേർത്തത്: %1$d\nനേരത്തേ ലൈബ്രറിയിലുള്ളത്: %2$d</string>
+    <string name="playlist_library_all_present">എല്ലാ പാട്ടുകളും ഇതിനകം നിങ്ങളുടെ ലൈബ്രറിയിലുണ്ട്.</string>
+    <string name="playlist_library_empty">ഈ പ്ലേലിസ്റ്റിൽ ചേർക്കാൻ പാട്ടുകളില്ല.</string>
+    <string name="playlist_library_failed">പ്ലേലിസ്റ്റിലെ പാട്ടുകൾ ലൈബ്രറിയിൽ ചേർക്കാനായില്ല.</string>
+    <string name="playlist_library_in_progress">പ്ലേലിസ്റ്റിലെ പാട്ടുകൾ ലൈബ്രറിയിൽ ചേർക്കുന്നു…</string>
+    <string name="download_parallelism_title">സമാന്തര ഡൗൺലോഡുകൾ</string>
+    <string name="download_parallelism_description">ഒരേസമയം 3 പാട്ടുകൾ വരെ ഡൗൺലോഡ് ചെയ്യാം. കൂടുതൽ ഡൗൺലോഡുകൾ നെറ്റ്‌വർക്ക് പിശകുകൾ വർധിപ്പിച്ചേക്കാം.</string>
+    <string name="download_shared_directory_warning">രണ്ട് ആപ്പുകളും ഒരേ ഫയലുകളിൽ എഴുതുന്നത് ഒഴിവാക്കാൻ Stable, Preview പതിപ്പുകൾക്ക് വ്യത്യസ്ത ഡൗൺലോഡ് ഫോൾഡറുകൾ ഉപയോഗിക്കുക.</string>
+    <string name="transfer_export_playlist">പ്ലേലിസ്റ്റ് എക്സ്പോർട്ട് ചെയ്യുക</string>
+    <string name="transfer_export_library">ലൈബ്രറിയും പ്ലേലിസ്റ്റുകളും എക്സ്പോർട്ട് ചെയ്യുക</string>
+    <string name="transfer_import">ലൈബ്രറിയോ പ്ലേലിസ്റ്റോ ഇംപോർട്ട് ചെയ്യുക</string>
+    <string name="transfer_choose_format">എക്സ്പോർട്ട് ഫോർമാറ്റ് തിരഞ്ഞെടുക്കുക</string>
+    <string name="transfer_in_progress">ട്രാൻസ്ഫർ പ്രോസസ്സ് ചെയ്യുന്നു…</string>
+    <string name="transfer_import_preview_title">ഇംപോർട്ട് പരിശോധിക്കുക</string>
+    <string name="transfer_import_preview_counts">കണ്ടെത്തിയ പ്ലേലിസ്റ്റുകൾ: %1$d\nകണ്ടെത്തിയ ട്രാക്കുകൾ: %2$d\nപുതിയ ട്രാക്കുകൾ: %3$d\nനിലവിലുള്ള ട്രാക്കുകൾ: %4$d\nപരിഹരിക്കാത്ത പ്രാദേശിക ട്രാക്കുകൾ: %5$d\nതനിപ്പകർപ്പ് ട്രാക്കുകൾ: %6$d\nഅസാധുവായ എൻട്രികൾ: %7$d\n\nപുതിയ ട്രാക്കുകളും പ്ലേലിസ്റ്റ് എൻട്രികളും ചേർക്കും. നിലവിലുള്ള ഇനങ്ങൾ നിലനിർത്തും.</string>
+    <string name="transfer_import_confirm">ഇംപോർട്ട് ചെയ്യുക</string>
+    <string name="transfer_exported">എക്സ്പോർട്ട് പൂർത്തിയായി</string>
+    <string name="transfer_imported">%1$d പുതിയ ട്രാക്കുകളും %2$d പ്ലേലിസ്റ്റ് എൻട്രികളും ഇംപോർട്ട് ചെയ്തു</string>
+    <string name="transfer_failed">ട്രാൻസ്ഫർ പരാജയപ്പെട്ടു</string>
 </resources>

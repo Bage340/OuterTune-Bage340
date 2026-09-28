@@ -1,75 +1,71 @@
-# OuterTune 0.11.1 custom revision
+# OuterTune 0.11.1 v92 custom build
 
-The application ID remains `com.dd3boh.outertune`. The current iterative test release uses
-`versionName = 0.11.1` and `versionCode = 92`.
+The active fork iteration uses upstream base version `0.11.1`, fork revision
+`v92`, and Android `versionCode` 92. Its tag is `0.11.1-v92`. A build attempt
+does not increment the revision. Preview is the current test channel; a Stable
+release requires explicit user acceptance after phone testing.
+
+## Channels and installation
+
+Stable uses application ID `com.dd3boh.outertune`. Preview uses
+`com.dd3boh.outertune.preview`, so both can be installed side by side and keep
+separate app-private databases and files. They are separate apps, not a data
+migration path. Preview uses its own signing identity. Android may reject a
+replacement Preview APK when package, signing identity, and version code match
+an already installed build. Back up/export data before uninstalling; data
+retention after uninstall is not guaranteed. Never change the public revision
+or signing key just to work around an installation failure.
+
+## Build and signing
+
+Use JDK 21 and an Android SDK with the platforms and build tools required by
+the project. Clone with submodules. Core omits the additional FFmpeg decoder;
+Full includes it.
+
+```text
+./gradlew :app:testStableCoreDebugUnitTest :app:lintPreviewCoreUserdebug :app:assemblePreviewCoreUserdebug -DskipFormatKtlint
+./gradlew :app:assembleStableCoreRelease :app:assemblePreviewCoreRelease
+```
+
+On Windows, use `gradlew.bat`. Release outputs are under
+`app/build/outputs/apk/<channel><Abi>/<buildType>/` (for example,
+`previewCore/userdebug` or `stableFull/release`); inspect the actual output
+variant before distributing it. CI must validate package ID, version, signing
+certificate, and SHA-256 before attaching an APK to a release.
+
+Stable signing reads ignored `keystore.properties`; preserve that key to allow
+updates to existing Stable installs. Preview signing reads ignored
+`preview-keystore.properties`; keep a secure backup because losing the key
+prevents signed in-place updates to that Preview package. Do not commit either
+properties file, keystore, passwords, or signing material. Builds without the
+relevant properties are unsigned and are not publishable update packages.
+
+The expected Stable certificate SHA-256 is
+`98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736`.
+Verify the actual APK package, version, alignment, checksum, and certificate
+before distribution. Do not infer successful Play Protect review from a local
+build or signature check.
+
+## Current iteration scope
+
+This v92 iteration includes work on local scanner safety and library
+preservation, local playback path recovery and stream retries, playlist-folder
+organization, playlist-to-library actions, download queue filtering/retry and
+parallelism settings, lyrics provider selection, library/playlist transfer,
+and localization. The exact user-facing summary is in [CHANGELOG.md](CHANGELOG.md).
+Use [docs/PHONE_TEST_PLAN.md](docs/PHONE_TEST_PLAN.md) for acceptance checks;
+automated tests do not establish real-device behavior. In particular, SAF
+provider behavior, Android lifecycle behavior, network retries, stream
+availability, installation/update behavior, and Play Protect outcomes require
+device or service validation.
 
 ## Source history
 
 - Base: AsterTune `b7f58abfd3e77b7548bee353761828cfd213a0c2`.
-- `0.10.15-v90`: materialized source patches from the workflow in
+- `0.10.15-v90` materialized source patches from the workflow in
   `072d8b119e6ebf210870b2447fb419a210c14a6e`.
-- v91 is developed directly from that v90 source, not the abandoned playlist-context experiment.
-- `legacy-outertune-vk` preserves the former repository main; `legacy-v90-workflow`
-  preserves the original reconstruction recipe. Local refs are not evidence of remote publication.
-
-## Build and signing
-
-Use JDK 21 and an Android SDK with the required platforms/build tools:
-
-```text
-./gradlew :app:testCoreDebugUnitTest :app:lintCoreUserdebug :app:assembleCoreUserdebug -DskipFormatKtlint
-```
-
-The universal APK is under `app/build/outputs/apk/core/userdebug/`.
-The manual test workflow signs the core APK with the existing private OuterTune key
-stored in GitHub Secrets, verifies its package/version/certificate, and uploads only a
-short-lived Actions artifact. It does not create a tag or GitHub Release.
-
-Local builds without `keystore.properties` remain unsigned and are not installable updates.
-Never generate a replacement key. Verify package,
-version, alignment, APK SHA-256, and this certificate SHA-256 before publishing:
-
-```text
-98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736
-```
-
-## v91 release notes
-
-- Repair local-library playback after a scan cleared `localPath`: check both DB/queue paths,
-  then the exact audio path retained as song artwork by the local scanners. Persist a readable
-  recovered path without changing IDs, likes, playlist membership, or a newer scanner update.
-- Preserve the last known path when a scan disables a local song. Generated local IDs
-  (`LS` plus eight letters) never enter YouTube resolution, even with missing queue metadata.
-- Report missing/inaccessible local files as a local storage error instead of “video unavailable”.
-- Prefer physical downloads and fresh database paths when playlist queue metadata is stale.
-- Keep the download file index updated after save/delete/rescan, using exact media IDs.
-- Require completed download state before treating internal download cache as offline audio.
-- Store stream URL, client, headers, and safe expiry together; invalidate rejected URLs.
-- Try alternative audio formats and clients, returning only a validated stream.
-- Preserve sequential bulk downloads, nullable-length support, and the bundled player-config snapshot.
-- Include source IDs, local path state, and per-client outcomes when resolution fails.
-  Diagnostic reports can contain private track/playlist IDs and paths; review them before public sharing.
-
-## Phone acceptance checks
-
-Test the same downloaded song from an online playlist, library, and queue with
-airplane mode enabled. Exercise shuffle, next/previous, repeat, seeking, and app
-restart. Then test remote playback, a complete playlist download, an individual
-download, and retry of a failed download. Existing downloads and user data must remain.
-
-For the local-library repair, first retry the reported “Lost Frequency” entry without
-rescanning, including airplane mode. If its original audio path is still readable, it
-should recover automatically. Also check next/previous and playback after a restart.
-An actually moved/deleted file or revoked media permission cannot be repaired from an ID
-alone; the local error includes the recorded paths for diagnosis. No title-based file search
-is used, and no permission is requested automatically during playback.
-
-If a Source error persists, collect its extended diagnostics. Equal IDs with a
-missing local path indicate a storage/index problem; differing IDs require further
-canonical-ID investigation. No title-based alias matching or database migration is introduced.
-
-## v92 release notes
-
-- v92 raises the install revision so this build can be installed over the v91 test APK.
-- It carries the same functional changes as v91; use this prerelease for phone testing.
-- Follow-up APKs for this iterative release must use a higher `versionCode` so Android accepts in-place updates.
+- The v91 source iteration added local-file playback recovery, download and
+  stream retry handling, fail-safe scanning, and playlist-folder organization.
+- v92 continues from the existing `0.11.1-v92` prerelease. See Git history for
+  implementation detail; this document is not a substitute for attribution
+  notices in source and dependency files.

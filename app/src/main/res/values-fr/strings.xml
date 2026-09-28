@@ -147,7 +147,7 @@
     <string name="sleep_timer">Minuterie de Sommeil</string>
     <string name="end_of_song">Fin du titre</string>
     <plurals name="minute">
-        <item quantity="one">1 minute</item>
+        <item quantity="one">%d minute</item>
         <item quantity="many">%d minutes</item>
         <item quantity="other">%d minutes</item>
     </plurals>
@@ -295,4 +295,23 @@
     <string name="ignore_audio_focus_desc">Continuer la lecture lorsqu\'une autre application prend le focus audio. La musique ne sera pas mise en pause par d\'autres sources audio, y compris les appels téléphoniques.</string>
     <string name="enable_betterlyrics">Activer le fournisseur de paroles BetterLyrics</string>
     <string name="enable_simpmusic">Activer le fournisseur de paroles SimpMusic</string>
+    <string name="playlist_library_added_result">Ajoutés : %1$d\nDéjà dans la bibliothèque : %2$d</string>
+    <string name="playlist_library_all_present">Tous les titres sont déjà dans votre bibliothèque.</string>
+    <string name="playlist_library_empty">Cette playlist ne contient aucun titre à ajouter.</string>
+    <string name="playlist_library_failed">Impossible d\'ajouter les titres de la playlist à la bibliothèque.</string>
+    <string name="playlist_library_in_progress">Ajout des titres de la playlist à la bibliothèque…</string>
+    <string name="download_parallelism_title">Téléchargements parallèles</string>
+    <string name="download_parallelism_description">Téléchargez jusqu\'à 3 titres à la fois. Au-delà, les erreurs réseau peuvent augmenter.</string>
+    <string name="download_shared_directory_warning">Utilisez un dossier de téléchargement différent pour Stable et Preview afin d\'éviter que les deux applications écrivent dans les mêmes fichiers.</string>
+    <string name="transfer_export_playlist">Exporter la playlist</string>
+    <string name="transfer_export_library">Exporter la bibliothèque et les playlists</string>
+    <string name="transfer_import">Importer une bibliothèque ou une playlist</string>
+    <string name="transfer_choose_format">Choisir le format d\'exportation</string>
+    <string name="transfer_in_progress">Traitement du transfert…</string>
+    <string name="transfer_import_preview_title">Vérifier l\'importation</string>
+    <string name="transfer_import_preview_counts">Playlists trouvées : %1$d\nTitres trouvés : %2$d\nNouveaux titres : %3$d\nTitres existants : %4$d\nTitres locaux non résolus : %5$d\nTitres en double : %6$d\nEntrées non valides : %7$d\n\nLes nouveaux titres et entrées de playlist seront ajoutés. Les éléments existants seront conservés.</string>
+    <string name="transfer_import_confirm">Importer</string>
+    <string name="transfer_exported">Exportation terminée</string>
+    <string name="transfer_imported">%1$d nouveaux titres et %2$d entrées de playlist importés</string>
+    <string name="transfer_failed">Échec du transfert</string>
 </resources>

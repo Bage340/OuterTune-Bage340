@@ -598,4 +598,23 @@
     <string name="move_to_folder">ย้ายไปที่โฟลเดอร์</string>
     <string name="root_folder">เพลย์ลิสต์ทั้งหมด</string>
     <string name="previous_folder">โฟลเดอร์ก่อนหน้า</string>
+    <string name="playlist_library_added_result">เพิ่มแล้ว: %1$d\nมีในคลังอยู่แล้ว: %2$d</string>
+    <string name="playlist_library_all_present">เพลงทั้งหมดอยู่ในคลังของคุณแล้ว</string>
+    <string name="playlist_library_empty">เพลย์ลิสต์นี้ไม่มีเพลงให้เพิ่ม</string>
+    <string name="playlist_library_failed">ไม่สามารถเพิ่มเพลงในเพลย์ลิสต์ลงในคลังได้</string>
+    <string name="playlist_library_in_progress">กำลังเพิ่มเพลงในเพลย์ลิสต์ลงในคลัง…</string>
+    <string name="download_parallelism_title">ดาวน์โหลดพร้อมกัน</string>
+    <string name="download_parallelism_description">ดาวน์โหลดได้สูงสุด 3 เพลงพร้อมกัน การดาวน์โหลดมากกว่านี้อาจทำให้เกิดข้อผิดพลาดของเครือข่ายเพิ่มขึ้น</string>
+    <string name="download_shared_directory_warning">ใช้โฟลเดอร์ดาวน์โหลดแยกกันสำหรับ Stable และ Preview เพื่อไม่ให้ทั้งสองแอปเขียนทับไฟล์เดียวกัน</string>
+    <string name="transfer_export_playlist">ส่งออกเพลย์ลิสต์</string>
+    <string name="transfer_export_library">ส่งออกคลังเพลงและเพลย์ลิสต์</string>
+    <string name="transfer_import">นำเข้าคลังเพลงหรือเพลย์ลิสต์</string>
+    <string name="transfer_choose_format">เลือกรูปแบบการส่งออก</string>
+    <string name="transfer_in_progress">กำลังประมวลผลการโอน…</string>
+    <string name="transfer_import_preview_title">ตรวจสอบการนำเข้า</string>
+    <string name="transfer_import_preview_counts">พบเพลย์ลิสต์: %1$d\nพบแทร็ก: %2$d\nแทร็กใหม่: %3$d\nแทร็กที่มีอยู่แล้ว: %4$d\nแทร็กในเครื่องที่ยังจับคู่ไม่ได้: %5$d\nแทร็กซ้ำ: %6$d\nรายการที่ไม่ถูกต้อง: %7$d\n\nระบบจะเพิ่มแทร็กใหม่และรายการในเพลย์ลิสต์ โดยเก็บรายการที่มีอยู่แล้วไว้</string>
+    <string name="transfer_import_confirm">นำเข้า</string>
+    <string name="transfer_exported">ส่งออกเสร็จแล้ว</string>
+    <string name="transfer_imported">นำเข้าแทร็กใหม่ %1$d รายการและรายการในเพลย์ลิสต์ %2$d รายการแล้ว</string>
+    <string name="transfer_failed">โอนย้ายไม่สำเร็จ</string>
 </resources>

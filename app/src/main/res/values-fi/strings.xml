@@ -279,4 +279,23 @@
     <string name="new_version_available">Uusi versio saatavilla</string>
     <string name="translation_models">Käännösmallit</string>
     <string name="clear_translation_models">Tyhjennä käännösmallit</string>
+    <string name="playlist_library_added_result">Lisätty: %1$d\nJo kirjastossa: %2$d</string>
+    <string name="playlist_library_all_present">Kaikki kappaleet ovat jo kirjastossasi.</string>
+    <string name="playlist_library_empty">Tässä soittolistassa ei ole lisättäviä kappaleita.</string>
+    <string name="playlist_library_failed">Soittolistan kappaleita ei voitu lisätä kirjastoon.</string>
+    <string name="playlist_library_in_progress">Lisätään soittolistan kappaleita kirjastoon…</string>
+    <string name="download_parallelism_title">Rinnakkaiset lataukset</string>
+    <string name="download_parallelism_description">Lataa enintään 3 kappaletta kerralla. Useampi kappale voi lisätä verkkovirheitä.</string>
+    <string name="download_shared_directory_warning">Käytä eri latauskansioita vakaalle ja esikatseluversiolle, jotta sovellukset eivät kirjoita samoihin tiedostoihin.</string>
+    <string name="transfer_export_playlist">Vie soittolista</string>
+    <string name="transfer_export_library">Vie kirjasto ja soittolistat</string>
+    <string name="transfer_import">Tuo kirjasto tai soittolista</string>
+    <string name="transfer_choose_format">Valitse vientimuoto</string>
+    <string name="transfer_in_progress">Siirtoa käsitellään…</string>
+    <string name="transfer_import_preview_title">Tarkista tuonti</string>
+    <string name="transfer_import_preview_counts">Löydetyt soittolistat: %1$d\nLöydetyt kappaleet: %2$d\nUudet kappaleet: %3$d\nOlemassa olevat kappaleet: %4$d\nRatkaisemattomat paikalliset kappaleet: %5$d\nKaksoiskappaleet: %6$d\nVirheelliset merkinnät: %7$d\n\nUudet kappaleet ja soittolistojen merkinnät lisätään. Olemassa olevat kohteet säilytetään.</string>
+    <string name="transfer_import_confirm">Tuo</string>
+    <string name="transfer_exported">Vienti valmis</string>
+    <string name="transfer_imported">Tuotiin %1$d uutta kappaletta ja %2$d soittolistan merkintää</string>
+    <string name="transfer_failed">Siirto epäonnistui</string>
 </resources>

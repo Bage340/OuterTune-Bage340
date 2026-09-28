@@ -147,7 +147,7 @@
     <string name="sleep_timer">Timer para dormir</string>
     <string name="end_of_song">Fim da música</string>
     <plurals name="minute">
-        <item quantity="one">1 minuto</item>
+        <item quantity="one">%d minuto</item>
         <item quantity="many">%d de minutos</item>
         <item quantity="other">%d minutos</item>
     </plurals>
@@ -288,4 +288,23 @@
     <string name="use_login_for_browse">Usar a conta para a navegação de conteúdo</string>
     <string name="use_login_for_browse_desc">Isto pode influenciar em que conteúdo você vê, e se você tiver Premium por exemplo, verá álbuns que só estão disponíveis com Premium</string>
     <string name="action_login">Conectar-se</string>
+    <string name="playlist_library_added_result">Adicionadas: %1$d\nJá na biblioteca: %2$d</string>
+    <string name="playlist_library_all_present">Todas as músicas já estão na sua biblioteca.</string>
+    <string name="playlist_library_empty">Esta playlist não tem músicas para adicionar.</string>
+    <string name="playlist_library_failed">Não foi possível adicionar as músicas da playlist à biblioteca.</string>
+    <string name="playlist_library_in_progress">Adicionando as músicas da playlist à biblioteca…</string>
+    <string name="download_parallelism_title">Downloads paralelos</string>
+    <string name="download_parallelism_description">Baixe até 3 músicas de uma vez. Mais downloads podem aumentar os erros de rede.</string>
+    <string name="download_shared_directory_warning">Use pastas de download diferentes para as versões estável e de prévia para evitar que os dois aplicativos gravem nos mesmos arquivos.</string>
+    <string name="transfer_export_playlist">Exportar playlist</string>
+    <string name="transfer_export_library">Exportar biblioteca e playlists</string>
+    <string name="transfer_import">Importar biblioteca ou playlist</string>
+    <string name="transfer_choose_format">Escolher formato de exportação</string>
+    <string name="transfer_in_progress">Processando transferência…</string>
+    <string name="transfer_import_preview_title">Revisar importação</string>
+    <string name="transfer_import_preview_counts">Playlists encontradas: %1$d\nFaixas encontradas: %2$d\nFaixas novas: %3$d\nFaixas existentes: %4$d\nFaixas locais não resolvidas: %5$d\nFaixas duplicadas: %6$d\nEntradas inválidas: %7$d\n\nAs faixas novas e as entradas das playlists serão adicionadas. Os itens existentes serão mantidos.</string>
+    <string name="transfer_import_confirm">Importar</string>
+    <string name="transfer_exported">Exportação concluída</string>
+    <string name="transfer_imported">%1$d faixas novas e %2$d entradas de playlists importadas</string>
+    <string name="transfer_failed">Falha na transferência</string>
 </resources>

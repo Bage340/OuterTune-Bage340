@@ -288,4 +288,23 @@
     <string name="refetch">Reîncarcă</string>
     <string name="sided">Într-o parte</string>
     <string name="remove_download_playlist_confirm">Sigur vrei să ștergi toate cele %s (de) melodii din playlist din Melodii descărcate?</string>
+    <string name="playlist_library_added_result">Adăugate: %1$d\nDeja în bibliotecă: %2$d</string>
+    <string name="playlist_library_all_present">Toate melodiile sunt deja în biblioteca ta.</string>
+    <string name="playlist_library_empty">Această listă nu are melodii de adăugat.</string>
+    <string name="playlist_library_failed">Melodiile din listă nu au putut fi adăugate în bibliotecă.</string>
+    <string name="playlist_library_in_progress">Se adaugă melodiile din listă în bibliotecă…</string>
+    <string name="download_parallelism_title">Descărcări simultane</string>
+    <string name="download_parallelism_description">Descarcă până la 3 melodii simultan. Mai multe descărcări pot crește numărul erorilor de rețea.</string>
+    <string name="download_shared_directory_warning">Folosește dosare de descărcare diferite pentru versiunile Stable și Preview, ca aplicațiile să nu scrie în aceleași fișiere.</string>
+    <string name="transfer_export_playlist">Exportă lista de redare</string>
+    <string name="transfer_export_library">Exportă biblioteca și listele de redare</string>
+    <string name="transfer_import">Importă biblioteca sau lista de redare</string>
+    <string name="transfer_choose_format">Alege formatul de export</string>
+    <string name="transfer_in_progress">Se procesează transferul…</string>
+    <string name="transfer_import_preview_title">Verifică importul</string>
+    <string name="transfer_import_preview_counts">Liste de redare găsite: %1$d\nPiese găsite: %2$d\nPiese noi: %3$d\nPiese existente: %4$d\nPiese locale nerezolvate: %5$d\nPiese duplicate: %6$d\nIntrări nevalide: %7$d\n\nPiesele noi și intrările din listele de redare vor fi adăugate. Elementele existente vor fi păstrate.</string>
+    <string name="transfer_import_confirm">Importă</string>
+    <string name="transfer_exported">Export finalizat</string>
+    <string name="transfer_imported">S-au importat %1$d piese noi și %2$d intrări în listele de redare</string>
+    <string name="transfer_failed">Transferul a eșuat</string>
 </resources>

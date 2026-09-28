@@ -25,6 +25,7 @@ object LocalLyricsProvider : LyricsProvider {
         title: String,
         artist: String,
         duration: Int,
+        album: String?,
     ): LyricsFetchResult {
         throw NotImplementedError()
     }

@@ -278,4 +278,23 @@
     <string name="use_login_for_browse">Masuk untuk menjelajahi konten</string>
     <string name="use_login_for_browse_desc">Hal ini dapat memengaruhi konten yang Anda lihat dan misalnya menampilkan album khusus premium jika Anda masuk dengan akun Premium</string>
     <string name="action_login">Masuk</string>
+    <string name="playlist_library_added_result">Ditambahkan: %1$d\nSudah ada di pustaka: %2$d</string>
+    <string name="playlist_library_all_present">Semua lagu sudah ada di pustaka Anda.</string>
+    <string name="playlist_library_empty">Tidak ada lagu dalam daftar putar ini untuk ditambahkan.</string>
+    <string name="playlist_library_failed">Lagu dari daftar putar tidak dapat ditambahkan ke pustaka.</string>
+    <string name="playlist_library_in_progress">Menambahkan lagu dari daftar putar ke pustaka…</string>
+    <string name="download_parallelism_title">Unduhan paralel</string>
+    <string name="download_parallelism_description">Unduh hingga 3 lagu sekaligus. Mengunduh lebih banyak dapat meningkatkan kesalahan jaringan.</string>
+    <string name="download_shared_directory_warning">Gunakan folder unduhan yang berbeda untuk Stable dan Preview agar kedua aplikasi tidak menulis ke file yang sama.</string>
+    <string name="transfer_export_playlist">Ekspor playlist</string>
+    <string name="transfer_export_library">Ekspor koleksi dan playlist</string>
+    <string name="transfer_import">Impor koleksi atau playlist</string>
+    <string name="transfer_choose_format">Pilih format ekspor</string>
+    <string name="transfer_in_progress">Memproses transfer…</string>
+    <string name="transfer_import_preview_title">Tinjau impor</string>
+    <string name="transfer_import_preview_counts">Playlist ditemukan: %1$d\nTrack ditemukan: %2$d\nTrack baru: %3$d\nTrack yang sudah ada: %4$d\nTrack lokal yang belum ditemukan: %5$d\nTrack duplikat: %6$d\nEntri tidak valid: %7$d\n\nTrack baru dan entri playlist akan ditambahkan. Item yang sudah ada akan dipertahankan.</string>
+    <string name="transfer_import_confirm">Impor</string>
+    <string name="transfer_exported">Ekspor selesai</string>
+    <string name="transfer_imported">%1$d track baru dan %2$d entri playlist diimpor</string>
+    <string name="transfer_failed">Transfer gagal</string>
 </resources>

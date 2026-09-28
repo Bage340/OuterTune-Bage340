@@ -73,6 +73,9 @@ class MusicDatabase(
         }
     }
 
+    suspend fun <T> withTransferTransaction(block: suspend MusicDatabase.() -> T): T =
+        delegate.withTransaction { block(this@MusicDatabase) }
+
     fun close() = delegate.close()
 
     companion object {

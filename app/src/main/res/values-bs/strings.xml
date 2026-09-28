@@ -287,4 +287,23 @@
     <string name="translation_models">Modeli prevođenja</string>
     <string name="use_login_for_browse_desc">Ovo može utjecati na sadržaj koji vidite i, na primjer, prikazivati albume koji su dostupni samo za Premium korisnike ako ste prijavljeni sa Premium računom ili nalogom</string>
     <string name="use_login_for_browse">Koristite prijavu za pregledavanje sadržaja</string>
+    <string name="playlist_library_added_result">Dodano: %1$d\nVeć u biblioteci: %2$d</string>
+    <string name="playlist_library_all_present">Sve pjesme su već u vašoj biblioteci.</string>
+    <string name="playlist_library_empty">Na ovoj listi nema pjesama za dodavanje.</string>
+    <string name="playlist_library_failed">Pjesme s liste nije moguće dodati u biblioteku.</string>
+    <string name="playlist_library_in_progress">Dodavanje pjesama s liste u biblioteku…</string>
+    <string name="download_parallelism_title">Paralelna preuzimanja</string>
+    <string name="download_parallelism_description">Preuzmite do 3 pjesme istovremeno. Više preuzimanja može povećati broj mrežnih grešaka.</string>
+    <string name="download_shared_directory_warning">Koristite različite foldere za preuzimanje za stabilnu i probnu verziju kako biste spriječili da obje aplikacije upisuju iste datoteke.</string>
+    <string name="transfer_export_playlist">Izvezi playlistu</string>
+    <string name="transfer_export_library">Izvezi biblioteku i playliste</string>
+    <string name="transfer_import">Uvezi biblioteku ili playlistu</string>
+    <string name="transfer_choose_format">Odaberi format izvoza</string>
+    <string name="transfer_in_progress">Obrada prijenosa…</string>
+    <string name="transfer_import_preview_title">Pregled uvoza</string>
+    <string name="transfer_import_preview_counts">Pronađene playliste: %1$d\nPronađene pjesme: %2$d\nNove pjesme: %3$d\nPostojeće pjesme: %4$d\nNerazriješene lokalne pjesme: %5$d\nDuplikati pjesama: %6$d\nNevažeći unosi: %7$d\n\nNove pjesme i stavke playliste bit će dodane. Postojeće stavke će ostati.</string>
+    <string name="transfer_import_confirm">Uvezi</string>
+    <string name="transfer_exported">Izvoz je završen</string>
+    <string name="transfer_imported">Uvezeno novih pjesama: %1$d; stavki playliste: %2$d</string>
+    <string name="transfer_failed">Prijenos nije uspio</string>
 </resources>

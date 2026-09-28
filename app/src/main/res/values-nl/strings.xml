@@ -279,4 +279,23 @@
     <string name="use_login_for_browse_desc">Dit kan invloed hebben op welke inhoud u ziet en laat bijvoorbeeld alleen premium albums zien als u bent ingelogd met een Premium account</string>
     <string name="use_login_for_browse">Gebruik login om inhoud te bekijken</string>
     <string name="action_login">Inloggen</string>
+    <string name="playlist_library_added_result">Toegevoegd: %1$d\nAl in de bibliotheek: %2$d</string>
+    <string name="playlist_library_all_present">Alle nummers staan al in je bibliotheek.</string>
+    <string name="playlist_library_empty">Deze afspeellijst bevat geen nummers om toe te voegen.</string>
+    <string name="playlist_library_failed">De nummers uit de afspeellijst konden niet worden toegevoegd aan de bibliotheek.</string>
+    <string name="playlist_library_in_progress">Nummers uit de afspeellijst toevoegen aan de bibliotheek…</string>
+    <string name="download_parallelism_title">Parallelle downloads</string>
+    <string name="download_parallelism_description">Download maximaal 3 nummers tegelijk. Meer downloads kunnen netwerkfouten veroorzaken.</string>
+    <string name="download_shared_directory_warning">Gebruik aparte downloadmappen voor Stable en Preview, zodat beide apps niet naar dezelfde bestanden schrijven.</string>
+    <string name="transfer_export_playlist">Afspeellijst exporteren</string>
+    <string name="transfer_export_library">Bibliotheek en afspeellijsten exporteren</string>
+    <string name="transfer_import">Bibliotheek of afspeellijst importeren</string>
+    <string name="transfer_choose_format">Kies exportindeling</string>
+    <string name="transfer_in_progress">Overdracht wordt verwerkt…</string>
+    <string name="transfer_import_preview_title">Import controleren</string>
+    <string name="transfer_import_preview_counts">Gevonden afspeellijsten: %1$d\nGevonden nummers: %2$d\nNieuwe nummers: %3$d\nBestaande nummers: %4$d\nNiet gevonden lokale nummers: %5$d\nDubbele nummers: %6$d\nOngeldige items: %7$d\n\nNieuwe nummers en afspeellijstitems worden toegevoegd. Bestaande items blijven behouden.</string>
+    <string name="transfer_import_confirm">Importeren</string>
+    <string name="transfer_exported">Export voltooid</string>
+    <string name="transfer_imported">%1$d nieuwe nummers en %2$d afspeellijstitems geïmporteerd</string>
+    <string name="transfer_failed">Overdracht mislukt</string>
 </resources>

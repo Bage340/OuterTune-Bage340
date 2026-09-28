@@ -283,4 +283,23 @@
     <string name="new_version_available">發現新版本</string>
     <string name="translation_models">翻譯模型</string>
     <string name="clear_translation_models">清除翻譯模型</string>
+    <string name="playlist_library_added_result">已加入：%1$d\n媒體庫中已有：%2$d</string>
+    <string name="playlist_library_all_present">所有歌曲都已在媒體庫中。</string>
+    <string name="playlist_library_empty">此播放清單中沒有可加入的歌曲。</string>
+    <string name="playlist_library_failed">無法將播放清單中的歌曲加入媒體庫。</string>
+    <string name="playlist_library_in_progress">正在將播放清單中的歌曲加入媒體庫…</string>
+    <string name="download_parallelism_title">平行下載</string>
+    <string name="download_parallelism_description">一次最多下載 3 首歌曲。下載更多歌曲可能會增加網路錯誤。</string>
+    <string name="download_shared_directory_warning">請為穩定版和預覽版使用不同的下載資料夾，以免兩個應用程式寫入相同檔案。</string>
+    <string name="transfer_export_playlist">匯出播放清單</string>
+    <string name="transfer_export_library">匯出音樂庫和播放清單</string>
+    <string name="transfer_import">匯入音樂庫或播放清單</string>
+    <string name="transfer_choose_format">選擇匯出格式</string>
+    <string name="transfer_in_progress">正在處理傳輸…</string>
+    <string name="transfer_import_preview_title">檢查匯入內容</string>
+    <string name="transfer_import_preview_counts">找到的播放清單：%1$d\n找到的曲目：%2$d\n新增曲目：%3$d\n既有曲目：%4$d\n未配對的本機曲目：%5$d\n重複曲目：%6$d\n無效項目：%7$d\n\n將新增曲目和播放清單項目。既有項目會保留。</string>
+    <string name="transfer_import_confirm">匯入</string>
+    <string name="transfer_exported">匯出完成</string>
+    <string name="transfer_imported">已匯入 %1$d 首新曲目和 %2$d 個播放清單項目</string>
+    <string name="transfer_failed">傳輸失敗</string>
 </resources>

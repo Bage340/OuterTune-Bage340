@@ -11,6 +11,7 @@ import androidx.media3.database.DatabaseProvider
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.CacheSpan
+import androidx.media3.datasource.cache.ContentMetadata
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.offline.Download
@@ -25,6 +26,7 @@ import com.dd3boh.outertune.constants.AudioQualityKey
 import com.dd3boh.outertune.constants.DOWNLOAD_DEBUG
 import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadOnWifiOnlyKey
+import com.dd3boh.outertune.constants.DownloadParallelismKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.FormatEntity
@@ -87,6 +89,8 @@ class DownloadUtil @Inject constructor(
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val songUrlCache = StreamUrlCache()
     private val rejectedStreamClients = ConcurrentHashMap<String, String>()
+    private val reservedDownloadIds = ConcurrentHashMap.newKeySet<String>()
+    private val downloadScope = CoroutineScope(dlCoroutine)
     private val dataSourceFactory = ResolvingDataSource.Factory(
         CacheDataSource.Factory()
             .setCache(playerCache)
@@ -109,8 +113,10 @@ class DownloadUtil @Inject constructor(
             )
     ) { dataSpec ->
         val mediaId = dataSpec.key ?: error("No media id")
-        val length = if (dataSpec.length >= 0) dataSpec.length else 1
-        if (playerCache.isCached(mediaId, dataSpec.position, length)) {
+        val contentLength = playerCache.getContentMetadata(mediaId)
+            .get(ContentMetadata.KEY_CONTENT_LENGTH, -1L)
+        val cachedRangeLength = requiredCachedStreamLength(dataSpec.length, dataSpec.position, contentLength)
+        if (cachedRangeLength != null && playerCache.isCached(mediaId, dataSpec.position, cachedRangeLength)) {
             return@Factory dataSpec
         }
 
@@ -164,7 +170,7 @@ class DownloadUtil @Inject constructor(
     val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
     val downloadManager: DownloadManager =
         DownloadManager(context, databaseProvider, downloadCache, dataSourceFactory, Executor(Runnable::run)).apply {
-            maxParallelDownloads = 1
+            maxParallelDownloads = context.dataStore.get(DownloadParallelismKey, 1).coerceIn(1, 3)
             requirements = downloadRequirements(context.dataStore.get(DownloadOnWifiOnlyKey, true))
             addListener(
                 ExoDownloadService.TerminalStateNotificationHelper(
@@ -194,18 +200,19 @@ class DownloadUtil @Inject constructor(
     }
 
     fun download(songs: List<MediaMetadata>) {
-        if (songs.any { downloads.value[it.id] == null }) notifyIfWaitingForWifi()
-        songs.forEach { song -> downloadSong(song.id, song.title) }
+        queueEligibleDownloads(songs.map { DownloadCandidate(it.id, it.title, isLocal = it.isLocal) })
     }
 
     fun download(song: MediaMetadata) {
-        if (downloads.value[song.id] == null) notifyIfWaitingForWifi()
-        downloadSong(song.id, song.title)
+        download(listOf(song))
     }
 
     fun download(song: SongEntity) {
-        if (downloads.value[song.id] == null) notifyIfWaitingForWifi()
-        downloadSong(song.id, song.title)
+        queueEligibleDownloads(listOf(DownloadCandidate(song.id, song.title, isLocal = song.isLocal)))
+    }
+
+    fun setDownloadParallelism(value: Int) {
+        downloadManager.maxParallelDownloads = value.coerceIn(1, 3)
     }
 
     /**
@@ -231,20 +238,65 @@ class DownloadUtil @Inject constructor(
         }
     }
 
-    private fun downloadSong(id: String, title: String) {
-        if (downloads.value[id] != null) return
-        // A manual retry must resolve a fresh stream instead of reusing the URL that just failed.
-        songUrlCache.invalidate(id)
-        val downloadRequest = DownloadRequest.Builder(id, id.toUri())
-            .setCustomCacheKey(id)
-            .setData(title.toByteArray())
-            .build()
-        DownloadService.sendAddDownload(
-            context,
-            ExoDownloadService::class.java,
-            downloadRequest,
-            false
-        )
+    private fun queueEligibleDownloads(songs: List<DownloadCandidate>) {
+        if (songs.isEmpty()) return
+        downloadScope.launch {
+            try {
+                val localFileIds = localMgr.getAvailableFiles(false).keys
+                val recordedDownloads = downloads.value
+                val recordedDatabaseIds = database.downloadedOrQueuedSongs().first().mapTo(mutableSetOf()) { it.id }
+                val candidates = songs.distinctBy { it.id }.map { song ->
+                    val indexed = downloadManager.downloadIndex.getDownload(song.id)
+                    song.copy(
+                        hasLocalFile = song.id in localFileIds,
+                        state = indexed?.state,
+                        hasCompleteCache = indexed?.state == Download.STATE_COMPLETED &&
+                            hasCompleteDownloadCache(indexed),
+                        hasRecordedDownload = recordedDownloads[song.id] != null || song.id in recordedDatabaseIds,
+                        isReserved = song.id in reservedDownloadIds,
+                    )
+                }
+                val plan = planDownloads(candidates)
+                Log.i(TAG, "Download preflight: downloaded=${plan.alreadyDownloaded}, queued=${plan.alreadyQueued}, " +
+                    "toQueue=${plan.toQueue.size}, unavailable=${plan.unavailable}")
+                if (plan.staleMarkers.isNotEmpty()) {
+                    downloads.update { it - plan.staleMarkers }
+                    plan.staleMarkers.forEach { database.updateDownloadStatus(it, null) }
+                }
+
+                val toQueue = plan.toQueue.filter { reservedDownloadIds.add(it.id) }
+                if (toQueue.isNotEmpty()) withContext(Dispatchers.Main) { notifyIfWaitingForWifi() }
+                toQueue.forEach { song ->
+                    try {
+                        // Failed downloads must resolve a new stream URL on manual retry.
+                        songUrlCache.invalidate(song.id)
+                        val request = DownloadRequest.Builder(song.id, song.id.toUri())
+                            .setCustomCacheKey(song.id)
+                            .setData(song.title.toByteArray())
+                            .build()
+                        DownloadService.sendAddDownload(
+                            context,
+                            ExoDownloadService::class.java,
+                            request,
+                            false,
+                        )
+                    } catch (exception: Exception) {
+                        reservedDownloadIds.remove(song.id)
+                        Log.e(TAG, "Unable to queue download ${song.id}", exception)
+                    }
+                }
+            } catch (exception: Exception) {
+                Log.e(TAG, "Unable to inspect downloads before queueing", exception)
+            }
+        }
+    }
+
+    private fun hasCompleteDownloadCache(download: Download): Boolean {
+        val id = download.request.id
+        val metadataLength = downloadCache.getContentMetadata(id)
+            .get(ContentMetadata.KEY_CONTENT_LENGTH, -1L)
+        val expectedLength = maxOf(download.contentLength, metadataLength, download.bytesDownloaded)
+        return expectedLength > 0 && downloadCache.isCached(id, 0, expectedLength)
     }
 
     fun resumeDownloadsOnStart() {
@@ -507,6 +559,7 @@ class DownloadUtil @Inject constructor(
                     download: Download,
                     finalException: Exception?
                 ) {
+                    reservedDownloadIds.remove(download.request.id)
                     downloads.update { map ->
                         map.toMutableMap().apply {
                             val state = stateToLocalDateTime(download)

@@ -62,7 +62,7 @@ object SimpMusicLyrics {
         videoId: String,
         duration: Int,
     ): Result<String?> = runCatching {
-        queryLyrics(videoId).selectBestRaw(duration)
+        queryLyrics(videoId).selectBestRaw(videoId, duration)
     }
 
     suspend fun getAllLyrics(
@@ -90,14 +90,14 @@ object SimpMusicLyrics {
      * Pick the best track for [duration] and return its raw lyrics, preferring synced (line-timed LRC)
      * over plain text. Returns null when no track carries either.
      */
-    internal fun List<LyricsData>.selectBestRaw(duration: Int): String? {
-        val best = bestMatchingFor(duration)
-        return best?.syncedLyrics ?: best?.plainLyrics
-    }
-
-    private fun List<LyricsData>.bestMatchingFor(duration: Int): LyricsData? {
-        if (isEmpty()) return null
-        if (duration <= 0 || size == 1) return first()
-        return minByOrNull { abs((it.duration ?: 0) - duration) }
+    internal fun List<LyricsData>.selectBestRaw(videoId: String, duration: Int): String? {
+        val matching = filter { candidate ->
+            (candidate.videoId == null || candidate.videoId == videoId) &&
+                (duration <= 0 || candidate.duration == null || abs(candidate.duration - duration) <= 8)
+        }
+        val byDuration = if (duration > 0) matching.sortedBy { abs((it.duration ?: duration) - duration) }
+            else matching
+        return byDuration.firstNotNullOfOrNull { it.syncedLyrics?.takeIf(String::isNotBlank) }
+            ?: byDuration.firstNotNullOfOrNull { it.plainLyrics?.takeIf(String::isNotBlank) }
     }
 }

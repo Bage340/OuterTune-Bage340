@@ -139,7 +139,7 @@
     <string name="sleep_timer">স্লীপ টাইমার</string>
     <string name="end_of_song">গান শেষে</string>
     <plurals name="minute">
-        <item quantity="one">১ মিনিট</item>
+        <item quantity="one">%d মিনিট</item>
         <item quantity="other">%d মিনিট</item>
     </plurals>
     <string name="error_no_stream">স্ট্রিম পাওয়া যায়নি</string>
@@ -279,4 +279,23 @@
     <string name="options">বিকল্পসমূহ</string>
     <string name="preview">প্রিভিউ</string>
     <string name="enable_discord_rpc">রিচ প্রেজেন্স সক্ষম করুন</string>
+    <string name="playlist_library_added_result">যোগ করা হয়েছে: %1$d\nআগে থেকেই লাইব্রেরিতে আছে: %2$d</string>
+    <string name="playlist_library_all_present">সব গান ইতিমধ্যেই আপনার লাইব্রেরিতে আছে।</string>
+    <string name="playlist_library_empty">এই প্লেলিস্টে যোগ করার মতো কোনো গান নেই।</string>
+    <string name="playlist_library_failed">প্লেলিস্টের গানগুলি লাইব্রেরিতে যোগ করা যায়নি।</string>
+    <string name="playlist_library_in_progress">প্লেলিস্টের গানগুলি লাইব্রেরিতে যোগ করা হচ্ছে…</string>
+    <string name="download_parallelism_title">সমান্তরাল ডাউনলোড</string>
+    <string name="download_parallelism_description">একসঙ্গে সর্বোচ্চ ৩টি গান ডাউনলোড করুন। এর বেশি হলে নেটওয়ার্কে ত্রুটি বাড়তে পারে।</string>
+    <string name="download_shared_directory_warning">Stable ও Preview-এর জন্য আলাদা ডাউনলোড ফোল্ডার ব্যবহার করুন, যাতে দুই অ্যাপ একই ফাইলে লিখতে না পারে।</string>
+    <string name="transfer_export_playlist">প্লেলিস্ট রপ্তানি করুন</string>
+    <string name="transfer_export_library">লাইব্রেরি ও প্লেলিস্ট রপ্তানি করুন</string>
+    <string name="transfer_import">লাইব্রেরি বা প্লেলিস্ট আমদানি করুন</string>
+    <string name="transfer_choose_format">রপ্তানির ফরম্যাট বেছে নিন</string>
+    <string name="transfer_in_progress">ট্রান্সফার প্রক্রিয়াকরণ চলছে…</string>
+    <string name="transfer_import_preview_title">আমদানি পর্যালোচনা করুন</string>
+    <string name="transfer_import_preview_counts">পাওয়া প্লেলিস্ট: %1$d\nপাওয়া ট্র্যাক: %2$d\nনতুন ট্র্যাক: %3$d\nআগে থেকেই থাকা ট্র্যাক: %4$d\nমেলেনি এমন স্থানীয় ট্র্যাক: %5$d\nডুপ্লিকেট ট্র্যাক: %6$d\nঅবৈধ এন্ট্রি: %7$d\n\nনতুন ট্র্যাক ও প্লেলিস্টের এন্ট্রি যোগ করা হবে। আগে থেকে থাকা আইটেম অপরিবর্তিত থাকবে।</string>
+    <string name="transfer_import_confirm">আমদানি করুন</string>
+    <string name="transfer_exported">রপ্তানি সম্পূর্ণ</string>
+    <string name="transfer_imported">%1$dটি নতুন ট্র্যাক ও %2$dটি প্লেলিস্ট এন্ট্রি আমদানি হয়েছে</string>
+    <string name="transfer_failed">ট্রান্সফার ব্যর্থ হয়েছে</string>
 </resources>

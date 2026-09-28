@@ -21,6 +21,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.FilterAlt
+import androidx.compose.material.icons.automirrored.rounded.Input
+import androidx.compose.material.icons.rounded.Output
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Shuffle
@@ -84,6 +86,8 @@ import com.dd3boh.outertune.ui.component.ScrollToTopManager
 import com.dd3boh.outertune.ui.component.SelectHeader
 import com.dd3boh.outertune.ui.component.SortHeader
 import com.dd3boh.outertune.ui.component.items.SongListItem
+import com.dd3boh.outertune.ui.dialog.LibraryTransferHost
+import com.dd3boh.outertune.ui.dialog.LibraryTransferRequest
 import com.dd3boh.outertune.ui.menu.ActionDropdown
 import com.dd3boh.outertune.ui.menu.DropdownItem
 import com.dd3boh.outertune.ui.utils.MEDIA_PERMISSION_LEVEL
@@ -120,6 +124,8 @@ fun LibrarySongsScreen(
     val isSyncingRemoteSongs by viewModel.isSyncingRemoteSongs.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     val pullRefreshState = rememberPullToRefreshState()
+    var transferRequest by remember { mutableStateOf<LibraryTransferRequest?>(null) }
+    LibraryTransferHost(transferRequest) { transferRequest = null }
 
     val lazyListState = rememberLazyListState()
 
@@ -258,6 +264,16 @@ fun LibrarySongsScreen(
                                         )
                                     )
                                 }
+                            ),
+                            DropdownItem(
+                                title = stringResource(R.string.transfer_export_library),
+                                leadingIcon = { Icon(Icons.Rounded.Output, null) },
+                                action = { transferRequest = LibraryTransferRequest.ExportLibrary },
+                            ),
+                            DropdownItem(
+                                title = stringResource(R.string.transfer_import),
+                                leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
+                                action = { transferRequest = LibraryTransferRequest.Import },
                             ),
                         ),
                     )

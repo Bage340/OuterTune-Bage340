@@ -282,6 +282,7 @@
     <string name="scanner_auto_start">מרענן מדיה מקומית ותיקיות הורדת שירים…</string>
     <plurals name="scanner_n_song_processed">
         <item quantity="one">%d שיר עובד</item>
+        <item quantity="two">%d שירים עובדו</item>
         <item quantity="other">%d שירים עובדו</item>
     </plurals>
     <string name="scanner_strict_file_paths_title">התאמת נתיבי קבצים במקום מטא־נתונים</string>

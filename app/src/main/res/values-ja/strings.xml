@@ -285,4 +285,23 @@
     <string name="use_login_for_browse_desc">例えば、Premiumのアカウントでログインした時に、Premium限定のアルバムが表示されるようになります</string>
     <string name="use_login_for_browse">表示されるコンテンツをアカウントと結び付ける</string>
     <string name="action_login">ログイン</string>
+    <string name="playlist_library_added_result">追加: %1$d\nライブラリに登録済み: %2$d</string>
+    <string name="playlist_library_all_present">すべての曲はすでにライブラリにあります。</string>
+    <string name="playlist_library_empty">このプレイリストに追加できる曲はありません。</string>
+    <string name="playlist_library_failed">プレイリストの曲をライブラリに追加できませんでした。</string>
+    <string name="playlist_library_in_progress">プレイリストの曲をライブラリに追加しています…</string>
+    <string name="download_parallelism_title">並列ダウンロード</string>
+    <string name="download_parallelism_description">一度に最大3曲をダウンロードします。それ以上はネットワークエラーが増える可能性があります。</string>
+    <string name="download_shared_directory_warning">Stable版とPreview版で別々のダウンロードフォルダを使用し、両方のアプリが同じファイルに書き込まないようにしてください。</string>
+    <string name="transfer_export_playlist">プレイリストをエクスポート</string>
+    <string name="transfer_export_library">ライブラリとプレイリストをエクスポート</string>
+    <string name="transfer_import">ライブラリまたはプレイリストをインポート</string>
+    <string name="transfer_choose_format">エクスポート形式を選択</string>
+    <string name="transfer_in_progress">転送を処理中…</string>
+    <string name="transfer_import_preview_title">インポート内容を確認</string>
+    <string name="transfer_import_preview_counts">見つかったプレイリスト: %1$d\n見つかったトラック: %2$d\n新しいトラック: %3$d\n既存のトラック: %4$d\n解決できないローカルトラック: %5$d\n重複するトラック: %6$d\n無効な項目: %7$d\n\n新しいトラックとプレイリストの項目を追加します。既存の項目はそのまま保持されます。</string>
+    <string name="transfer_import_confirm">インポート</string>
+    <string name="transfer_exported">エクスポート完了</string>
+    <string name="transfer_imported">新しいトラック%1$d件、プレイリスト項目%2$d件をインポートしました</string>
+    <string name="transfer_failed">転送に失敗しました</string>
 </resources>

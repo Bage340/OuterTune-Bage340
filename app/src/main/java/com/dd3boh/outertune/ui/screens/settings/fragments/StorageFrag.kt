@@ -62,6 +62,7 @@ import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.R
 import com.dd3boh.outertune.constants.DownloadExtraPathKey
 import com.dd3boh.outertune.constants.DownloadOnWifiOnlyKey
+import com.dd3boh.outertune.constants.DownloadParallelismKey
 import com.dd3boh.outertune.constants.DownloadPathKey
 import com.dd3boh.outertune.constants.MaxImageCacheSizeKey
 import com.dd3boh.outertune.constants.MaxSongCacheSizeKey
@@ -150,6 +151,7 @@ fun ColumnScope.DownloadsFrag() {
     val (downloadPath, onDownloadPathChange) = rememberPreference(DownloadPathKey, "")
     val (scanPaths, onScanPathsChange) = rememberPreference(ScanPathsKey, defaultValue = "")
     val (downloadOnWifiOnly, onDownloadOnWifiOnlyChange) = rememberPreference(DownloadOnWifiOnlyKey, defaultValue = true)
+    val (downloadParallelism, onDownloadParallelismChange) = rememberPreference(DownloadParallelismKey, defaultValue = 1)
 
     // size stats
     var downloadCacheSize by remember {
@@ -204,6 +206,18 @@ fun ColumnScope.DownloadsFrag() {
         }
     )
 
+    ListPreference(
+        title = { Text(stringResource(R.string.download_parallelism_title)) },
+        selectedValue = downloadParallelism.coerceIn(1, 3),
+        values = listOf(1, 2, 3),
+        valueText = { it.toString() },
+        onValueSelected = {
+            onDownloadParallelismChange(it)
+            downloadUtil.setDownloadParallelism(it)
+        },
+    )
+    InfoLabel(stringResource(R.string.download_parallelism_description))
+
     PreferenceEntry(
         title = { Text(stringResource(R.string.dl_main_path_title)) },
         description = if (downloadPath != "") uriListFromString(downloadPath).firstOrNull()
@@ -212,6 +226,7 @@ fun ColumnScope.DownloadsFrag() {
             showDlPathDialog = true
         },
     )
+    InfoLabel(stringResource(R.string.download_shared_directory_warning))
 
     Text(
         text = stringResource(R.string.dl_size_used_cache, formatFileSize(downloadCacheSize)),

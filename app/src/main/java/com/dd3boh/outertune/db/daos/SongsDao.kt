@@ -12,6 +12,7 @@ import com.dd3boh.outertune.constants.SongSortType
 import com.dd3boh.outertune.db.entities.PlayCountEntity
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
+import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.extensions.reversed
 import com.dd3boh.outertune.utils.fixFilePath
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,33 @@ import java.time.ZoneOffset
 
 @Dao
 interface SongsDao {
+
+    data class TransferArtistName(val songId: String, val name: String)
+
+    @Query("SELECT song_artist_map.songId, artist.name FROM song_artist_map " +
+        "JOIN artist ON artist.id = song_artist_map.artistId " +
+        "WHERE song_artist_map.songId IN (:songIds) " +
+        "ORDER BY song_artist_map.songId, song_artist_map.position, song_artist_map.artistId")
+    fun transferArtistNames(songIds: List<String>): List<TransferArtistName>
+
+    @Transaction
+    @Query("SELECT * FROM song WHERE inLibrary IS NOT NULL OR liked = 1 ORDER BY rowid")
+    fun transferLibrarySongs(): List<Song>
+
+    @Transaction
+    @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId ORDER BY position, id")
+    fun transferPlaylistSongs(playlistId: String): List<PlaylistSong>
+
+    @Query("SELECT * FROM song WHERE id IN (:ids)")
+    fun transferSongEntities(ids: List<String>): List<SongEntity>
+
+    @Query("SELECT * FROM song WHERE isLocal = 1 AND localPath IN (:paths)")
+    fun transferLocalSongEntities(paths: List<String>): List<SongEntity>
+
+    data class TransferLocalIdentity(val id: String, val localPath: String)
+
+    @Query("SELECT id, localPath FROM song WHERE isLocal = 1 AND localPath IS NOT NULL")
+    fun transferLocalIdentities(): List<TransferLocalIdentity>
 
     // region Gets
     @Transaction

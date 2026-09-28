@@ -231,4 +231,23 @@
     <string name="new_version_available">Даступная новая версія</string>
     <string name="translation_models">Мадэлі перакладу</string>
     <string name="clear_translation_models">Ачысціць мадэлі перакладу</string>
+    <string name="playlist_library_added_result">Дададзена: %1$d\nУжо ў бібліятэцы: %2$d</string>
+    <string name="playlist_library_all_present">Усе песні ўжо ёсць у вашай бібліятэцы.</string>
+    <string name="playlist_library_empty">У гэтым плэйлісце няма песень для дадання.</string>
+    <string name="playlist_library_failed">Не ўдалося дадаць песні з плэйліста ў бібліятэку.</string>
+    <string name="playlist_library_in_progress">Даданне песень з плэйліста ў бібліятэку…</string>
+    <string name="download_parallelism_title">Паралельныя спампоўванні</string>
+    <string name="download_parallelism_description">Спампоўвайце да 3 песень адначасова. Большая колькасць можа павялічыць колькасць памылак сеткі.</string>
+    <string name="download_shared_directory_warning">Выкарыстоўвайце розныя папкі спамповак для стабільнай і папярэдняй версій, каб абедзве праграмы не запісвалі файлы ў адну папку.</string>
+    <string name="transfer_export_playlist">Экспартаваць плэйліст</string>
+    <string name="transfer_export_library">Экспартаваць бібліятэку і плэйлісты</string>
+    <string name="transfer_import">Імпартаваць бібліятэку або плэйліст</string>
+    <string name="transfer_choose_format">Выберыце фармат экспарту</string>
+    <string name="transfer_in_progress">Перадача апрацоўваецца…</string>
+    <string name="transfer_import_preview_title">Праверце імпарт</string>
+    <string name="transfer_import_preview_counts">Знойдзеныя плэйлісты: %1$d\nЗнойдзеныя трэкі: %2$d\nНовыя трэкі: %3$d\nНаяўныя трэкі: %4$d\nНеразвязаныя лакальныя трэкі: %5$d\nПаўторныя трэкі: %6$d\nНяправільныя запісы: %7$d\n\nНовыя трэкі і запісы плэйлістаў будуць дададзены. Наяўныя элементы застануцца.</string>
+    <string name="transfer_import_confirm">Імпартаваць</string>
+    <string name="transfer_exported">Экспарт завершаны</string>
+    <string name="transfer_imported">Імпартавана новых трэкаў: %1$d; запісаў плэйлістаў: %2$d</string>
+    <string name="transfer_failed">Памылка перадачы</string>
 </resources>

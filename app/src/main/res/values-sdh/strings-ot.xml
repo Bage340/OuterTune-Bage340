@@ -598,4 +598,23 @@
     <string name="move_to_folder">بچۆ بۆ فۆڵدەر</string>
     <string name="root_folder">هەموو پلەی لیستەکان</string>
     <string name="previous_folder">فۆڵدەری پێشوو</string>
+    <string name="playlist_library_added_result">زیادکرا: %1$d\nپێشتر لە کتێبخانەدا: %2$d</string>
+    <string name="playlist_library_all_present">هەموو گۆرانییەکان پێشتر لە کتێبخانەکەتدان.</string>
+    <string name="playlist_library_empty">ئەم لیستە گۆرانیی بۆ زیادکردن نییە.</string>
+    <string name="playlist_library_failed">نەتوانرا گۆرانییەکانی لیستەکە زیاد بکرێن بۆ کتێبخانە.</string>
+    <string name="playlist_library_in_progress">زیادکردنی گۆرانییەکانی لیستەکە بۆ کتێبخانە…</string>
+    <string name="download_parallelism_title">دانلۆدکردنی هاوتەریب</string>
+    <string name="download_parallelism_description">تا ٣ گۆرانی لە یەک کاتدا دابەزێنە. دابەزاندنی زیاتر ڕەنگە هەڵەکانی تۆڕ زیاد بکات.</string>
+    <string name="download_shared_directory_warning">بۆ وەشانی جێگیر و پێشبینین فۆڵدەری جیاوازی دابەزاندن بەکاربهێنە، تاکو هەردوو ئەپەکە لەسەر هەمان فایلەکان نەنووسن.</string>
+    <string name="transfer_export_playlist">هەناردەکردنی لیستی گۆرانی</string>
+    <string name="transfer_export_library">هەناردەکردنی کتێبخانە و لیستەکانی گۆرانی</string>
+    <string name="transfer_import">هاوردەکردنی کتێبخانە یان لیستی گۆرانی</string>
+    <string name="transfer_choose_format">هەڵبژاردنی فۆرماتی هەناردە</string>
+    <string name="transfer_in_progress">گواستنەوە بەڕێوە دەچێت…</string>
+    <string name="transfer_import_preview_title">پێداچوونەوە بە هاوردە</string>
+    <string name="transfer_import_preview_counts">لیستەکانی گۆرانی دۆزراوە: %1$d\nگۆرانییە دۆزراوەکان: %2$d\nگۆرانییە نوێیەکان: %3$d\nگۆرانییە هەبووەکان: %4$d\nگۆرانییە ناوخۆییە چارەسەرنەکراوەکان: %5$d\nگۆرانییە دووبارەکان: %6$d\nتۆمارە نادروستەکان: %7$d\n\nگۆرانییە نوێ و تۆمارەکانی لیستی گۆرانی زیاد دەکرێن. بابەتە هەبووەکان دەمێننەوە.</string>
+    <string name="transfer_import_confirm">هاوردەکردن</string>
+    <string name="transfer_exported">هەناردەکردن تەواو بوو</string>
+    <string name="transfer_imported">%1$d گۆرانیی نوێ و %2$d تۆماری لیستی گۆرانی هاوردە کرا</string>
+    <string name="transfer_failed">گواستنەوە سەرکەوتوو نەبوو</string>
 </resources>

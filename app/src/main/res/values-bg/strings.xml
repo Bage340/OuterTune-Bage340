@@ -279,4 +279,23 @@
     <string name="use_login_for_browse">Използвай вход за разглеждане на съдържание</string>
     <string name="use_login_for_browse_desc">Това може да повлияе какво съдържание виждате и например показва само премиум албуми, ако сте влезли с Премиум профил</string>
     <string name="action_login">Вход</string>
+    <string name="playlist_library_added_result">Добавени: %1$d\nВече в библиотеката: %2$d</string>
+    <string name="playlist_library_all_present">Всички песни вече са в библиотеката ви.</string>
+    <string name="playlist_library_empty">В този плейлист няма песни за добавяне.</string>
+    <string name="playlist_library_failed">Песните от плейлиста не можаха да бъдат добавени в библиотеката.</string>
+    <string name="playlist_library_in_progress">Песните от плейлиста се добавят в библиотеката…</string>
+    <string name="download_parallelism_title">Паралелно изтегляне</string>
+    <string name="download_parallelism_description">Изтегляйте до 3 песни едновременно. Повече песни може да увеличат мрежовите грешки.</string>
+    <string name="download_shared_directory_warning">Използвайте различни папки за изтегляне за стабилната и предварителната версия, за да избегнете записването на файлове от двете приложения в една и съща папка.</string>
+    <string name="transfer_export_playlist">Експортиране на плейлист</string>
+    <string name="transfer_export_library">Експортиране на библиотеката и плейлистите</string>
+    <string name="transfer_import">Импортиране на библиотека или плейлист</string>
+    <string name="transfer_choose_format">Изберете формат за експортиране</string>
+    <string name="transfer_in_progress">Обработване на трансфера…</string>
+    <string name="transfer_import_preview_title">Преглед на импорта</string>
+    <string name="transfer_import_preview_counts">Намерени плейлисти: %1$d\nНамерени песни: %2$d\nНови песни: %3$d\nСъществуващи песни: %4$d\nНеразрешени локални песни: %5$d\nДублирани песни: %6$d\nНевалидни записи: %7$d\n\nНовите песни и записите в плейлистите ще бъдат добавени. Съществуващите елементи ще се запазят.</string>
+    <string name="transfer_import_confirm">Импортиране</string>
+    <string name="transfer_exported">Експортирането завърши</string>
+    <string name="transfer_imported">Импортирани са %1$d нови песни и %2$d записа в плейлисти</string>
+    <string name="transfer_failed">Трансферът е неуспешен</string>
 </resources>

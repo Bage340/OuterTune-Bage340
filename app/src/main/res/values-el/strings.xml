@@ -277,4 +277,23 @@
     <string name="search_history">Ιστορικό αναζήτησης</string>
     <string name="disable_screenshot">Απενεργοποίηση στιγμιότυπων οθόνης</string>
     <string name="action_login">Συνδεθείτε</string>
+    <string name="playlist_library_added_result">Προστέθηκαν: %1$d\nΉδη στη βιβλιοθήκη: %2$d</string>
+    <string name="playlist_library_all_present">Όλα τα τραγούδια βρίσκονται ήδη στη βιβλιοθήκη σας.</string>
+    <string name="playlist_library_empty">Αυτή η λίστα δεν περιέχει τραγούδια για προσθήκη.</string>
+    <string name="playlist_library_failed">Δεν ήταν δυνατή η προσθήκη των τραγουδιών της λίστας στη βιβλιοθήκη.</string>
+    <string name="playlist_library_in_progress">Προσθήκη τραγουδιών της λίστας στη βιβλιοθήκη…</string>
+    <string name="download_parallelism_title">Παράλληλες λήψεις</string>
+    <string name="download_parallelism_description">Κατεβάστε έως 3 τραγούδια ταυτόχρονα. Περισσότερα μπορεί να αυξήσουν τα σφάλματα δικτύου.</string>
+    <string name="download_shared_directory_warning">Χρησιμοποιήστε διαφορετικούς φακέλους λήψεων για τις εκδόσεις Stable και Preview, ώστε οι δύο εφαρμογές να μην γράφουν στα ίδια αρχεία.</string>
+    <string name="transfer_export_playlist">Εξαγωγή playlist</string>
+    <string name="transfer_export_library">Εξαγωγή βιβλιοθήκης και playlist</string>
+    <string name="transfer_import">Εισαγωγή βιβλιοθήκης ή playlist</string>
+    <string name="transfer_choose_format">Επιλογή μορφής εξαγωγής</string>
+    <string name="transfer_in_progress">Επεξεργασία μεταφοράς…</string>
+    <string name="transfer_import_preview_title">Έλεγχος εισαγωγής</string>
+    <string name="transfer_import_preview_counts">Playlist που βρέθηκαν: %1$d\nΚομμάτια που βρέθηκαν: %2$d\nΝέα κομμάτια: %3$d\nΥπάρχοντα κομμάτια: %4$d\nΜη επιλυμένα τοπικά κομμάτια: %5$d\nΔιπλότυπα κομμάτια: %6$d\nΜη έγκυρες εγγραφές: %7$d\n\nΘα προστεθούν τα νέα κομμάτια και οι εγγραφές playlist. Τα υπάρχοντα στοιχεία θα διατηρηθούν.</string>
+    <string name="transfer_import_confirm">Εισαγωγή</string>
+    <string name="transfer_exported">Η εξαγωγή ολοκληρώθηκε</string>
+    <string name="transfer_imported">Εισήχθησαν %1$d νέα κομμάτια και %2$d εγγραφές playlist</string>
+    <string name="transfer_failed">Η μεταφορά απέτυχε</string>
 </resources>

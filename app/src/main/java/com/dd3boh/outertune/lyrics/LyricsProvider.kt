@@ -35,7 +35,7 @@ interface LyricsProvider {
     val id: String
     val name: String
     fun isEnabled(context: Context): Boolean
-    suspend fun getLyrics(id: String, title: String, artist: String, duration: Int): LyricsFetchResult
+    suspend fun getLyrics(id: String, title: String, artist: String, duration: Int, album: String? = null): LyricsFetchResult
     suspend fun getAllLyrics(id: String, title: String, artist: String, duration: Int, callback: (String) -> Unit) {
         (getLyrics(id, title, artist, duration) as? LyricsFetchResult.Found)?.let { callback(it.raw) }
     }

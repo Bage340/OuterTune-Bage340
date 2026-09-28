@@ -139,7 +139,7 @@
     <string name="sleep_timer">ਸਲੀਪ ਟਾਈਮਰ</string>
     <string name="end_of_song">ਗੀਤ ਸਮਾਪਤ</string>
     <plurals name="minute">
-        <item quantity="one">1 ਮਿੰਟ</item>
+        <item quantity="one">%d ਮਿੰਟ</item>
         <item quantity="other">%d ਮਿੰਟ</item>
     </plurals>
     <string name="error_no_stream">ਕੋਈ ਸਟ੍ਰੀਮ ਉਪਲਬਧ ਨਹੀਂ ਹੈ</string>
@@ -229,4 +229,23 @@
     <string name="library_album_empty">ਲਾਇਬ੍ਰੇਰੀ ਟੇਪਾਂ ਇੱਥੇ ਦਿਖਣ ਗੀਆਂ</string>
     <string name="library_playlist_empty">ਤੁਹਾਡੀਆਂ ਚਾਲ ਸੂਚੀਆਂ ਇੱਥੇ ਦਿਖਣ ਗਿਆਂ</string>
     <string name="other_versions">ਟੇਪ ਦ੍ਰਿਸ਼</string>
+    <string name="playlist_library_added_result">ਸ਼ਾਮਲ ਕੀਤੇ: %1$d\nਪਹਿਲਾਂ ਹੀ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ: %2$d</string>
+    <string name="playlist_library_all_present">ਸਾਰੇ ਗੀਤ ਪਹਿਲਾਂ ਹੀ ਤੁਹਾਡੀ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਹਨ।</string>
+    <string name="playlist_library_empty">ਇਸ ਪਲੇਲਿਸਟ ਵਿੱਚ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਕੋਈ ਗੀਤ ਨਹੀਂ ਹੈ।</string>
+    <string name="playlist_library_failed">ਪਲੇਲਿਸਟ ਦੇ ਗੀਤ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਸ਼ਾਮਲ ਨਹੀਂ ਹੋ ਸਕੇ।</string>
+    <string name="playlist_library_in_progress">ਪਲੇਲਿਸਟ ਦੇ ਗੀਤ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਸ਼ਾਮਲ ਕੀਤੇ ਜਾ ਰਹੇ ਹਨ…</string>
+    <string name="download_parallelism_title">ਇੱਕੋ ਸਮੇਂ ਡਾਊਨਲੋਡ</string>
+    <string name="download_parallelism_description">ਇੱਕ ਵਾਰ ਵਿੱਚ ਵੱਧ ਤੋਂ ਵੱਧ 3 ਗਾਣੇ ਡਾਊਨਲੋਡ ਕਰੋ। ਹੋਰ ਡਾਊਨਲੋਡ ਕਰਨ ਨਾਲ ਨੈੱਟਵਰਕ ਦੀਆਂ ਗੜਬੜਾਂ ਵਧ ਸਕਦੀਆਂ ਹਨ।</string>
+    <string name="download_shared_directory_warning">Stable ਅਤੇ Preview ਲਈ ਵੱਖਰੇ ਡਾਊਨਲੋਡ ਫੋਲਡਰ ਵਰਤੋ, ਤਾਂ ਜੋ ਦੋਵੇਂ ਐਪਾਂ ਇੱਕੋ ਫ਼ਾਈਲਾਂ ਵਿੱਚ ਨਾ ਲਿਖਣ।</string>
+    <string name="transfer_export_playlist">ਪਲੇਲਿਸਟ ਐਕਸਪੋਰਟ ਕਰੋ</string>
+    <string name="transfer_export_library">ਲਾਇਬ੍ਰੇਰੀ ਅਤੇ ਪਲੇਲਿਸਟਾਂ ਐਕਸਪੋਰਟ ਕਰੋ</string>
+    <string name="transfer_import">ਲਾਇਬ੍ਰੇਰੀ ਜਾਂ ਪਲੇਲਿਸਟ ਇੰਪੋਰਟ ਕਰੋ</string>
+    <string name="transfer_choose_format">ਐਕਸਪੋਰਟ ਫ਼ਾਰਮੈਟ ਚੁਣੋ</string>
+    <string name="transfer_in_progress">ਟ੍ਰਾਂਸਫ਼ਰ ਦੀ ਪ੍ਰਕਿਰਿਆ ਜਾਰੀ ਹੈ…</string>
+    <string name="transfer_import_preview_title">ਇੰਪੋਰਟ ਦੀ ਸਮੀਖਿਆ ਕਰੋ</string>
+    <string name="transfer_import_preview_counts">ਮਿਲੀਆਂ ਪਲੇਲਿਸਟਾਂ: %1$d\nਮਿਲੇ ਟਰੈਕ: %2$d\nਨਵੇਂ ਟਰੈਕ: %3$d\nਮੌਜੂਦਾ ਟਰੈਕ: %4$d\nਨਾ ਲੱਭੇ ਸਥਾਨਕ ਟਰੈਕ: %5$d\nਦੁਹਰਾਏ ਟਰੈਕ: %6$d\nਅਵੈਧ ਐਂਟਰੀਆਂ: %7$d\n\nਨਵੇਂ ਟਰੈਕ ਅਤੇ ਪਲੇਲਿਸਟ ਐਂਟਰੀਆਂ ਸ਼ਾਮਲ ਕੀਤੀਆਂ ਜਾਣਗੀਆਂ। ਮੌਜੂਦਾ ਆਈਟਮਾਂ ਕਾਇਮ ਰਹਿਣਗੀਆਂ।</string>
+    <string name="transfer_import_confirm">ਇੰਪੋਰਟ ਕਰੋ</string>
+    <string name="transfer_exported">ਐਕਸਪੋਰਟ ਪੂਰਾ ਹੋਇਆ</string>
+    <string name="transfer_imported">%1$d ਨਵੇਂ ਟਰੈਕ ਅਤੇ %2$d ਪਲੇਲਿਸਟ ਐਂਟਰੀਆਂ ਇੰਪੋਰਟ ਕੀਤੀਆਂ</string>
+    <string name="transfer_failed">ਟ੍ਰਾਂਸਫ਼ਰ ਅਸਫਲ ਰਿਹਾ</string>
 </resources>

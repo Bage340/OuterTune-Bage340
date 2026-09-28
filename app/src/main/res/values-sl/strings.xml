@@ -41,4 +41,18 @@
     <string name="filter_albums">Albumi</string>
     <string name="filter_artists">Izvajalci</string>
     <string name="filter_playlists">Seznami predvajanja</string>
+    <string name="download_parallelism_title">Vzporedni prenosi</string>
+    <string name="download_parallelism_description">Prenesite do 3 skladb hkrati. Več prenosov lahko poveča število omrežnih napak.</string>
+    <string name="download_shared_directory_warning">Za stabilno in predogledno različico uporabite različni mapi za prenose, da aplikaciji ne bosta zapisovali v iste datoteke.</string>
+    <string name="transfer_export_playlist">Izvozi seznam predvajanja</string>
+    <string name="transfer_export_library">Izvozi knjižnico in sezname predvajanja</string>
+    <string name="transfer_import">Uvozi knjižnico ali seznam predvajanja</string>
+    <string name="transfer_choose_format">Izberi obliko izvoza</string>
+    <string name="transfer_in_progress">Obdelava prenosa…</string>
+    <string name="transfer_import_preview_title">Pregled uvoza</string>
+    <string name="transfer_import_preview_counts">Najdeni seznami predvajanja: %1$d\nNajdene skladbe: %2$d\nNove skladbe: %3$d\nObstoječe skladbe: %4$d\nNerazrešene lokalne skladbe: %5$d\nPodvojene skladbe: %6$d\nNeveljavni vnosi: %7$d\n\nNove skladbe in vnosi seznamov predvajanja bodo dodani. Obstoječi elementi bodo ohranjeni.</string>
+    <string name="transfer_import_confirm">Uvozi</string>
+    <string name="transfer_exported">Izvoz je končan</string>
+    <string name="transfer_imported">Uvoženih novih skladb: %1$d; vnosov seznamov predvajanja: %2$d</string>
+    <string name="transfer_failed">Prenos ni uspel</string>
 </resources>

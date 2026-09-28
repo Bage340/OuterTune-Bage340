@@ -279,4 +279,23 @@
     <string name="new_version_available">కొత్త వెర్షన్ అందుబాటులో ఉంది</string>
     <string name="translation_models">అనువాద మోడల్స్</string>
     <string name="clear_translation_models">అనువాద నమూనాలను క్లియర్ చెయ్యండి</string>
+    <string name="playlist_library_added_result">జోడించినవి: %1$d\nఇప్పటికే లైబ్రరీలో ఉన్నవి: %2$d</string>
+    <string name="playlist_library_all_present">అన్ని పాటలు ఇప్పటికే మీ లైబ్రరీలో ఉన్నాయి.</string>
+    <string name="playlist_library_empty">ఈ ప్లేలిస్ట్‌లో జోడించడానికి పాటలు లేవు.</string>
+    <string name="playlist_library_failed">ప్లేలిస్ట్ పాటలను లైబ్రరీకి జోడించలేకపోయాము.</string>
+    <string name="playlist_library_in_progress">ప్లేలిస్ట్ పాటలను లైబ్రరీకి జోడిస్తున్నాము…</string>
+    <string name="download_parallelism_title">సమాంతర డౌన్‌లోడ్‌లు</string>
+    <string name="download_parallelism_description">ఒకేసారి గరిష్ఠంగా 3 పాటలను డౌన్‌లోడ్ చేయండి. అంతకంటే ఎక్కువైతే నెట్‌వర్క్ లోపాలు పెరగవచ్చు.</string>
+    <string name="download_shared_directory_warning">రెండు యాప్‌లు ఒకే ఫైళ్లలో రాయకుండా Stable, Preview కోసం వేర్వేరు డౌన్‌లోడ్ ఫోల్డర్‌లను ఉపయోగించండి.</string>
+    <string name="transfer_export_playlist">ప్లేలిస్ట్‌ను ఎగుమతి చేయండి</string>
+    <string name="transfer_export_library">లైబ్రరీ, ప్లేలిస్ట్‌లను ఎగుమతి చేయండి</string>
+    <string name="transfer_import">లైబ్రరీ లేదా ప్లేలిస్ట్‌ను దిగుమతి చేయండి</string>
+    <string name="transfer_choose_format">ఎగుమతి ఫార్మాట్‌ను ఎంచుకోండి</string>
+    <string name="transfer_in_progress">బదిలీని ప్రాసెస్ చేస్తోంది…</string>
+    <string name="transfer_import_preview_title">దిగుమతిని సమీక్షించండి</string>
+    <string name="transfer_import_preview_counts">కనుగొన్న ప్లేలిస్ట్‌లు: %1$d\nకనుగొన్న ట్రాక్‌లు: %2$d\nకొత్త ట్రాక్‌లు: %3$d\nఇప్పటికే ఉన్న ట్రాక్‌లు: %4$d\nపరిష్కరించని స్థానిక ట్రాక్‌లు: %5$d\nడూప్లికేట్ ట్రాక్‌లు: %6$d\nచెల్లని ఎంట్రీలు: %7$d\n\nకొత్త ట్రాక్‌లు, ప్లేలిస్ట్ ఎంట్రీలు జోడించబడతాయి. ఇప్పటికే ఉన్నవి అలాగే ఉంచబడతాయి.</string>
+    <string name="transfer_import_confirm">దిగుమతి చేయండి</string>
+    <string name="transfer_exported">ఎగుమతి పూర్తయింది</string>
+    <string name="transfer_imported">%1$d కొత్త ట్రాక్‌లు, %2$d ప్లేలిస్ట్ ఎంట్రీలు దిగుమతి చేయబడ్డాయి</string>
+    <string name="transfer_failed">బదిలీ విఫలమైంది</string>
 </resources>

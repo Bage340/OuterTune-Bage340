@@ -315,4 +315,23 @@
     <string name="use_login_for_browse">استخدم تسجيل الدخول لتصفح المحتوى</string>
     <string name="use_login_for_browse_desc">يمكن أن يؤثر ذلك على المحتوى الذي تراه، فعلى سبيل المثال، يعرض الألبومات المخصصة للمشتركين المميزين فقط إذا كنت مسجلاً الدخول باستخدام حساب مميز</string>
     <string name="action_login">تسجيل دخول</string>
+    <string name="playlist_library_added_result">تمت الإضافة: %1$d\nموجودة مسبقًا في المكتبة: %2$d</string>
+    <string name="playlist_library_all_present">جميع المقاطع موجودة بالفعل في مكتبتك.</string>
+    <string name="playlist_library_empty">لا توجد مقاطع في قائمة التشغيل لإضافتها.</string>
+    <string name="playlist_library_failed">تعذرت إضافة مقاطع قائمة التشغيل إلى المكتبة.</string>
+    <string name="playlist_library_in_progress">جارٍ إضافة مقاطع قائمة التشغيل إلى المكتبة…</string>
+    <string name="download_parallelism_title">التنزيلات المتوازية</string>
+    <string name="download_parallelism_description">نزّل حتى 3 أغانٍ في الوقت نفسه. قد يؤدي تنزيل المزيد إلى زيادة أخطاء الشبكة.</string>
+    <string name="download_shared_directory_warning">استخدم مجلد تنزيل مختلفًا للإصدار المستقر والمعاينة لتجنب كتابة التطبيقين في الملفات نفسها.</string>
+    <string name="transfer_export_playlist">تصدير قائمة التشغيل</string>
+    <string name="transfer_export_library">تصدير المكتبة وقوائم التشغيل</string>
+    <string name="transfer_import">استيراد المكتبة أو قائمة التشغيل</string>
+    <string name="transfer_choose_format">اختر تنسيق التصدير</string>
+    <string name="transfer_in_progress">جارٍ تنفيذ النقل…</string>
+    <string name="transfer_import_preview_title">مراجعة الاستيراد</string>
+    <string name="transfer_import_preview_counts">قوائم التشغيل التي تم العثور عليها: %1$d\nالمقاطع التي تم العثور عليها: %2$d\nالمقاطع الجديدة: %3$d\nالمقاطع الموجودة: %4$d\nالمقاطع المحلية التي تعذّر العثور عليها: %5$d\nالمقاطع المكررة: %6$d\nالإدخالات غير الصالحة: %7$d\n\nستُضاف المقاطع الجديدة وإدخالات قوائم التشغيل. ستبقى العناصر الموجودة كما هي.</string>
+    <string name="transfer_import_confirm">استيراد</string>
+    <string name="transfer_exported">اكتمل التصدير</string>
+    <string name="transfer_imported">تم استيراد %1$d مقطع جديد و%2$d من إدخالات قوائم التشغيل</string>
+    <string name="transfer_failed">فشل النقل</string>
 </resources>

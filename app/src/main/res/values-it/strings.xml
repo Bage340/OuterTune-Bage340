@@ -288,4 +288,23 @@
     <string name="enable_discord_rpc">Abilita Rich Presence</string>
     <string name="dismiss">Ignorare</string>
     <string name="action_login">Accedi</string>
+    <string name="playlist_library_added_result">Aggiunti: %1$d\nGià nella libreria: %2$d</string>
+    <string name="playlist_library_all_present">Tutti i brani sono già nella tua libreria.</string>
+    <string name="playlist_library_empty">Questa playlist non contiene brani da aggiungere.</string>
+    <string name="playlist_library_failed">Impossibile aggiungere i brani della playlist alla libreria.</string>
+    <string name="playlist_library_in_progress">Aggiunta dei brani della playlist alla libreria…</string>
+    <string name="download_parallelism_title">Download paralleli</string>
+    <string name="download_parallelism_description">Scarica fino a 3 brani alla volta. Un numero maggiore può aumentare gli errori di rete.</string>
+    <string name="download_shared_directory_warning">Usa cartelle di download diverse per le versioni Stable e Preview, così le due app non scriveranno sugli stessi file.</string>
+    <string name="transfer_export_playlist">Esporta playlist</string>
+    <string name="transfer_export_library">Esporta raccolta e playlist</string>
+    <string name="transfer_import">Importa raccolta o playlist</string>
+    <string name="transfer_choose_format">Scegli il formato di esportazione</string>
+    <string name="transfer_in_progress">Trasferimento in corso…</string>
+    <string name="transfer_import_preview_title">Controlla l\'importazione</string>
+    <string name="transfer_import_preview_counts">Playlist trovate: %1$d\nBrani trovati: %2$d\nNuovi brani: %3$d\nBrani esistenti: %4$d\nBrani locali non risolti: %5$d\nBrani duplicati: %6$d\nVoci non valide: %7$d\n\nVerranno aggiunti i nuovi brani e le voci delle playlist. Gli elementi esistenti saranno mantenuti.</string>
+    <string name="transfer_import_confirm">Importa</string>
+    <string name="transfer_exported">Esportazione completata</string>
+    <string name="transfer_imported">Importati %1$d nuovi brani e %2$d voci di playlist</string>
+    <string name="transfer_failed">Trasferimento non riuscito</string>
 </resources>

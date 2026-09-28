@@ -13,7 +13,7 @@ object SimpMusicLyricsProvider : LyricsProvider {
     override fun isEnabled(context: Context): Boolean =
         context.dataStore[EnableSimpMusicKey] ?: true
 
-    override suspend fun getLyrics(id: String, title: String, artist: String, duration: Int): LyricsFetchResult =
+    override suspend fun getLyrics(id: String, title: String, artist: String, duration: Int, album: String?): LyricsFetchResult =
         SimpMusicLyrics.getLyrics(id, duration).toFetchResult()
 
     override suspend fun getAllLyrics(

@@ -288,4 +288,23 @@
     <string name="use_login_for_browse">Použít účet pro procházení obsahu</string>
     <string name="use_login_for_browse_desc">Může ovlivnit obsah, který se vám zobrazí – při přihlášení například mohou být zobrazena například alba, která jsou dostupná pouze s Premium účtem</string>
     <string name="action_login">Přihlásit se</string>
+    <string name="playlist_library_added_result">Přidáno: %1$d\nJiž v knihovně: %2$d</string>
+    <string name="playlist_library_all_present">Všechny skladby už jsou ve vaší knihovně.</string>
+    <string name="playlist_library_empty">V tomto playlistu nejsou žádné skladby k přidání.</string>
+    <string name="playlist_library_failed">Skladby z playlistu se nepodařilo přidat do knihovny.</string>
+    <string name="playlist_library_in_progress">Přidávání skladeb z playlistu do knihovny…</string>
+    <string name="download_parallelism_title">Paralelní stahování</string>
+    <string name="download_parallelism_description">Stahujte až 3 skladby současně. Více stahování může zvýšit počet chyb sítě.</string>
+    <string name="download_shared_directory_warning">Pro stabilní a preview verzi použijte různé složky pro stahování, aby obě aplikace nezapisovaly do stejných souborů.</string>
+    <string name="transfer_export_playlist">Exportovat playlist</string>
+    <string name="transfer_export_library">Exportovat knihovnu a playlisty</string>
+    <string name="transfer_import">Importovat knihovnu nebo playlist</string>
+    <string name="transfer_choose_format">Vyberte formát exportu</string>
+    <string name="transfer_in_progress">Probíhá zpracování přenosu…</string>
+    <string name="transfer_import_preview_title">Zkontrolujte import</string>
+    <string name="transfer_import_preview_counts">Nalezené playlisty: %1$d\nNalezené skladby: %2$d\nNové skladby: %3$d\nExistující skladby: %4$d\nNerozpoznané místní skladby: %5$d\nDuplicitní skladby: %6$d\nNeplatné položky: %7$d\n\nNové skladby a položky playlistů budou přidány. Existující položky zůstanou zachovány.</string>
+    <string name="transfer_import_confirm">Importovat</string>
+    <string name="transfer_exported">Export dokončen</string>
+    <string name="transfer_imported">Importováno nových skladeb: %1$d; položek playlistů: %2$d</string>
+    <string name="transfer_failed">Přenos se nezdařil</string>
 </resources>

@@ -295,4 +295,23 @@
     <string name="ignore_audio_focus_desc">Continuar la reproducción cuando otra aplicación tome el foco de audio. La música no se pausará por otras fuentes de audio, incluidas las llamadas telefónicas.</string>
     <string name="enable_betterlyrics">Activar el proveedor de letras BetterLyrics</string>
     <string name="enable_simpmusic">Activar el proveedor de letras SimpMusic</string>
+    <string name="playlist_library_added_result">Añadidas: %1$d\nYa en la biblioteca: %2$d</string>
+    <string name="playlist_library_all_present">Todas las canciones ya están en tu biblioteca.</string>
+    <string name="playlist_library_empty">Esta lista no tiene canciones para añadir.</string>
+    <string name="playlist_library_failed">No se pudieron añadir las canciones de la lista a la biblioteca.</string>
+    <string name="playlist_library_in_progress">Añadiendo las canciones de la lista a la biblioteca…</string>
+    <string name="download_parallelism_title">Descargas simultáneas</string>
+    <string name="download_parallelism_description">Descarga hasta 3 canciones al mismo tiempo. Descargar más puede aumentar los errores de red.</string>
+    <string name="download_shared_directory_warning">Usa carpetas de descarga distintas para las versiones estable y de vista previa para evitar que ambas aplicaciones escriban en los mismos archivos.</string>
+    <string name="transfer_export_playlist">Exportar playlist</string>
+    <string name="transfer_export_library">Exportar biblioteca y playlists</string>
+    <string name="transfer_import">Importar biblioteca o playlist</string>
+    <string name="transfer_choose_format">Elegir formato de exportación</string>
+    <string name="transfer_in_progress">Procesando transferencia…</string>
+    <string name="transfer_import_preview_title">Revisar importación</string>
+    <string name="transfer_import_preview_counts">Playlists encontradas: %1$d\nCanciones encontradas: %2$d\nCanciones nuevas: %3$d\nCanciones existentes: %4$d\nCanciones locales sin resolver: %5$d\nCanciones duplicadas: %6$d\nEntradas no válidas: %7$d\n\nSe agregarán las canciones nuevas y las entradas de playlists. Se conservarán los elementos existentes.</string>
+    <string name="transfer_import_confirm">Importar</string>
+    <string name="transfer_exported">Exportación completa</string>
+    <string name="transfer_imported">Se importaron %1$d canciones nuevas y %2$d entradas de playlists</string>
+    <string name="transfer_failed">Error en la transferencia</string>
 </resources>

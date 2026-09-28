@@ -37,6 +37,58 @@ class ShouldFetchLyricsTest {
     }
 
     @Test
+    fun fallbackAfterAuthFailureKeepsTextAndRetriesOnlyAfterCooldown() {
+        val result = RemoteLyricsResult.Found("LrcLib", "plain", false, LyricsFailureKind.AUTH)
+        val row = lyricsEntityForResult("v", result, sig, now)!!
+
+        assertTrue(row.lyrics == "plain")
+        assertFalse(shouldFetchLyrics(row, sig, now + PREFERRED_FAILURE_RETRY_MS - 1, forceRefresh = false))
+        assertTrue(shouldFetchLyrics(row, sig, now + PREFERRED_FAILURE_RETRY_MS, forceRefresh = false))
+        assertTrue(shouldFetchLyrics(row, "youtube,lrclib", now + 1, forceRefresh = false))
+    }
+
+    @Test
+    fun recoveredYoutubeResultClearsPreferredFailureMarker() {
+        val row = lyricsEntityForResult("v", RemoteLyricsResult.Found("YouTube Music", "[00:01]hi", true), sig, now)!!
+
+        assertFalse(shouldFetchLyrics(row, sig, now + PREFERRED_FAILURE_RETRY_MS, forceRefresh = false))
+    }
+
+    @Test
+    fun rateLimitedFallbackWaitsLongerBeforeRetry() {
+        val row = lyricsEntityForResult(
+            "v", RemoteLyricsResult.Found("LrcLib", "plain", false, LyricsFailureKind.RATE_LIMIT), sig, now,
+        )!!
+
+        assertFalse(shouldFetchLyrics(row, sig, now + PREFERRED_FAILURE_RETRY_MS, forceRefresh = false))
+        assertTrue(shouldFetchLyrics(row, sig, now + 60L * 60 * 1000, forceRefresh = false))
+    }
+
+    @Test
+    fun expiredAuthFallbackRemainsVisibleWhenRevalidationIsInconclusive() {
+        val previous = lyricsEntityForResult(
+            "v", RemoteLyricsResult.Found("LrcLib", "plain", false, LyricsFailureKind.AUTH), sig, now,
+        )!!
+        val checkedAt = now + PREFERRED_FAILURE_RETRY_MS
+        val retained = lyricsEntityForResult("v", RemoteLyricsResult.Indeterminate, sig, checkedAt, previous)!!
+
+        assertTrue(retained.lyrics == "plain")
+        assertFalse(shouldFetchLyrics(retained, sig, checkedAt + 1, forceRefresh = false))
+    }
+
+    @Test
+    fun preferredDefinitiveAbsenceKeepsEarlierFallbackTextWithoutFurtherRetry() {
+        val previous = lyricsEntityForResult(
+            "v", RemoteLyricsResult.Found("LrcLib", "plain", false, LyricsFailureKind.AUTH), sig, now,
+        )!!
+        val checkedAt = now + PREFERRED_FAILURE_RETRY_MS
+        val retained = lyricsEntityForResult("v", RemoteLyricsResult.DefinitiveNotFound, sig, checkedAt, previous)!!
+
+        assertTrue(retained.lyrics == "plain")
+        assertFalse(shouldFetchLyrics(retained, sig, checkedAt + PREFERRED_FAILURE_RETRY_MS, forceRefresh = false))
+    }
+
+    @Test
     fun freshNegative_sameSignature_doesNotFetch() {
         val row = negativeRow(lastCheckedAt = now - ttl / 2, signature = sig)
         assertFalse(shouldFetchLyrics(row, sig, now, forceRefresh = false))

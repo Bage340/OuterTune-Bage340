@@ -12,6 +12,7 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.dd3boh.outertune.constants.PlaylistFilter
 import com.dd3boh.outertune.constants.PlaylistSortType
+import com.dd3boh.outertune.db.PlaylistLibraryResult
 import com.dd3boh.outertune.db.entities.Playlist
 import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistFolderEntity
@@ -22,6 +23,7 @@ import com.dd3boh.outertune.extensions.reversed
 import com.zionhuang.innertube.models.PlaylistItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDateTime
 
 
 /*
@@ -160,6 +162,23 @@ interface PlaylistsDao {
     @Transaction
     @Query("SELECT * FROM playlist_song_map WHERE playlistId = :playlistId ORDER BY position")
     fun playlistSongs(playlistId: String): Flow<List<PlaylistSong>>
+
+    @Query("""SELECT COUNT(DISTINCT song.id) FROM song
+        JOIN playlist_song_map ON song.id = playlist_song_map.songId
+        WHERE playlist_song_map.playlistId = :playlistId""")
+    fun playlistUniqueSongCount(playlistId: String): Int
+
+    @Query("""UPDATE song SET inLibrary = :date
+        WHERE inLibrary IS NULL AND id IN
+            (SELECT songId FROM playlist_song_map WHERE playlistId = :playlistId)""")
+    fun addUnlistedPlaylistSongsToLibrary(playlistId: String, date: LocalDateTime): Int
+
+    @Transaction
+    fun addPlaylistSongsToLibrary(playlistId: String, date: LocalDateTime = LocalDateTime.now()): PlaylistLibraryResult {
+        val total = playlistUniqueSongCount(playlistId)
+        val added = addUnlistedPlaylistSongsToLibrary(playlistId, date)
+        return PlaylistLibraryResult(added = added, alreadyPresent = total - added)
+    }
 
     @Query("SELECT songId from playlist_song_map WHERE playlistId = :playlistId AND songId IN (:songIds)")
     fun playlistDuplicates(playlistId: String, songIds: List<String>,): List<String>

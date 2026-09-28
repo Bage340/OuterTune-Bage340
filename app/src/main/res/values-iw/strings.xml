@@ -288,4 +288,23 @@
     <string name="new_version_available">גירסה חדשה זמינה</string>
     <string name="translation_models">מודלים של תרגום</string>
     <string name="clear_translation_models">ניקוי מודלי תרגום</string>
+    <string name="playlist_library_added_result">נוספו: %1$d\nכבר בספרייה: %2$d</string>
+    <string name="playlist_library_all_present">כל השירים כבר נמצאים בספרייה שלך.</string>
+    <string name="playlist_library_empty">אין בפלייליסט הזה שירים להוספה.</string>
+    <string name="playlist_library_failed">לא ניתן להוסיף את שירי הפלייליסט לספרייה.</string>
+    <string name="playlist_library_in_progress">שירי הפלייליסט מתווספים לספרייה…</string>
+    <string name="download_parallelism_title">הורדות במקביל</string>
+    <string name="download_parallelism_description">אפשר להוריד עד 3 שירים בו-זמנית. הורדה של יותר שירים עלולה להגדיל את מספר שגיאות הרשת.</string>
+    <string name="download_shared_directory_warning">יש להשתמש בתיקיות הורדה נפרדות לגרסאות היציבה והתצוגה המקדימה כדי ששתי האפליקציות לא יכתבו לאותם קבצים.</string>
+    <string name="transfer_export_playlist">ייצוא פלייליסט</string>
+    <string name="transfer_export_library">ייצוא הספרייה והפלייליסטים</string>
+    <string name="transfer_import">ייבוא ספרייה או פלייליסט</string>
+    <string name="transfer_choose_format">בחירת פורמט ייצוא</string>
+    <string name="transfer_in_progress">העברה מתבצעת…</string>
+    <string name="transfer_import_preview_title">בדיקת הייבוא</string>
+    <string name="transfer_import_preview_counts">פלייליסטים שנמצאו: %1$d\nרצועות שנמצאו: %2$d\nרצועות חדשות: %3$d\nרצועות קיימות: %4$d\nרצועות מקומיות שלא זוהו: %5$d\nרצועות כפולות: %6$d\nרשומות לא תקינות: %7$d\n\nרצועות חדשות ורשומות פלייליסט יתווספו. הפריטים הקיימים יישארו ללא שינוי.</string>
+    <string name="transfer_import_confirm">ייבוא</string>
+    <string name="transfer_exported">הייצוא הושלם</string>
+    <string name="transfer_imported">יובאו %1$d רצועות חדשות ו-%2$d רשומות פלייליסט</string>
+    <string name="transfer_failed">ההעברה נכשלה</string>
 </resources>

@@ -1,9 +1,7 @@
 package com.dd3boh.outertune.ui.menu
 
 import android.content.Intent
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -15,6 +13,7 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.automirrored.rounded.DriveFileMove
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.LibraryAdd
 import androidx.compose.material.icons.rounded.Output
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.PlaylistRemove
@@ -66,16 +65,18 @@ import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
 import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
 import com.dd3boh.outertune.ui.dialog.DefaultDialog
 import com.dd3boh.outertune.ui.dialog.MovePlaylistDialog
+import com.dd3boh.outertune.ui.dialog.LibraryTransferHost
+import com.dd3boh.outertune.ui.dialog.LibraryTransferRequest
 import com.dd3boh.outertune.ui.dialog.TextFieldDialog
 import com.dd3boh.outertune.utils.getDownloadState
-import com.dd3boh.outertune.utils.lmScannerCoroutine
 import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.syncCoroutine
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.WatchEndpoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
+import kotlinx.coroutines.withContext
 
 @Composable
 fun PlaylistMenu(
@@ -93,29 +94,6 @@ fun PlaylistMenu(
     val dbPlaylist by database.playlist(playlist.id).collectAsState(initial = playlist)
     var songs by remember {
         mutableStateOf(emptyList<Song>())
-    }
-
-    val m3uLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("audio/x-mpegurl")
-    ) { uri: Uri? ->
-        uri?.let {
-            CoroutineScope(lmScannerCoroutine).launch {
-                try {
-                    var result = "#EXTM3U\n"
-                    songs.forEach { s ->
-                        val se = s.song
-                        result += "#EXTINF:${se.duration},${s.artists.joinToString(";") { it.name }} - ${s.title}\n"
-                        result += if (se.isLocal) "${se.id}, ${se.localPath}" else "https://youtube.com/watch?v=${se.id}"
-                        result += "\n"
-                    }
-                    context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                        outputStream.write(result.toByteArray(Charsets.UTF_8))
-                    }
-                } catch (e: IOException) {
-                    reportException(e)
-                }
-            }
-        }
     }
 
     LaunchedEffect(Unit) {
@@ -148,6 +126,9 @@ fun PlaylistMenu(
     var showMovePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
     }
+    var transferRequest by remember { mutableStateOf<LibraryTransferRequest?>(null) }
+
+    LibraryTransferHost(transferRequest) { transferRequest = null }
 
     LaunchedEffect(songs) {
         val songs = songs.filterNot { it.song.isLocal }
@@ -265,6 +246,43 @@ fun PlaylistMenu(
             showChoosePlaylistDialog = true
         }
 
+        if (playlist.playlist.isLocal) {
+            GridMenuItem(
+                icon = Icons.Rounded.LibraryAdd,
+                title = R.string.add_to_library
+            ) {
+                val appContext = context.applicationContext
+                val playlistId = playlist.id
+                val operationDatabase = database
+                playlistLibraryActions.launchIfIdle(
+                    playlistId = playlistId,
+                    onStarted = {
+                        Toast.makeText(appContext, R.string.playlist_library_in_progress, Toast.LENGTH_SHORT).show()
+                        onDismiss()
+                    },
+                    operation = {
+                        val result = withContext(Dispatchers.IO) {
+                            operationDatabase.addPlaylistSongsToLibrary(playlistId)
+                        }
+                        val message = when {
+                            result.added > 0 -> appContext.getString(
+                                R.string.playlist_library_added_result,
+                                result.added,
+                                result.alreadyPresent
+                            )
+                            result.alreadyPresent > 0 -> appContext.getString(R.string.playlist_library_all_present)
+                            else -> appContext.getString(R.string.playlist_library_empty)
+                        }
+                        Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+                    },
+                    onFailure = { e ->
+                        reportException(e)
+                        Toast.makeText(appContext, R.string.playlist_library_failed, Toast.LENGTH_LONG).show()
+                    }
+                )
+            }
+        }
+
         if (songs.fastAny { !it.song.isLocal }) {
             DownloadGridMenu(
                 state = downloadState,
@@ -315,9 +333,9 @@ fun PlaylistMenu(
         }
         GridMenuItem(
             icon = Icons.Rounded.Output,
-            title = R.string.m3u_export
+            title = R.string.transfer_export_playlist
         ) {
-            m3uLauncher.launch("playlist.m3u")
+            transferRequest = LibraryTransferRequest.ExportPlaylist(playlist.id, playlist.playlist.name)
         }
     }
 

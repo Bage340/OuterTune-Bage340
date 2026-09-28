@@ -278,4 +278,23 @@
     <string name="use_login_for_browse">Đăng nhập để xem nội dung</string>
     <string name="use_login_for_browse_desc">Điều này có thể ảnh hưởng đến nội dung bạn nhìn thấy, ví dụ như hiện những album dành riêng cho premium nếu bạn đăng nhập với tài khoản Premium</string>
     <string name="action_login">Đăng nhập</string>
+    <string name="playlist_library_added_result">Đã thêm: %1$d\nĐã có trong thư viện: %2$d</string>
+    <string name="playlist_library_all_present">Tất cả bài hát đã có trong thư viện của bạn.</string>
+    <string name="playlist_library_empty">Danh sách phát này không có bài hát để thêm.</string>
+    <string name="playlist_library_failed">Không thể thêm các bài hát trong danh sách phát vào thư viện.</string>
+    <string name="playlist_library_in_progress">Đang thêm các bài hát trong danh sách phát vào thư viện…</string>
+    <string name="download_parallelism_title">Tải xuống song song</string>
+    <string name="download_parallelism_description">Tải xuống tối đa 3 bài hát cùng lúc. Tải nhiều hơn có thể làm tăng lỗi mạng.</string>
+    <string name="download_shared_directory_warning">Dùng thư mục tải xuống riêng cho Stable và Preview để hai ứng dụng không ghi vào cùng một tệp.</string>
+    <string name="transfer_export_playlist">Xuất danh sách phát</string>
+    <string name="transfer_export_library">Xuất thư viện và danh sách phát</string>
+    <string name="transfer_import">Nhập thư viện hoặc danh sách phát</string>
+    <string name="transfer_choose_format">Chọn định dạng xuất</string>
+    <string name="transfer_in_progress">Đang xử lý chuyển dữ liệu…</string>
+    <string name="transfer_import_preview_title">Xem lại nội dung nhập</string>
+    <string name="transfer_import_preview_counts">Danh sách phát tìm thấy: %1$d\nBản nhạc tìm thấy: %2$d\nBản nhạc mới: %3$d\nBản nhạc hiện có: %4$d\nBản nhạc cục bộ chưa xác định: %5$d\nBản nhạc trùng lặp: %6$d\nMục không hợp lệ: %7$d\n\nBản nhạc mới và mục trong danh sách phát sẽ được thêm. Các mục hiện có sẽ được giữ nguyên.</string>
+    <string name="transfer_import_confirm">Nhập</string>
+    <string name="transfer_exported">Xuất xong</string>
+    <string name="transfer_imported">Đã nhập %1$d bản nhạc mới và %2$d mục danh sách phát</string>
+    <string name="transfer_failed">Chuyển dữ liệu thất bại</string>
 </resources>

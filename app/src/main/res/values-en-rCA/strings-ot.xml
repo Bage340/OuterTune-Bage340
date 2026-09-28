@@ -9,6 +9,7 @@
     <string name="albums">Albums</string>
     <string name="playlists">Playlists</string>
     <plurals name="n_selected">
+        <item quantity="one">%d selected</item>
         <item quantity="other">%d selected</item>
     </plurals>
     <string name="history">History</string>
@@ -592,4 +593,9 @@
     <string name="move_to_folder">Move to folder</string>
     <string name="root_folder">All playlists</string>
     <string name="previous_folder">Previous folder</string>
+    <string name="playlist_library_added_result">Added: %1$d\nAlready in library: %2$d</string>
+    <string name="playlist_library_all_present">All songs are already in your library.</string>
+    <string name="playlist_library_empty">This playlist has no songs to add.</string>
+    <string name="playlist_library_failed">Could not add playlist songs to the library.</string>
+    <string name="playlist_library_in_progress">Adding playlist songs to the library…</string>
 </resources>

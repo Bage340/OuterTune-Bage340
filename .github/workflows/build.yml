@@ -39,29 +39,32 @@ jobs:
           python -m unittest scripts.tests.test_check_translations
           python scripts/check_translations.py
 
-      - name: Test, lint, and build unsigned APK
-        run: ./gradlew testCoreDebugUnitTest lintCoreUserdebug assembleCoreUserdebug --stacktrace -DskipFormatKtlint
+      - name: Test, lint, and build both unsigned channels
+        run: ./gradlew testStableCoreDebugUnitTest testPreviewCoreDebugUnitTest compileStableFullDebugKotlin compilePreviewFullDebugKotlin lintStableCoreUserdebug lintPreviewCoreUserdebug assembleStableCoreUserdebug assemblePreviewCoreUserdebug --stacktrace -DskipFormatKtlint
 
       - name: Verify package and version
         shell: bash
         run: |
           set -euo pipefail
-          APK="$(find app/build/outputs/apk/core/userdebug -name '*universal*.apk' -print -quit)"
-          if [ -z "$APK" ]; then APK="$(find app/build/outputs/apk/core/userdebug -name '*.apk' -print -quit)"; fi
-          test -n "$APK"
           AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
-          "$AAPT" dump badging "$APK" | tee apk-badging.txt
-          grep -q "package: name='com.dd3boh.outertune' versionCode='92' versionName='0.11.1'" apk-badging.txt
-          cp "$APK" OuterTune-0.11.1-v92-unsigned.apk
-          sha256sum OuterTune-0.11.1-v92-unsigned.apk | tee SHA256SUMS.txt
+          for CHANNEL in stable preview; do
+            if [ "$CHANNEL" = stable ]; then FLAVOR=stableCore; else FLAVOR=previewCore; fi
+            APK="$(find "app/build/outputs/apk/${FLAVOR}/userdebug" -name '*universal*.apk' -print -quit)"
+            test -n "$APK"
+            "$AAPT" dump badging "$APK" | tee "apk-${CHANNEL}-badging.txt"
+            if [ "$CHANNEL" = stable ]; then PACKAGE=com.dd3boh.outertune; else PACKAGE=com.dd3boh.outertune.preview; fi
+            grep -q "package: name='${PACKAGE}' versionCode='92' versionName='0.11.1'" "apk-${CHANNEL}-badging.txt"
+            cp "$APK" "OuterTune-Bage340-0.11.1-v92-${CHANNEL}-unsigned.apk"
+          done
+          sha256sum OuterTune-Bage340-0.11.1-v92-*-unsigned.apk | tee SHA256SUMS.txt
 
       - name: Upload verified unsigned APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: OuterTune-0.11.1-v92-unsigned
+          name: OuterTune-Bage340-0.11.1-v92-unsigned
           if-no-files-found: error
           retention-days: 14
           path: |
-            OuterTune-0.11.1-v92-unsigned.apk
-            apk-badging.txt
+            OuterTune-Bage340-0.11.1-v92-*-unsigned.apk
+            apk-*-badging.txt
             SHA256SUMS.txt

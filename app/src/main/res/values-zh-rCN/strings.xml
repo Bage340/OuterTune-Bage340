@@ -278,4 +278,23 @@
     <string name="use_login_for_browse_desc">这可能会影响您看到的内容，例如，如果您使用会员账号登录，则会显示仅会员专辑</string>
     <string name="use_login_for_browse">登录账号浏览内容</string>
     <string name="action_login">登录</string>
+    <string name="playlist_library_added_result">已添加：%1$d\n媒体库中已有：%2$d</string>
+    <string name="playlist_library_all_present">所有歌曲都已在媒体库中。</string>
+    <string name="playlist_library_empty">此播放列表中没有可添加的歌曲。</string>
+    <string name="playlist_library_failed">无法将播放列表中的歌曲添加到媒体库。</string>
+    <string name="playlist_library_in_progress">正在将播放列表中的歌曲添加到媒体库…</string>
+    <string name="download_parallelism_title">并行下载</string>
+    <string name="download_parallelism_description">一次最多下载 3 首歌曲。下载更多歌曲可能会增加网络错误。</string>
+    <string name="download_shared_directory_warning">请为稳定版和预览版使用不同的下载文件夹，以免两个应用写入相同文件。</string>
+    <string name="transfer_export_playlist">导出播放列表</string>
+    <string name="transfer_export_library">导出音乐库和播放列表</string>
+    <string name="transfer_import">导入音乐库或播放列表</string>
+    <string name="transfer_choose_format">选择导出格式</string>
+    <string name="transfer_in_progress">正在处理传输…</string>
+    <string name="transfer_import_preview_title">检查导入内容</string>
+    <string name="transfer_import_preview_counts">找到的播放列表：%1$d\n找到的曲目：%2$d\n新增曲目：%3$d\n已有曲目：%4$d\n未匹配的本地曲目：%5$d\n重复曲目：%6$d\n无效条目：%7$d\n\n将添加新曲目和播放列表条目。已有内容将保留。</string>
+    <string name="transfer_import_confirm">导入</string>
+    <string name="transfer_exported">导出完成</string>
+    <string name="transfer_imported">已导入 %1$d 首新曲目和 %2$d 个播放列表条目</string>
+    <string name="transfer_failed">传输失败</string>
 </resources>

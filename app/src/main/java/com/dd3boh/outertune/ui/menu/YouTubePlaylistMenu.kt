@@ -11,11 +11,14 @@ import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.automirrored.rounded.DriveFileMove
+import androidx.compose.material.icons.rounded.Output
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.PlaylistRemove
 import androidx.compose.material.icons.rounded.Radio
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Shuffle
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -29,10 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -55,12 +60,19 @@ import com.dd3boh.outertune.ui.component.items.YouTubeListItem
 import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
 import com.dd3boh.outertune.ui.dialog.AddToQueueDialog
 import com.dd3boh.outertune.ui.dialog.DefaultDialog
+import com.dd3boh.outertune.ui.dialog.LibraryTransferHost
+import com.dd3boh.outertune.ui.dialog.LibraryTransferRequest
 import com.dd3boh.outertune.ui.dialog.MovePlaylistDialog
+import com.dd3boh.outertune.transfer.TrackSource
+import com.dd3boh.outertune.transfer.TransferDocument
+import com.dd3boh.outertune.transfer.TransferPlaylist
+import com.dd3boh.outertune.transfer.TransferTrack
 import com.dd3boh.outertune.utils.getDownloadState
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.utils.completed
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -75,11 +87,18 @@ fun YouTubePlaylistMenu(
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val database = LocalDatabase.current
     val downloadUtil = LocalDownloadUtil.current
     val playerConnection = LocalPlayerConnection.current ?: return
     val queueBoard by playerConnection.queueBoard.collectAsState()
     val dbPlaylist by database.playlistByBrowseId(playlist.id).collectAsState(initial = null)
+    val exportScope = rememberCoroutineScope()
+    var exportRequest by remember { mutableStateOf<LibraryTransferRequest?>(null) }
+    var exportLoading by remember { mutableStateOf(false) }
+    var exportError by remember { mutableStateOf<String?>(null) }
+
+    LibraryTransferHost(exportRequest) { exportRequest = null }
 
     var showChoosePlaylistDialog by rememberSaveable {
         mutableStateOf(false)
@@ -271,6 +290,32 @@ fun YouTubePlaylistMenu(
         }
 
         GridMenuItem(
+            icon = Icons.Rounded.Output,
+            title = R.string.transfer_export_playlist,
+        ) {
+            if (!exportLoading) {
+                exportLoading = true
+                exportScope.launch {
+                    try {
+                        val completeSongs = withContext(Dispatchers.IO) {
+                            YouTube.playlist(playlist.id).completed().getOrThrow().songs
+                        }
+                        exportRequest = LibraryTransferRequest.ExportDocument(
+                            remotePlaylistTransferDocument(playlist, completeSongs),
+                            playlist.title,
+                        )
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (failure: Exception) {
+                        exportError = failure.message ?: resources.getString(R.string.transfer_failed)
+                    } finally {
+                        exportLoading = false
+                    }
+                }
+            }
+        }
+
+        GridMenuItem(
             icon = Icons.Rounded.Share,
             title = R.string.share
         ) {
@@ -299,6 +344,23 @@ fun YouTubePlaylistMenu(
                 }
             },
             onDismiss = { showMovePlaylistDialog = false },
+        )
+    }
+
+    if (exportLoading) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text(stringResource(R.string.transfer_in_progress)) },
+            text = { CircularProgressIndicator() },
+            confirmButton = {},
+        )
+    }
+    exportError?.let { message ->
+        AlertDialog(
+            onDismissRequest = { exportError = null },
+            title = { Text(stringResource(R.string.transfer_failed)) },
+            text = { Text(message) },
+            confirmButton = { TextButton(onClick = { exportError = null }) { Text(stringResource(android.R.string.ok)) } },
         )
     }
 
@@ -430,3 +492,24 @@ fun YouTubePlaylistMenu(
         )
     }
 }
+
+internal fun remotePlaylistTransferDocument(playlist: PlaylistItem, songs: List<SongItem>): TransferDocument =
+    TransferDocument(
+        library = emptyList(),
+        playlists = listOf(
+            TransferPlaylist(
+                stableId = playlist.id,
+                title = playlist.title,
+                tracks = songs.map { song ->
+                    TransferTrack(
+                        source = TrackSource.YOUTUBE,
+                        stableId = song.id,
+                        title = song.title,
+                        artists = song.artists.map { it.name },
+                        album = song.album?.name,
+                        durationSeconds = song.duration,
+                    )
+                },
+            )
+        ),
+    )

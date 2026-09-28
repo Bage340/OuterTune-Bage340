@@ -2,4 +2,18 @@
 <resources>
     <string name="forgotten_favorites">Forgotten favourites</string>
     <string name="center">Centre</string>
+    <string name="download_parallelism_title">Parallel downloads</string>
+    <string name="download_parallelism_description">Download up to three songs at once. More may increase network errors.</string>
+    <string name="download_shared_directory_warning">Use a different download folder for Stable and Preview to avoid both apps writing the same files.</string>
+    <string name="transfer_export_playlist">Export playlist</string>
+    <string name="transfer_export_library">Export library and playlists</string>
+    <string name="transfer_import">Import library or playlist</string>
+    <string name="transfer_choose_format">Choose export format</string>
+    <string name="transfer_in_progress">Processing transfer…</string>
+    <string name="transfer_import_preview_title">Review import</string>
+    <string name="transfer_import_preview_counts">Playlists found: %1$d\nTracks found: %2$d\nNew tracks: %3$d\nExisting tracks: %4$d\nUnresolved local tracks: %5$d\nDuplicate tracks: %6$d\nInvalid entries: %7$d\n\nNew tracks and playlist entries will be added. Existing items will be kept.</string>
+    <string name="transfer_import_confirm">Import</string>
+    <string name="transfer_exported">Export complete</string>
+    <string name="transfer_imported">Imported %1$d new tracks and %2$d playlist entries</string>
+    <string name="transfer_failed">Transfer failed</string>
 </resources>

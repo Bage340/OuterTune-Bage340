@@ -279,4 +279,23 @@
     <string name="options">Opciók</string>
     <string name="preview">Előnézet</string>
     <string name="enable_discord_rpc">Rich Presence engedélyezése</string>
+    <string name="playlist_library_added_result">Hozzáadva: %1$d\nMár a könyvtárban: %2$d</string>
+    <string name="playlist_library_all_present">Minden dal megtalálható a könyvtáradban.</string>
+    <string name="playlist_library_empty">Ebben a lejátszási listában nincs hozzáadható dal.</string>
+    <string name="playlist_library_failed">Nem sikerült hozzáadni a lista dalait a könyvtárhoz.</string>
+    <string name="playlist_library_in_progress">A lista dalainak hozzáadása a könyvtárhoz…</string>
+    <string name="download_parallelism_title">Párhuzamos letöltések</string>
+    <string name="download_parallelism_description">Tölts le egyszerre legfeljebb 3 dalt. Több letöltés növelheti a hálózati hibák számát.</string>
+    <string name="download_shared_directory_warning">A Stable és Preview verzióhoz használj külön letöltési mappát, hogy a két alkalmazás ne ugyanazokba a fájlokba írjon.</string>
+    <string name="transfer_export_playlist">Lejátszási lista exportálása</string>
+    <string name="transfer_export_library">Könyvtár és lejátszási listák exportálása</string>
+    <string name="transfer_import">Könyvtár vagy lejátszási lista importálása</string>
+    <string name="transfer_choose_format">Exportformátum kiválasztása</string>
+    <string name="transfer_in_progress">Átvitel feldolgozása…</string>
+    <string name="transfer_import_preview_title">Import áttekintése</string>
+    <string name="transfer_import_preview_counts">Talált lejátszási listák: %1$d\nTalált számok: %2$d\nÚj számok: %3$d\nMeglévő számok: %4$d\nFel nem oldott helyi számok: %5$d\nDuplikált számok: %6$d\nÉrvénytelen bejegyzések: %7$d\n\nAz új számok és lejátszási listaelemek hozzáadódnak. A meglévő elemek megmaradnak.</string>
+    <string name="transfer_import_confirm">Importálás</string>
+    <string name="transfer_exported">Az exportálás kész</string>
+    <string name="transfer_imported">%1$d új szám és %2$d lejátszásilista-bejegyzés importálva</string>
+    <string name="transfer_failed">Az átvitel nem sikerült</string>
 </resources>

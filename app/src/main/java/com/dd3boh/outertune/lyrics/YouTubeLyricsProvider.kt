@@ -10,7 +10,7 @@ object YouTubeLyricsProvider : LyricsProvider {
     override val name = "YouTube Music"
     override fun isEnabled(context: Context) = true
 
-    override suspend fun getLyrics(id: String, title: String, artist: String, duration: Int): LyricsFetchResult {
+    override suspend fun getLyrics(id: String, title: String, artist: String, duration: Int, album: String?): LyricsFetchResult {
         val nextResult = YouTube.next(WatchEndpoint(videoId = id)).getOrElse {
             if (it is CancellationException) throw it
             return LyricsFetchResult.Failed(it)

@@ -12,6 +12,7 @@
     <string name="albums">Album</string>
     <string name="playlists">Spellistor</string>
     <plurals name="n_selected">
+        <item quantity="one">%d vald</item>
         <item quantity="other">%d valda</item>
     </plurals>
     <string name="history">Historik</string>
@@ -598,4 +599,23 @@
     <string name="move_to_folder">Flytta till mapp</string>
     <string name="root_folder">Alla spellistor</string>
     <string name="previous_folder">Föregående mapp</string>
+    <string name="playlist_library_added_result">Tillagda: %1$d\nRedan i biblioteket: %2$d</string>
+    <string name="playlist_library_all_present">Alla låtar finns redan i ditt bibliotek.</string>
+    <string name="playlist_library_empty">Den här spellistan har inga låtar att lägga till.</string>
+    <string name="playlist_library_failed">Det gick inte att lägga till låtarna i biblioteket.</string>
+    <string name="playlist_library_in_progress">Lägger till låtar från spellistan i biblioteket…</string>
+    <string name="download_parallelism_title">Parallella nedladdningar</string>
+    <string name="download_parallelism_description">Ladda ned upp till 3 låtar samtidigt. Fler nedladdningar kan öka antalet nätverksfel.</string>
+    <string name="download_shared_directory_warning">Använd olika nedladdningsmappar för Stable och Preview så att apparna inte skriver till samma filer.</string>
+    <string name="transfer_export_playlist">Exportera spellista</string>
+    <string name="transfer_export_library">Exportera bibliotek och spellistor</string>
+    <string name="transfer_import">Importera bibliotek eller spellista</string>
+    <string name="transfer_choose_format">Välj exportformat</string>
+    <string name="transfer_in_progress">Bearbetar överföring…</string>
+    <string name="transfer_import_preview_title">Granska import</string>
+    <string name="transfer_import_preview_counts">Hittade spellistor: %1$d\nHittade spår: %2$d\nNya spår: %3$d\nBefintliga spår: %4$d\nOlösta lokala spår: %5$d\nDuplicerade spår: %6$d\nOgiltiga poster: %7$d\n\nNya spår och spellisteposter läggs till. Befintliga objekt behålls.</string>
+    <string name="transfer_import_confirm">Importera</string>
+    <string name="transfer_exported">Exporten är klar</string>
+    <string name="transfer_imported">Importerade %1$d nya spår och %2$d spellisteposter</string>
+    <string name="transfer_failed">Överföringen misslyckades</string>
 </resources>

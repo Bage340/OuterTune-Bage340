@@ -279,4 +279,23 @@
     <string name="use_login_for_browse">Sisu sirvimiseks logi sisse</string>
     <string name="use_login_for_browse_desc">See võib mõjutada mis sisu sa näed, sealhulgas kui kasutad YouTube Premium-kontot, siis YouTube Premiumi jaoks mõeldud albumeid</string>
     <string name="action_login">Logi sisse</string>
+    <string name="playlist_library_added_result">Lisatud: %1$d\nJuba kogus: %2$d</string>
+    <string name="playlist_library_all_present">Kõik lood on juba sinu muusikakogus.</string>
+    <string name="playlist_library_empty">Selles esitusloendis pole lisatavaid lugusid.</string>
+    <string name="playlist_library_failed">Esitusloendi lugusid ei õnnestunud kogusse lisada.</string>
+    <string name="playlist_library_in_progress">Esitusloendi lugude lisamine kogusse…</string>
+    <string name="download_parallelism_title">Paralleelsed allalaadimised</string>
+    <string name="download_parallelism_description">Laadi korraga alla kuni 3 lugu. Rohkem allalaadimisi võib suurendada võrguvigu.</string>
+    <string name="download_shared_directory_warning">Kasuta stabiilse ja eelvaateversiooni jaoks eri allalaadimiskaustu, et mõlemad rakendused ei kirjutaks samadesse failidesse.</string>
+    <string name="transfer_export_playlist">Ekspordi esitusloend</string>
+    <string name="transfer_export_library">Ekspordi kogu muusikakogu ja esitusloendid</string>
+    <string name="transfer_import">Impordi muusikakogu või esitusloend</string>
+    <string name="transfer_choose_format">Vali ekspordivorming</string>
+    <string name="transfer_in_progress">Edastuse töötlemine…</string>
+    <string name="transfer_import_preview_title">Vaata import üle</string>
+    <string name="transfer_import_preview_counts">Leitud esitusloendid: %1$d\nLeitud lood: %2$d\nUued lood: %3$d\nOlemasolevad lood: %4$d\nLahendamata kohalikud lood: %5$d\nDuplikaatlood: %6$d\nVigased kirjed: %7$d\n\nUued lood ja esitusloendite kirjed lisatakse. Olemasolevad üksused säilivad.</string>
+    <string name="transfer_import_confirm">Impordi</string>
+    <string name="transfer_exported">Eksport on valmis</string>
+    <string name="transfer_imported">Imporditi %1$d uut lugu ja %2$d esitusloendi kirjet</string>
+    <string name="transfer_failed">Edastus nurjus</string>
 </resources>

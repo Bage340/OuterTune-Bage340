@@ -2,7 +2,10 @@
 
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import com.android.build.api.variant.ResValue
 import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.MessageDigest
 import java.util.Properties
 
 
@@ -18,7 +21,33 @@ plugins {
 val keystorePropertiesFile = rootProject.file("keystore.properties")
 val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    FileInputStream(keystorePropertiesFile).use(keystoreProperties::load)
+}
+val previewKeystorePropertiesFile = rootProject.file("preview-keystore.properties")
+val previewKeystoreProperties = Properties()
+if (previewKeystorePropertiesFile.exists()) {
+    FileInputStream(previewKeystorePropertiesFile).use(previewKeystoreProperties::load)
+    require(listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all {
+        !previewKeystoreProperties.getProperty(it).isNullOrBlank()
+    }) { "preview-keystore.properties must define storeFile, storePassword, keyAlias, and keyPassword" }
+    if (!keystoreProperties.getProperty("storeFile").isNullOrBlank()) {
+        require(rootProject.file(previewKeystoreProperties.getProperty("storeFile")).canonicalFile !=
+            file(keystoreProperties.getProperty("storeFile")).canonicalFile) {
+            "Preview and Stable must use different keystore files"
+        }
+    }
+    val previewStore = rootProject.file(previewKeystoreProperties.getProperty("storeFile"))
+    if (previewStore.exists()) {
+        val store = KeyStore.getInstance(previewStore, previewKeystoreProperties.getProperty("storePassword").toCharArray())
+        val certificate = requireNotNull(store.getCertificate(previewKeystoreProperties.getProperty("keyAlias"))) {
+            "Preview signing alias is missing from its keystore"
+        }
+        val fingerprint = MessageDigest.getInstance("SHA-256").digest(certificate.encoded)
+            .joinToString("") { "%02x".format(it) }
+        require(fingerprint != "98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736") {
+            "Preview must not use the published Stable signing certificate"
+        }
+    }
 }
 
 android {
@@ -54,6 +83,14 @@ android {
         } else {
             create("ot_release") { }
         }
+        if (!previewKeystoreProperties.isEmpty) {
+            create("preview_release") {
+                storeFile = rootProject.file(previewKeystoreProperties.getProperty("storeFile"))
+                storePassword = previewKeystoreProperties.getProperty("storePassword")
+                keyAlias = previewKeystoreProperties.getProperty("keyAlias")
+                keyPassword = previewKeystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -62,9 +99,8 @@ android {
             isShrinkResources = true
             isCrunchPngs = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Local builds stay unsigned unless the existing project keystore is supplied.
-            // CI provides the same keystore through the ignored keystore.properties file.
-            signingConfig = if (keystoreProperties.isEmpty) null else signingConfigs.getByName("ot_release")
+            // Channel flavors select their own signing keys; absent local properties stay unsigned.
+            signingConfig = null
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -84,6 +120,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
 
 // build variants and stuff
@@ -97,9 +134,21 @@ android {
         }
     }
 
-    flavorDimensions.add("abi")
+    flavorDimensions.addAll(listOf("channel", "abi"))
 
     productFlavors {
+        create("stable") {
+            isDefault = true
+            dimension = "channel"
+            signingConfig = if (keystoreProperties.isEmpty) null else signingConfigs.getByName("ot_release")
+        }
+
+        create("preview") {
+            dimension = "channel"
+            applicationIdSuffix = ".preview"
+            signingConfig = if (previewKeystoreProperties.isEmpty) null else signingConfigs.getByName("preview_release")
+        }
+
         // main version
         create("core") {
             isDefault = true
@@ -140,7 +189,7 @@ android {
         // Tag extraction uses TagLib in every flavor. Only the FFmpeg playback decoder
         // (nextlib) is flavor-gated: the "full" flavor links it from the prebuilt AAR,
         // while other flavors compile the dud stub.
-        if (name.substringAfter("compile").lowercase().startsWith("full")) {
+        if (name.substringAfter("compile").contains("Full")) {
             exclude("**/*ffdecoderDud.kt")
         }
     }
@@ -212,6 +261,15 @@ android {
 
     androidResources {
         generateLocaleConfig = true
+    }
+}
+
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.resValues.put(
+            variant.makeResValueKey("string", "shortcut_target_package"),
+            variant.applicationId.map { ResValue(it, "Package of this build variant for static shortcuts") },
+        )
     }
 }
 

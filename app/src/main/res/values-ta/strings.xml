@@ -279,4 +279,23 @@
         <item quantity="other">%d தேர்ந்தெடுக்கப்பட்டன</item>
     </plurals>
     <string name="action_login">புகுபதிகை</string>
+    <string name="playlist_library_added_result">சேர்க்கப்பட்டவை: %1$d\nஏற்கனவே நூலகத்தில் உள்ளவை: %2$d</string>
+    <string name="playlist_library_all_present">அனைத்துப் பாடல்களும் ஏற்கனவே உங்கள் நூலகத்தில் உள்ளன.</string>
+    <string name="playlist_library_empty">இந்தப் பாடல் பட்டியலில் சேர்க்கப் பாடல்கள் இல்லை.</string>
+    <string name="playlist_library_failed">பாடல் பட்டியலின் பாடல்களை நூலகத்தில் சேர்க்க முடியவில்லை.</string>
+    <string name="playlist_library_in_progress">பாடல் பட்டியலின் பாடல்கள் நூலகத்தில் சேர்க்கப்படுகின்றன…</string>
+    <string name="download_parallelism_title">ஒரே நேரத்தில் பதிவிறக்கங்கள்</string>
+    <string name="download_parallelism_description">ஒரே நேரத்தில் 3 பாடல்கள் வரை பதிவிறக்கலாம். அதற்கு மேல் பதிவிறக்கினால் நெட்வொர்க் பிழைகள் அதிகரிக்கலாம்.</string>
+    <string name="download_shared_directory_warning">இரண்டு செயலிகளும் ஒரே கோப்புகளில் எழுதுவதைத் தவிர்க்க Stable மற்றும் Preview பதிப்புகளுக்கு வெவ்வேறு பதிவிறக்கக் கோப்புறைகளைப் பயன்படுத்தவும்.</string>
+    <string name="transfer_export_playlist">பிளேலிஸ்ட்டை ஏற்றுமதி செய்</string>
+    <string name="transfer_export_library">நூலகத்தையும் பிளேலிஸ்ட்களையும் ஏற்றுமதி செய்</string>
+    <string name="transfer_import">நூலகம் அல்லது பிளேலிஸ்ட்டை இறக்குமதி செய்</string>
+    <string name="transfer_choose_format">ஏற்றுமதி வடிவத்தைத் தேர்ந்தெடு</string>
+    <string name="transfer_in_progress">பரிமாற்றம் செயலாக்கப்படுகிறது…</string>
+    <string name="transfer_import_preview_title">இறக்குமதியை மதிப்பாய்வு செய்</string>
+    <string name="transfer_import_preview_counts">கண்டறியப்பட்ட பிளேலிஸ்ட்கள்: %1$d\nகண்டறியப்பட்ட பாடல்கள்: %2$d\nபுதிய பாடல்கள்: %3$d\nஏற்கனவே உள்ள பாடல்கள்: %4$d\nதீர்மானிக்கப்படாத உள்ளூர் பாடல்கள்: %5$d\nநகல் பாடல்கள்: %6$d\nதவறான உள்ளீடுகள்: %7$d\n\nபுதிய பாடல்களும் பிளேலிஸ்ட் உள்ளீடுகளும் சேர்க்கப்படும். ஏற்கனவே உள்ளவை அப்படியே இருக்கும்.</string>
+    <string name="transfer_import_confirm">இறக்குமதி செய்</string>
+    <string name="transfer_exported">ஏற்றுமதி முடிந்தது</string>
+    <string name="transfer_imported">%1$d புதிய பாடல்களும் %2$d பிளேலிஸ்ட் உள்ளீடுகளும் இறக்குமதி செய்யப்பட்டன</string>
+    <string name="transfer_failed">பரிமாற்றம் தோல்வியடைந்தது</string>
 </resources>

@@ -168,7 +168,7 @@
     <string name="sleep_timer">स्लीप टाइमर</string>
     <string name="end_of_song">गाने का अंत</string>
     <plurals name="minute">
-        <item quantity="one">1 मिनट</item>
+        <item quantity="one">%d मिनट</item>
         <item quantity="other">%d मिनट</item>
     </plurals>
     <string name="error_timeout">समय सीमा</string>
@@ -207,4 +207,23 @@
     <string name="action_login">लॉग इन</string>
     <string name="login">लॉगिन</string>
     <string name="login_failed">लॉगिन असफल रहा</string>
+    <string name="playlist_library_added_result">जोड़े गए: %1$d\nपहले से लाइब्रेरी में: %2$d</string>
+    <string name="playlist_library_all_present">सभी गाने पहले से आपकी लाइब्रेरी में हैं।</string>
+    <string name="playlist_library_empty">इस प्लेलिस्ट में जोड़ने के लिए कोई गाना नहीं है।</string>
+    <string name="playlist_library_failed">प्लेलिस्ट के गाने लाइब्रेरी में नहीं जोड़े जा सके।</string>
+    <string name="playlist_library_in_progress">प्लेलिस्ट के गाने लाइब्रेरी में जोड़े जा रहे हैं…</string>
+    <string name="download_parallelism_title">समानांतर डाउनलोड</string>
+    <string name="download_parallelism_description">एक साथ अधिकतम 3 गाने डाउनलोड करें। इससे अधिक डाउनलोड करने पर नेटवर्क त्रुटियाँ बढ़ सकती हैं।</string>
+    <string name="download_shared_directory_warning">Stable और Preview के लिए अलग-अलग डाउनलोड फ़ोल्डर रखें, ताकि दोनों ऐप एक ही फ़ाइलों में न लिखें।</string>
+    <string name="transfer_export_playlist">प्लेलिस्ट निर्यात करें</string>
+    <string name="transfer_export_library">लाइब्रेरी और प्लेलिस्ट निर्यात करें</string>
+    <string name="transfer_import">लाइब्रेरी या प्लेलिस्ट आयात करें</string>
+    <string name="transfer_choose_format">निर्यात फ़ॉर्मैट चुनें</string>
+    <string name="transfer_in_progress">ट्रांसफ़र संसाधित हो रहा है…</string>
+    <string name="transfer_import_preview_title">आयात की समीक्षा करें</string>
+    <string name="transfer_import_preview_counts">मिली प्लेलिस्ट: %1$d\nमिले ट्रैक: %2$d\nनए ट्रैक: %3$d\nमौजूदा ट्रैक: %4$d\nअनसुलझे स्थानीय ट्रैक: %5$d\nडुप्लिकेट ट्रैक: %6$d\nअमान्य प्रविष्टियाँ: %7$d\n\nनए ट्रैक और प्लेलिस्ट प्रविष्टियाँ जोड़ी जाएँगी। मौजूदा आइटम सुरक्षित रहेंगे।</string>
+    <string name="transfer_import_confirm">आयात करें</string>
+    <string name="transfer_exported">निर्यात पूरा हुआ</string>
+    <string name="transfer_imported">%1$d नए ट्रैक और %2$d प्लेलिस्ट प्रविष्टियाँ आयात की गईं</string>
+    <string name="transfer_failed">ट्रांसफ़र विफल</string>
 </resources>

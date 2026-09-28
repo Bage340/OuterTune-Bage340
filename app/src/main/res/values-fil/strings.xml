@@ -1,3 +1,17 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+    <string name="download_parallelism_title">Sabay-sabay na pag-download</string>
+    <string name="download_parallelism_description">Mag-download ng hanggang 3 kanta nang sabay. Maaaring dumami ang mga error sa network kapag mas marami pa.</string>
+    <string name="download_shared_directory_warning">Gumamit ng magkaibang download folder para sa Stable at Preview para hindi magsulat ang dalawang app sa iisang file.</string>
+    <string name="transfer_export_playlist">I-export ang playlist</string>
+    <string name="transfer_export_library">I-export ang library at mga playlist</string>
+    <string name="transfer_import">Mag-import ng library o playlist</string>
+    <string name="transfer_choose_format">Pumili ng format ng export</string>
+    <string name="transfer_in_progress">Pinoproseso ang paglilipat…</string>
+    <string name="transfer_import_preview_title">Suriin ang import</string>
+    <string name="transfer_import_preview_counts">Mga playlist na nakita: %1$d\nMga track na nakita: %2$d\nMga bagong track: %3$d\nMga dati nang track: %4$d\nMga lokal na track na hindi matukoy: %5$d\nMga dobleng track: %6$d\nMga di-wastong entry: %7$d\n\nIdadagdag ang mga bagong track at entry sa playlist. Mananatili ang mga dati nang item.</string>
+    <string name="transfer_import_confirm">Mag-import</string>
+    <string name="transfer_exported">Tapos na ang export</string>
+    <string name="transfer_imported">Na-import ang %1$d bagong track at %2$d entry sa playlist</string>
+    <string name="transfer_failed">Nabigo ang paglilipat</string>
 </resources>

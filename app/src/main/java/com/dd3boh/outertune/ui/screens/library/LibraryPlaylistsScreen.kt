@@ -36,6 +36,7 @@ import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FilterAlt
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Output
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -94,7 +95,8 @@ import com.dd3boh.outertune.ui.component.items.GridItem
 import com.dd3boh.outertune.ui.component.items.ListItem
 import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.dialog.CreatePlaylistDialog
-import com.dd3boh.outertune.ui.dialog.ImportM3uDialog
+import com.dd3boh.outertune.ui.dialog.LibraryTransferHost
+import com.dd3boh.outertune.ui.dialog.LibraryTransferRequest
 import com.dd3boh.outertune.ui.dialog.TextFieldDialog
 import com.dd3boh.outertune.ui.menu.ActionDropdown
 import com.dd3boh.outertune.ui.menu.DropdownItem
@@ -142,7 +144,8 @@ fun LibraryPlaylistsScreen(
     val lazyListState = rememberLazyListState()
     val lazyGridState = rememberLazyGridState()
 
-    var showImportM3uDialog by rememberSaveable { mutableStateOf(false) }
+    var transferRequest by remember { mutableStateOf<LibraryTransferRequest?>(null) }
+    LibraryTransferHost(transferRequest) { transferRequest = null }
     var showCreatePlaylistDialog by rememberSaveable { mutableStateOf(false) }
     var showCreateFolderDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -278,7 +281,12 @@ fun LibraryPlaylistsScreen(
                         DropdownItem(
                             title = stringResource(R.string.import_playlist),
                             leadingIcon = { Icon(Icons.AutoMirrored.Rounded.Input, null) },
-                            action = { showImportM3uDialog = true }
+                            action = { transferRequest = LibraryTransferRequest.Import }
+                        ),
+                        DropdownItem(
+                            title = stringResource(R.string.transfer_export_library),
+                            leadingIcon = { Icon(Icons.Rounded.Output, null) },
+                            action = { transferRequest = LibraryTransferRequest.ExportLibrary },
                         ),
                     ),
                 )
@@ -558,13 +566,6 @@ fun LibraryPlaylistsScreen(
         /**
          * Dialog
          */
-
-        if (showImportM3uDialog) {
-            ImportM3uDialog(
-                navController = navController,
-                onDismiss = { showImportM3uDialog = false }
-            )
-        }
 
         Indicator(
             isRefreshing = isSyncingRemotePlaylists,

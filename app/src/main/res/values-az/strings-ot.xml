@@ -73,6 +73,7 @@
     <string name="albums">Albomlar</string>
     <string name="playlists">Pleylistlər</string>
     <plurals name="n_selected">
+        <item quantity="one">%d seçilib</item>
         <item quantity="other">%d seçilib</item>
     </plurals>
     <string name="history">Tarixçə</string>
@@ -598,4 +599,23 @@
     <string name="move_to_folder">Qovluğa köçür</string>
     <string name="root_folder">Bütün pleylistlər</string>
     <string name="previous_folder">Əvvəlki qovluq</string>
+    <string name="playlist_library_added_result">Əlavə edildi: %1$d\nArtıq kitabxanada: %2$d</string>
+    <string name="playlist_library_all_present">Bütün mahnılar artıq kitabxananızdadır.</string>
+    <string name="playlist_library_empty">Bu pleylistdə əlavə ediləcək mahnı yoxdur.</string>
+    <string name="playlist_library_failed">Pleylist mahnılarını kitabxanaya əlavə etmək mümkün olmadı.</string>
+    <string name="playlist_library_in_progress">Pleylist mahnıları kitabxanaya əlavə edilir…</string>
+    <string name="download_parallelism_title">Paralel endirmələr</string>
+    <string name="download_parallelism_description">Eyni anda 3 mahnıyadək endirin. Daha çox endirmək şəbəkə xətalarını artıra bilər.</string>
+    <string name="download_shared_directory_warning">Hər iki tətbiqin eyni fayllara yazmaması üçün Stable və Preview versiyaları üçün fərqli endirmə qovluqları seçin.</string>
+    <string name="transfer_export_playlist">Pleylisti ixrac et</string>
+    <string name="transfer_export_library">Kitabxananı və pleylistləri ixrac et</string>
+    <string name="transfer_import">Kitabxananı və ya pleylisti idxal et</string>
+    <string name="transfer_choose_format">İxrac formatını seçin</string>
+    <string name="transfer_in_progress">Transfer icra olunur…</string>
+    <string name="transfer_import_preview_title">İdxalı nəzərdən keçir</string>
+    <string name="transfer_import_preview_counts">Tapılan pleylistlər: %1$d\nTapılan treklər: %2$d\nYeni treklər: %3$d\nMövcud treklər: %4$d\nTapılmayan yerli treklər: %5$d\nTəkrarlanan treklər: %6$d\nYanlış qeydlər: %7$d\n\nYeni treklər və pleylist elementləri əlavə ediləcək. Mövcud elementlər saxlanacaq.</string>
+    <string name="transfer_import_confirm">İdxal et</string>
+    <string name="transfer_exported">İxrac tamamlandı</string>
+    <string name="transfer_imported">%1$d yeni trek və %2$d pleylist elementi idxal edildi</string>
+    <string name="transfer_failed">Transfer alınmadı</string>
 </resources>

@@ -17,7 +17,9 @@ An independent public fork of [OuterTune](https://github.com/OuterTune/OuterTune
 
 - YouTube Music browsing, streaming, playlists, account synchronization, lyrics, and optional offline downloads
 - Playback of local audio files alongside YouTube Music content
-- Local-library scanning, browsing, filtering, and M3U import/export
+- Local-library scanning, browsing, filtering, playlist-to-library actions, JSON/CSV library and playlist transfer, and M3U8 playlist transfer
+- Download queue filtering and retry handling, with the configured parallel-download limit kept conservative by default
+- Stable and Preview build channels, with distinct package IDs and separate app data
 - A Material 3 Android interface, multiple playback queues, Android Auto, audio effects, and multilingual resources
 - Targeted reliability work and selected backports, with scope documented in this repository's history and pull requests
 
@@ -25,7 +27,7 @@ Feature availability can vary with device, account, network, region, provider, a
 
 ## Install or build
 
-The current source version is **0.11.1 (version code 92)** and is treated as a prerelease while it is being validated. When a release is published, use only the APKs on this repository's [Releases](https://github.com/Bage340/OuterTune-Bage340/releases) page. Test-build artifacts, when available, are attached to this repository's [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) runs and are not a substitute for a published release.
+The active test iteration is **OuterTune 0.11.1 v92** (Android `versionCode` 92), tag `0.11.1-v92`. It remains Preview/pre-release until phone testing is accepted; no Stable release is implied. Stable and Preview use different package IDs and keep separate app data. Android may reject replacing an installed Preview APK with another build that has the same package, signing key, and version code. Back up app data before uninstalling; do not assume an uninstall preserves it. When a release is published, use only the APKs on this repository's [Releases](https://github.com/Bage340/OuterTune-Bage340/releases) page. Test-build artifacts, when available, are attached to [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) runs and are not a substitute for a published release. See [release policy](docs/RELEASE_POLICY.md), [custom build notes](CUSTOM_BUILD.md), and the [phone test plan](docs/PHONE_TEST_PLAN.md).
 
 To build from source, clone this repository with submodules and use Android Studio or the Gradle wrapper:
 
@@ -56,6 +58,7 @@ On Windows, run `./gradlew` as `./gradlew.bat` or `gradlew.bat`. See [CONTRIBUTI
 
 - Report bugs specific to this fork through this repository's [Issues](https://github.com/Bage340/OuterTune-Bage340/issues).
 - Before opening a pull request, follow [CONTRIBUTING.md](CONTRIBUTING.md) and test the affected build flavor.
+- See [CHANGELOG.md](CHANGELOG.md) for user-facing notes for the current iteration.
 - Changes from upstream projects retain their original authorship and attribution where applicable.
 
 ## Attribution and license

@@ -241,6 +241,8 @@
     <string name="albums">Албуми</string>
     <string name="playlists">Плејлисте</string>
     <plurals name="n_selected">
+        <item quantity="one">Изабрано: %d</item>
+        <item quantity="few">Изабрано: %d</item>
         <item quantity="other">Изабрано: %d</item>
     </plurals>
     <string name="history">Историја</string>
@@ -360,30 +362,37 @@
     <string name="duplicates_description_multiple">%d песме су већ на вашој листи песама</string>
     <plurals name="n_song">
         <item quantity="one">%d песма</item>
+        <item quantity="few">%d песме</item>
         <item quantity="other">%d песме</item>
     </plurals>
     <plurals name="n_artist">
         <item quantity="one">%d извођач</item>
+        <item quantity="few">%d извођача</item>
         <item quantity="other">%d извођачи</item>
     </plurals>
     <plurals name="n_album">
         <item quantity="one">%d албум</item>
+        <item quantity="few">%d албума</item>
         <item quantity="other">%d албуми</item>
     </plurals>
     <plurals name="n_playlist">
         <item quantity="one">%d листа песама</item>
+        <item quantity="few">%d листе песама</item>
         <item quantity="other">%d листе песама</item>
     </plurals>
     <plurals name="n_week">
         <item quantity="one">%d недеља</item>
+        <item quantity="few">%d недеље</item>
         <item quantity="other">%d недеље</item>
     </plurals>
     <plurals name="n_month">
         <item quantity="one">%d месец</item>
+        <item quantity="few">%d месеца</item>
         <item quantity="other">%d месеци</item>
     </plurals>
     <plurals name="n_year">
         <item quantity="one">%d година</item>
+        <item quantity="few">%d године</item>
         <item quantity="other">%d године</item>
     </plurals>
     <string name="playlist_imported">листа за репродукцију је увезена</string>
@@ -395,6 +404,7 @@
     <string name="end_of_song">Крај песме</string>
     <plurals name="minute">
         <item quantity="one">%d минут</item>
+        <item quantity="few">%d минута</item>
         <item quantity="other">%d минута</item>
     </plurals>
     <string name="error_no_stream">Није доступан ниједан стрим</string>
@@ -579,6 +589,7 @@
     <string name="oobe_cache_subtitle">Изаберите величину кеш меморије за песме. Ово може помоћи у смањењу проблема са репродукцијом путем интернета или YouTube API-ја.</string>
     <plurals name="second">
         <item quantity="one">%d секунда</item>
+        <item quantity="few">%d секунде</item>
         <item quantity="other">%d секунди</item>
     </plurals>
     <string name="keep_screen_on">Држи екран укљученим</string>
@@ -592,4 +603,23 @@
     <string name="move_to_folder">Премести у фасциклу</string>
     <string name="root_folder">Све плејлисте</string>
     <string name="previous_folder">Претходна фасцикла</string>
+    <string name="playlist_library_added_result">Додато: %1$d\nВећ у библиотеци: %2$d</string>
+    <string name="playlist_library_all_present">Све песме су већ у вашој библиотеци.</string>
+    <string name="playlist_library_empty">На овој плејлисти нема песама за додавање.</string>
+    <string name="playlist_library_failed">Није могуће додати песме са плејлисте у библиотеку.</string>
+    <string name="playlist_library_in_progress">Додавање песама са плејлисте у библиотеку…</string>
+    <string name="download_parallelism_title">Паралелна преузимања</string>
+    <string name="download_parallelism_description">Преузмите до 3 песме истовремено. Више преузимања може повећати број мрежних грешака.</string>
+    <string name="download_shared_directory_warning">Користите различите фасцикле за преузимање за стабилну и пробну верзију како апликације не би уписивале у исте датотеке.</string>
+    <string name="transfer_export_playlist">Извези плејлисту</string>
+    <string name="transfer_export_library">Извези библиотеку и плејлисте</string>
+    <string name="transfer_import">Увези библиотеку или плејлисту</string>
+    <string name="transfer_choose_format">Изаберите формат извоза</string>
+    <string name="transfer_in_progress">Обрада преноса…</string>
+    <string name="transfer_import_preview_title">Преглед увоза</string>
+    <string name="transfer_import_preview_counts">Пронађене плејлисте: %1$d\nПронађене песме: %2$d\nНове песме: %3$d\nПостојеће песме: %4$d\nНеразрешене локалне песме: %5$d\nДупликати песама: %6$d\nНеважећи уноси: %7$d\n\nНове песме и ставке плејлисти биће додате. Постојеће ставке ће бити сачуване.</string>
+    <string name="transfer_import_confirm">Увези</string>
+    <string name="transfer_exported">Извоз је завршен</string>
+    <string name="transfer_imported">Увезено нових песама: %1$d; ставки плејлисти: %2$d</string>
+    <string name="transfer_failed">Пренос није успео</string>
 </resources>

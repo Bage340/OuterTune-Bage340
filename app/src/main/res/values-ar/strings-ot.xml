@@ -310,6 +310,10 @@
     <string name="m3u_ytm_lookup">البحث في YouTube Music عن الأغاني غير الموجودة في قاعدة بيانات التطبيق</string>
     <plurals name="second">
         <item quantity="one">%d ثانية</item>
+        <item quantity="zero">%d ثانية</item>
+        <item quantity="two">%d ثانيتان</item>
+        <item quantity="few">%d ثوانٍ</item>
+        <item quantity="many">%d ثانية</item>
         <item quantity="other">%d ثانية</item>
     </plurals>
     <string name="speed_very_slow">بطيء جداً</string>

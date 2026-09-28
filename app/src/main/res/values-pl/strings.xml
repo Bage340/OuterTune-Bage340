@@ -297,4 +297,23 @@
     <string name="use_login_for_browse">Zaloguj się, aby przeglądać treści</string>
     <string name="use_login_for_browse_desc">Może mieć wpływ na to, jakie treści widzisz i np. pokazuje albumy tylko premium, jeśli jesteś zalogowany na konto Premium</string>
     <string name="action_login">Zaloguj</string>
+    <string name="playlist_library_added_result">Dodano: %1$d\nJuż w bibliotece: %2$d</string>
+    <string name="playlist_library_all_present">Wszystkie utwory są już w Twojej bibliotece.</string>
+    <string name="playlist_library_empty">Na tej playliście nie ma utworów do dodania.</string>
+    <string name="playlist_library_failed">Nie udało się dodać utworów z playlisty do biblioteki.</string>
+    <string name="playlist_library_in_progress">Dodawanie utworów z playlisty do biblioteki…</string>
+    <string name="download_parallelism_title">Pobieranie równoległe</string>
+    <string name="download_parallelism_description">Pobieraj do 3 utworów jednocześnie. Większa liczba może zwiększyć liczbę błędów sieci.</string>
+    <string name="download_shared_directory_warning">Używaj osobnych folderów pobierania dla wersji Stable i Preview, aby obie aplikacje nie zapisywały tych samych plików.</string>
+    <string name="transfer_export_playlist">Eksportuj playlistę</string>
+    <string name="transfer_export_library">Eksportuj bibliotekę i playlisty</string>
+    <string name="transfer_import">Importuj bibliotekę lub playlistę</string>
+    <string name="transfer_choose_format">Wybierz format eksportu</string>
+    <string name="transfer_in_progress">Przetwarzanie transferu…</string>
+    <string name="transfer_import_preview_title">Sprawdź import</string>
+    <string name="transfer_import_preview_counts">Znalezione playlisty: %1$d\nZnalezione utwory: %2$d\nNowe utwory: %3$d\nIstniejące utwory: %4$d\nNierozpoznane utwory lokalne: %5$d\nDuplikaty utworów: %6$d\nNieprawidłowe wpisy: %7$d\n\nNowe utwory i wpisy playlist zostaną dodane. Istniejące elementy zostaną zachowane.</string>
+    <string name="transfer_import_confirm">Importuj</string>
+    <string name="transfer_exported">Eksport ukończony</string>
+    <string name="transfer_imported">Zaimportowano %1$d nowych utworów i %2$d wpisów playlist</string>
+    <string name="transfer_failed">Transfer się nie powiódł</string>
 </resources>
