@@ -189,6 +189,43 @@ offline decoder playback/seek, UI rendering, 1–3 concurrent network jobs,
 background/process death, installation replacement and Play Protect need the
 user's phone. Corresponding issues must remain open until evidence is supplied.
 
+## Poco X3 Pro follow-up: 2026-10-01
+
+An authorized Poco X3 Pro (M2102J20SG), Android 13/API 33, MIUI 14 was
+subsequently attached over ADB. The published Preview installed alongside
+Stable v91 and launched successfully. Preview's actual SAF folder picker
+selected an isolated directory containing three generated/test audio files;
+manual scanning found all three, local WAV playback advanced, and backup
+creation produced a readable archive containing settings and main/WAL files.
+These UI observations concern the previously published artifact and are not
+proof of every acceptance case or subjective audio quality.
+
+Initial execution of the scanner instrumentation suite found two genuine
+local album identity failures and one incorrectly prepared missing-file test.
+`DatabaseDao.insert(MediaMetadata)` now resolves the local album before
+inserting a song and uses the same ID for the song and album relationship.
+New albums use the album ID generator. The missing-file fixture now actually
+removes its own test file; another test protects an existing file omitted from
+the input. Every test uses an in-memory database and a fresh app-specific
+temporary directory; Stable data and user media were not modified.
+
+The corrected scanner suite passed **9/9 on the Poco**. Five Room regression
+tests cover new/reused albums, missing album metadata, duplicate inserts and
+remote caller changes; the two intended failures were observed before the
+production fix. Full Preview/Stable Core Debug JVM suites subsequently passed
+**282 tests each, zero failures/errors**. The bounded patch also received an
+independent source review with no blocking findings. Existing stale album IDs
+are not rewritten by a migration; a full metadata rescan reconciles those
+records. Remaining phone cases retain their individual verification boundary.
+
+The locally rebuilt, minified signed Preview Core Release also passed
+installation over the published Preview with the same versionCode 92. The
+three test songs and scanner settings remained present. Its package and
+signer matched the Preview identity, APK alignment passed, and local Gradle
+verification completed successfully; Preview Core Debug lint had zero errors
+and the existing 339 warnings/3 hints. CI replacement provenance and additional
+device acceptance are recorded in the finalized release attachments.
+
 ## Publication provenance and phone acceptance
 
 The existing prerelease can be updated only after final checks. Publish the

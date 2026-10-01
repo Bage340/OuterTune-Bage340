@@ -166,7 +166,10 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
 
     @Transaction
     fun insert(mediaMetadata: MediaMetadata, block: (SongEntity) -> SongEntity = { it }) {
-        if (insert(mediaMetadata.toSongEntity().let(block)) == -1L) return
+        val album = mediaMetadata.album?.let { albumsByName(it.title) }
+        val albumId = mediaMetadata.album?.let { album?.id ?: AlbumEntity.generateAlbumId() }
+        val song = mediaMetadata.toSongEntity().let(block)
+        if (insert(if (mediaMetadata.isLocal && albumId != null) song.copy(albumId = albumId) else song) == -1L) return
         mediaMetadata.artists.forEachIndexed { index, artist ->
             val artistId = artist.id ?: artistByName(artist.name)?.id ?: ArtistEntity.generateArtistId()
             insert( // TODO: use upsert???
@@ -203,11 +206,10 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         }
 
         mediaMetadata.album?.let {
-            val album = albumsByName(it.title)
-            val albumId = album?.id ?: GenreEntity.generateGenreId()
+            val resolvedAlbumId = requireNotNull(albumId)
             upsert(
                 AlbumEntity(
-                    id = albumId,
+                    id = resolvedAlbumId,
                     title = it.title,
                     thumbnailUrl = album?.thumbnailUrl?: mediaMetadata.thumbnailUrl,
                     songCount = (album?.songCount ?: 0).coerceAtLeast(1),
@@ -218,7 +220,7 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
             insert(
                 SongAlbumMap(
                     songId = mediaMetadata.id,
-                    albumId = albumId,
+                    albumId = resolvedAlbumId,
                     index = album?.songCount ?: 0
                 )
             )

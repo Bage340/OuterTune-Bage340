@@ -200,6 +200,8 @@ class LocalMediaScannerTest {
         database.insert(remote)
         database.insert(playlist)
         database.insert(relation)
+        check(missing.delete())
+        assertTrue(!missing.exists())
 
         full(remaining)
 
@@ -209,6 +211,19 @@ class LocalMediaScannerTest {
             relation.copy(id = database.songMapsToPlaylist(remote.id).single().id),
             database.songMapsToPlaylist(remote.id).single(),
         )
+    }
+
+    @Test
+    fun fullScanPreservesExistingFileOmittedFromInput() = runBlocking {
+        val omitted = copyAudio("a-before.flac", "a.flac")
+        val remaining = copyAudio("b.flac", "b.flac")
+        quick(omitted, remaining)
+        val before = database.allLocalDbSongs().map { it.song }.toSet()
+
+        full(remaining)
+
+        assertEquals(before, database.allLocalDbSongs().map { it.song }.toSet())
+        assertTrue(omitted.exists())
     }
 
     @Test

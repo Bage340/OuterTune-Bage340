@@ -1,13 +1,16 @@
 # Changelog
 
 User-facing highlights for the active `0.11.1 v92` Preview iteration. This is
-not a commit-by-commit log. Phone behavior remains unverified until the
-checklist in [docs/PHONE_TEST_PLAN.md](docs/PHONE_TEST_PLAN.md) has been run.
+not a commit-by-commit log. Phone acceptance is tracked separately in
+[docs/PHONE_TEST_PLAN.md](docs/PHONE_TEST_PLAN.md); automated checks do not
+replace every case in that checklist.
 
 ## 0.11.1 v92 — Preview / pre-release
 
 - Make local-library scans safer: incomplete traversal or metadata reads must
   not be treated as a complete scan that removes songs from the library.
+- Keep newly imported local songs linked to the same album in both their
+  stored metadata and album relationships, including an existing album.
 - Keep scanner database reconciliation atomic and contain manual scan failures;
   SAF traversal and retries remain authoritative.
 - Improve recovery of local playback paths and avoid treating local IDs as
