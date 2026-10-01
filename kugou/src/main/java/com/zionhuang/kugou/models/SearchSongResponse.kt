@@ -1,6 +1,7 @@
 package com.zionhuang.kugou.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 @Serializable
 data class SearchSongResponse(
@@ -17,6 +18,9 @@ data class SearchSongResponse(
         data class Info(
             val duration: Int,
             val hash: String,
+            val songname: String? = null,
+            val singername: String? = null,
+            @SerialName("album_name") val albumName: String? = null,
         )
     }
 }

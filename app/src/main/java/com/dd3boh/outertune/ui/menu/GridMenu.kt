@@ -167,7 +167,7 @@ fun LazyGridScope.DownloadGridMenu(
                         strokeWidth = 2.dp
                     )
                 },
-                title = R.string.downloading,
+                title = android.R.string.cancel,
                 onClick = onRemoveDownload
             )
         }
@@ -205,7 +205,7 @@ fun LazyGridScope.DownloadGridMenu(
                         strokeWidth = 2.dp
                     )
                 },
-                title = R.string.downloading,
+                title = android.R.string.cancel,
                 onClick = onRemoveDownload
             )
         }

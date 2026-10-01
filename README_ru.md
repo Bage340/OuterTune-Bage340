@@ -27,7 +27,7 @@
 
 ## Установка или сборка
 
-Текущая тестовая итерация — **OuterTune 0.11.1 v92** (Android `versionCode` 92), тег `0.11.1-v92`. Пока проверка на телефоне не принята, это Preview/pre-release; выпуск Stable не подразумевается. Stable и Preview имеют разные идентификаторы пакетов и отдельные данные приложения. Android может отказать в установке поверх уже установленного Preview APK при совпадении пакета, подписи и кода версии. Перед удалением приложения экспортируйте или сохраните данные: сохранение данных при удалении не гарантируется. Опубликованные APK берите только со страницы [Releases](https://github.com/Bage340/OuterTune-Bage340). Тестовые сборки, если доступны, находятся в [Actions](https://github.com/Bage340/OuterTune-Bage340) и не заменяют опубликованный релиз. См. [правила релизов](docs/RELEASE_POLICY.md), [заметки о сборке](CUSTOM_BUILD.md) и [план проверки на телефоне](docs/PHONE_TEST_PLAN.md).
+Текущая тестовая итерация — **OuterTune 0.11.1 v92** (Android `versionCode` 92), тег `0.11.1-v92`. Пока проверка на телефоне не принята, это Preview/pre-release; выпуск Stable не подразумевается. Stable и Preview имеют разные идентификаторы пакетов и отдельные данные приложения. Сохраните резервную копию/экспорт и сначала попробуйте обычное обновление Preview. Если Android отклонит установку, сохраните текст ошибки и не удаляйте единственную копию данных. Опубликованные APK берите только со страницы [Releases](https://github.com/Bage340/OuterTune-Bage340/releases). Тестовые сборки, если доступны, находятся в [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) и не заменяют опубликованный релиз. См. [правила релизов](docs/RELEASE_POLICY.md), [заметки о сборке](CUSTOM_BUILD.md) и [план проверки на телефоне](docs/PHONE_TEST_PLAN.md).
 
 Для сборки из исходного кода клонируйте этот репозиторий вместе с подмодулями и используйте Android Studio или Gradle Wrapper:
 
@@ -36,10 +36,10 @@ git clone --recurse-submodules https://github.com/Bage340/OuterTune-Bage340.git
 cd OuterTune-Bage340
 
 # Отладочный APK Core
-./gradlew assembleCoreDebug
+./gradlew assemblePreviewCoreDebug
 
 # Отладочный APK Full с дополнительным пакетом декодеров FFmpeg
-./gradlew assembleFullDebug
+./gradlew assemblePreviewFullDebug
 ```
 
 В Windows вместо `./gradlew` используйте `./gradlew.bat` или `gradlew.bat`. Предварительные требования, отличия вариантов сборки и правила участия описаны в [CONTRIBUTING.md](CONTRIBUTING.md).

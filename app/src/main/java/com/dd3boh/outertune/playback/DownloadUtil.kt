@@ -10,7 +10,6 @@ import androidx.core.net.toUri
 import androidx.media3.database.DatabaseProvider
 import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.CacheSpan
 import androidx.media3.datasource.cache.ContentMetadata
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
@@ -53,6 +52,7 @@ import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,9 +63,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
 import java.io.IOException
 import java.time.Instant
 import java.time.LocalDateTime
@@ -88,7 +85,6 @@ class DownloadUtil @Inject constructor(
     private val connectivityManager = context.getSystemService<ConnectivityManager>()!!
     private val audioQuality by enumPreference(context, AudioQualityKey, AudioQuality.AUTO)
     private val songUrlCache = StreamUrlCache()
-    private val rejectedStreamClients = ConcurrentHashMap<String, String>()
     private val reservedDownloadIds = ConcurrentHashMap.newKeySet<String>()
     private val downloadScope = CoroutineScope(dlCoroutine)
     private val dataSourceFactory = ResolvingDataSource.Factory(
@@ -102,7 +98,6 @@ class DownloadUtil @Inject constructor(
                             val response = chain.proceed(chain.request())
                             if (response.code in RETRYABLE_STREAM_RESPONSE_CODES) {
                                 songUrlCache.invalidateUrl(chain.request().url.toString())?.let { rejected ->
-                                    rejectedStreamClients[rejected.mediaId] = rejected.clientName
                                     Log.w(TAG, "Invalidated rejected ${rejected.clientName} download stream: HTTP ${response.code}")
                                 }
                             }
@@ -129,7 +124,7 @@ class DownloadUtil @Inject constructor(
                 mediaId,
                 audioQuality = audioQuality,
                 connectivityManager = connectivityManager,
-                rejectedClient = rejectedStreamClients.remove(mediaId),
+                rejectedClient = songUrlCache.rejectedClient(mediaId),
             )
         }.getOrThrow()
         val format = playbackData.format
@@ -193,7 +188,7 @@ class DownloadUtil @Inject constructor(
     fun getDownload(songId: String): Flow<LocalDateTime?> = downloads.map { it[songId] }
 
     fun isDownloadCompleted(songId: String): Boolean = try {
-        downloadManager.downloadIndex.getDownload(songId)?.state == Download.STATE_COMPLETED
+        downloadManager.downloadIndex.getDownload(songId)?.let { hasCompleteDownloadCache(downloadCache, it) } == true
     } catch (exception: IOException) {
         Log.w(TAG, "Unable to read download state: ${exception.javaClass.simpleName}")
         false
@@ -213,6 +208,45 @@ class DownloadUtil @Inject constructor(
 
     fun setDownloadParallelism(value: Int) {
         downloadManager.maxParallelDownloads = value.coerceIn(1, 3)
+    }
+
+    fun removeDownloads(mediaIds: List<String>, cancelOnly: Boolean) {
+        if (mediaIds.isEmpty()) return
+        downloadScope.launch {
+            try {
+                val states = mutableMapOf<String, Int>()
+                downloadManager.downloadIndex.getDownloads().use { cursor ->
+                    while (cursor.moveToNext()) states[cursor.download.request.id] = cursor.download.state
+                }
+                if (!cancelOnly) localMgr.getAvailableFiles(false)
+                for (id in planDownloadRemoval(mediaIds, states, cancelOnly)) {
+                    try {
+                        if (cancelOnly) {
+                            // Stopping, rather than removing, also preserves a track that finished
+                            // between the index snapshot and service processing this command.
+                            DownloadService.sendSetStopReason(
+                                context, ExoDownloadService::class.java, id, STOP_REASON_USER_CANCELLED, false,
+                            )
+                        } else {
+                            if (localMgr.getFilePathIfExists(id) != null && !deleteSong(id)) {
+                                throw IOException("Unable to remove downloaded file")
+                            }
+                            DownloadService.sendRemoveDownload(context, ExoDownloadService::class.java, id, false)
+                        }
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (error: Exception) {
+                        Log.e(TAG, "Unable to remove download $id", error)
+                        withContext(Dispatchers.Main) { Toast.makeText(context, R.string.error_unknown, LENGTH_SHORT).show() }
+                    }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Log.e(TAG, "Unable to inspect downloads for removal", error)
+                withContext(Dispatchers.Main) { Toast.makeText(context, R.string.error_unknown, LENGTH_SHORT).show() }
+            }
+        }
     }
 
     /**
@@ -245,13 +279,17 @@ class DownloadUtil @Inject constructor(
                 val localFileIds = localMgr.getAvailableFiles(false).keys
                 val recordedDownloads = downloads.value
                 val recordedDatabaseIds = database.downloadedOrQueuedSongs().first().mapTo(mutableSetOf()) { it.id }
+                val indexedDownloads = mutableMapOf<String, Download>()
+                downloadManager.downloadIndex.getDownloads().use { cursor ->
+                    while (cursor.moveToNext()) indexedDownloads[cursor.download.request.id] = cursor.download
+                }
                 val candidates = songs.distinctBy { it.id }.map { song ->
-                    val indexed = downloadManager.downloadIndex.getDownload(song.id)
+                    val indexed = indexedDownloads[song.id]
                     song.copy(
                         hasLocalFile = song.id in localFileIds,
                         state = indexed?.state,
                         hasCompleteCache = indexed?.state == Download.STATE_COMPLETED &&
-                            hasCompleteDownloadCache(indexed),
+                            hasCompleteDownloadCache(downloadCache, indexed),
                         hasRecordedDownload = recordedDownloads[song.id] != null || song.id in recordedDatabaseIds,
                         isReserved = song.id in reservedDownloadIds,
                     )
@@ -289,14 +327,6 @@ class DownloadUtil @Inject constructor(
                 Log.e(TAG, "Unable to inspect downloads before queueing", exception)
             }
         }
-    }
-
-    private fun hasCompleteDownloadCache(download: Download): Boolean {
-        val id = download.request.id
-        val metadataLength = downloadCache.getContentMetadata(id)
-            .get(ContentMetadata.KEY_CONTENT_LENGTH, -1L)
-        val expectedLength = maxOf(download.contentLength, metadataLength, download.bytesDownloaded)
-        return expectedLength > 0 && downloadCache.isCached(id, 0, expectedLength)
     }
 
     fun resumeDownloadsOnStart() {
@@ -337,68 +367,16 @@ class DownloadUtil @Inject constructor(
     }
 
     /**
-     * Retrieve song from cache, and delete it from cache afterwards
-     */
-    fun getFromCache(cache: SimpleCache, mediaId: String): ByteArray? {
-        val spans: Set<CacheSpan> = cache.getCachedSpans(mediaId)
-        if (spans.isEmpty()) return null
-
-        val output = ByteArrayOutputStream()
-        try {
-            for (span in spans) {
-                val file: File? = span.file
-                FileInputStream(file).use { fis ->
-                    fis.copyTo(output)
-                }
-            }
-            return output.toByteArray()
-        } catch (e: IOException) {
-            reportException(e)
-        } finally {
-            output.close()
-        }
-        return null
-    }
-
-    /**
      * Migrated existing downloads from the download cache to the new system in external storage
      */
     suspend fun migrateDownloads() {
-        if (isProcessingDownloads.value) return
-        isProcessingDownloads.value = true
+        if (!isProcessingDownloads.compareAndSet(expect = false, update = true)) return
 
         var runs = 0
         try {
-            // "skeleton" of old download manager to access old download data
-            val dataSourceFactory = ResolvingDataSource.Factory(
-                CacheDataSource.Factory()
-                    .setCache(playerCache)
-                    .setUpstreamDataSourceFactory(
-                        OkHttpDataSource.Factory(
-                            OkHttpClient.Builder()
-                                .proxy(YouTube.proxy)
-                                .build()
-                        )
-                    )
-            ) { dataSpec ->
-                return@Factory dataSpec
-            }
-
-            val downloadManager: DownloadManager = DownloadManager(
-                context,
-                databaseProvider,
-                downloadCache,
-                dataSourceFactory,
-                Executor(Runnable::run)
-            ).apply {
-                maxParallelDownloads = 3
-            }
-
-            // actual migration code
             val downloadedSongs = mutableMapOf<String, Download>()
-            val cursor = downloadManager.downloadIndex.getDownloads()
-            while (cursor.moveToNext()) {
-                downloadedSongs[cursor.download.request.id] = cursor.download
+            downloadManager.downloadIndex.getDownloads().use { cursor ->
+                while (cursor.moveToNext()) downloadedSongs[cursor.download.request.id] = cursor.download
             }
 
             // copy all completed downloads
@@ -412,21 +390,21 @@ class DownloadUtil @Inject constructor(
                         }
                     }
                 }
-                val songFromCache = getFromCache(downloadCache, s.key)
-                if (songFromCache != null) {
-                    downloadCache.removeResource(s.key)
+                val displayName = database.song(s.key).first()?.title.orEmpty()
+                migrateCachedDownload(downloadCache, s.value) { data ->
                     downloadMgr.enqueue(
                         mediaId = s.key,
-                        data = songFromCache,
-                        displayName = runBlocking { database.song(s.key).first()?.title ?: "" })
+                        data = data,
+                        displayName = displayName,
+                    )
                 }
             }
-            scanDownloads()
         } catch (e: Exception) {
             reportException(e)
         } finally {
             isProcessingDownloads.value = false
         }
+        scanDownloads()
     }
 
 
@@ -536,6 +514,7 @@ class DownloadUtil @Inject constructor(
     }
 
     companion object {
+        private const val STOP_REASON_USER_CANCELLED = 1
         private val RETRYABLE_STREAM_RESPONSE_CODES = setOf(403, 404, 410, 416)
         val STATE_DOWNLOADING: LocalDateTime = Instant.ofEpochMilli(1).atZone(ZoneOffset.UTC).toLocalDateTime()
         val STATE_INVALID: LocalDateTime = Instant.ofEpochMilli(0).atZone(ZoneOffset.UTC).toLocalDateTime()

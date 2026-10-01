@@ -37,6 +37,8 @@ object TransferLimits {
     const val MAX_PLAYLISTS = 500
     const val MAX_FIELD_CHARS = 4096
     const val MAX_LINE_CHARS = 16_384
+    const val MAX_JSON_DEPTH = 32
+    const val MAX_JSON_SEPARATORS = 650_000
 }
 
 data class TrackIdentity(val source: TrackSource, val stableId: String)
@@ -64,7 +66,7 @@ object TransferStaging {
         val newlyCreated = HashSet<TrackIdentity>()
         fun classify(track: TransferTrack): StagedTrack {
             val identity = TrackIdentity(track.source, track.stableId)
-            val localIdentity = track.localUri?.let { TrackIdentity(TrackSource.LOCAL, it) }
+            val localIdentity = track.localUri?.let { TrackIdentity(TrackSource.LOCAL, localReferenceKey(it) ?: it) }
             val portableIdentity = if (track.source == TrackSource.LOCAL) localIdentity ?: identity else identity
             val disposition = when {
                 track.source == TrackSource.LOCAL && (track.localUri == null || track.localUri !in accessibleLocalUris) -> TransferDisposition.UNRESOLVED
@@ -81,6 +83,20 @@ object TransferStaging {
             document.playlists.map { StagedPlaylist(it, it.tracks.map(::classify)) },
         )
     }
+}
+
+internal fun localReferenceKey(reference: String): String? = try {
+    if (!TransferValidation.safeLocalReference(reference)) null
+    else if (reference.startsWith("content://")) URI(reference).normalize().toString()
+    else {
+        val file = if (reference.startsWith("file://")) {
+            val uri = URI(reference)
+            java.io.File(if (uri.authority == "localhost") URI("file", null, uri.path, null, null) else uri)
+        } else java.io.File(reference)
+        file.canonicalPath.replace('\\', '/')
+    }
+} catch (_: Exception) {
+    null
 }
 
 internal object TransferValidation {

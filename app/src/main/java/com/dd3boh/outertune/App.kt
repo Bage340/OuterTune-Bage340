@@ -42,6 +42,7 @@ import com.dd3boh.outertune.constants.ProxyUrlKey
 import com.dd3boh.outertune.constants.SYSTEM_DEFAULT
 import com.dd3boh.outertune.constants.UseLoginForBrowse
 import com.dd3boh.outertune.constants.VisitorDataKey
+import com.dd3boh.outertune.db.InternalDatabase
 import com.dd3boh.outertune.extensions.toEnum
 import com.dd3boh.outertune.extensions.toInetSocketAddress
 import com.dd3boh.outertune.utils.CoilBitmapLoader
@@ -50,6 +51,8 @@ import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.get
 import com.dd3boh.outertune.utils.normalizeDataSyncId
 import com.dd3boh.outertune.utils.reportException
+import com.dd3boh.outertune.utils.recoverInterruptedRestore
+import com.dd3boh.outertune.viewmodels.BackupRestoreViewModel
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeLocale
 import com.zionhuang.kugou.KuGou
@@ -72,6 +75,11 @@ class App : Application(), SingletonImageLoader.Factory {
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate() {
         super.onCreate()
+
+        recoverInterruptedRestore(
+            getDatabasePath(InternalDatabase.DB_NAME),
+            filesDir.resolve("datastore").resolve(BackupRestoreViewModel.SETTINGS_FILENAME),
+        )
 
         if (BuildConfig.DEBUG) {
             System.setProperty("kotlinx.coroutines.debug", "on")

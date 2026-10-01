@@ -224,9 +224,10 @@ interface SongsDao {
 
     @Query("""
         SELECT * FROM song
-        WHERE localPath IN (
+        WHERE isLocal = 1 AND localPath IN (
             SELECT localPath
             FROM song
+            WHERE isLocal = 1
             GROUP BY localPath
             HAVING COUNT(*) > 1
         )

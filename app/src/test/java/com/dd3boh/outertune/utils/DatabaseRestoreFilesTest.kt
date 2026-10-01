@@ -60,6 +60,129 @@ class DatabaseRestoreFilesTest {
     }
 
     @Test
+    fun interruptedRestoreRecoversPreviousDatabaseBeforeOpeningRoom() {
+        val database = temporaryFolder.root.resolve("song.db")
+        val previousDatabase = temporaryFolder.newFile("song.db.restore-backup").apply {
+            writeText("previous-db")
+        }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply {
+            writeText("previous-settings")
+        }
+        temporaryFolder.newFile("probe_song.db").writeText("staged-db")
+
+        recoverInterruptedRestore(database, settings)
+
+        assertEquals("previous-db", database.readText())
+        assertEquals("previous-settings", settings.readText())
+        assertFalse(previousDatabase.exists())
+    }
+
+    @Test
+    fun interruptedRestoreRollsBackBothInstalledFiles() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("new-db") }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply {
+            writeText("new-settings")
+        }
+        temporaryFolder.newFile("song.db.restore-backup").writeText("previous-db")
+        temporaryFolder.newFile("settings.preferences_pb.restore-backup").writeText("previous-settings")
+
+        recoverInterruptedRestore(database, settings)
+
+        assertEquals("previous-db", database.readText())
+        assertEquals("previous-settings", settings.readText())
+    }
+
+    @Test
+    fun recoveryFailureKeepsDatabaseRollbackUntilSettingsCanBeRecovered() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("new-db") }
+        val databaseRollback = temporaryFolder.newFile("song.db.restore-backup").apply {
+            writeText("previous-db")
+        }
+        val settings = temporaryFolder.newFolder("settings.preferences_pb")
+        settings.resolve("locked-child").writeText("prevents replacing the directory")
+        temporaryFolder.newFile("settings.preferences_pb.restore-backup").writeText("previous-settings")
+
+        assertThrows(IOException::class.java) { recoverInterruptedRestore(database, settings) }
+
+        assertEquals("previous-db", databaseRollback.readText())
+        assertEquals("new-db", database.readText())
+        assertEquals("previous-settings", temporaryFolder.root.resolve("settings.preferences_pb.restore-backup").readText())
+    }
+
+    @Test
+    fun recoveringOldDatabaseDiscardsSidecarsBelongingToNewDatabase() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("new-db") }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply { writeText("settings") }
+        temporaryFolder.newFile("song.db.restore-backup").writeText("previous-db")
+        val wal = temporaryFolder.newFile("song.db-wal").apply { writeText("new-db-writes") }
+        val shm = temporaryFolder.newFile("song.db-shm")
+
+        recoverInterruptedRestore(database, settings)
+
+        assertEquals("previous-db", database.readText())
+        assertFalse(wal.exists())
+        assertFalse(shm.exists())
+    }
+
+    @Test
+    fun repeatedRecoveryCanFinishAfterSettingsWereAlreadyRecovered() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("new-db") }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply { writeText("previous-settings") }
+        temporaryFolder.newFile("song.db.restore-backup").writeText("previous-db")
+
+        recoverInterruptedRestore(database, settings)
+        recoverInterruptedRestore(database, settings)
+
+        assertEquals("previous-db", database.readText())
+        assertEquals("previous-settings", settings.readText())
+    }
+
+    @Test
+    fun committedRestoreKeepsNewFilesWhenRollbackCleanupWasInterrupted() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("new-db") }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply { writeText("new-settings") }
+        temporaryFolder.newFile("song.db.restore-backup").writeText("previous-db")
+        temporaryFolder.newFile("settings.preferences_pb.restore-backup").writeText("previous-settings")
+        temporaryFolder.newFile("song.db.restore-committed").writeText("committed")
+
+        recoverInterruptedRestore(database, settings)
+
+        assertEquals("new-db", database.readText())
+        assertEquals("new-settings", settings.readText())
+        assertFalse(temporaryFolder.root.resolve("song.db.restore-backup").exists())
+    }
+
+    @Test
+    fun interruptedRestoreRemovesSettingsThatDidNotPreviouslyExist() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("new-db") }
+        val settings = temporaryFolder.newFile("settings.preferences_pb").apply { writeText("new-settings") }
+        temporaryFolder.newFile("song.db.restore-backup").writeText("previous-db")
+        temporaryFolder.newFile("settings.preferences_pb.restore-absent").writeText("absent")
+
+        recoverInterruptedRestore(database, settings)
+
+        assertEquals("previous-db", database.readText())
+        assertFalse(settings.exists())
+    }
+
+    @Test
+    fun installerDoesNotDiscardAnUnrecoveredPreviousDatabase() {
+        val database = temporaryFolder.newFile("song.db").apply { writeText("current-db") }
+        val rollback = temporaryFolder.newFile("song.db.restore-backup").apply {
+            writeText("unrecovered-db")
+        }
+        val staged = temporaryFolder.newFile("probe_song.db").apply { writeText("new-db") }
+
+        assertThrows(IOException::class.java) {
+            installRestoredFiles(listOf(RestoreFileReplacement(staged, database)))
+        }
+
+        assertEquals("current-db", database.readText())
+        assertEquals("unrecovered-db", rollback.readText())
+        assertEquals("new-db", staged.readText())
+    }
+
+    @Test
     fun databaseCleanupRemovesWalAndSharedMemorySidecars() {
         val database = temporaryFolder.newFile("song.db")
         val wal = temporaryFolder.newFile("song.db-wal")
@@ -81,5 +204,12 @@ class DatabaseRestoreFilesTest {
         }
 
         assertEquals(0, output.size())
+    }
+
+    @Test
+    fun unavailableBackupOutputStreamIsAnError() {
+        assertThrows(IOException::class.java) {
+            requireBackupOutputStream(null)
+        }
     }
 }

@@ -1,685 +1,314 @@
-# Phone test plan — OuterTune 0.11.1 v92 Preview
-
-This plan combines current v92 changes with earlier unverified work recovered
-from Git history. Relevant earlier commits include `bace9eca4` (local playback
-path recovery and local-ID resolution), `d02d8e333` (deterministic playback
-source selection, stream retries and diagnostics), `33d5d4ae4` and `9ac546805`
-(fail-safe scanner and data-loss/signing fixes), `84bcb9ad4` (playlist folders
-and database migration), and the recent scanner/localization commits
-`8c7076190`, `e72fb0548`, `85b89f10e`, `cff5fd9ca`, `609000bfa`, and
-`4cb0f0937`.
-
-Phone and service behavior has **not** been verified by this document. Record
-the device model, Android version, build flavor, app version, and result for
-each case. Do not use your only copy of important data. Use a backup before
-database restore or any uninstall/update scenario. Mark checks requiring
-accounts, network, a second build, or special test files as skipped if those
-preconditions are unavailable; do not interpret skipped as passed.
-
-Priority: **P0** must pass before ordinary use; **P1** covers the principal new
-features; **P2** covers edge cases and additional regressions.
-
-## P0 — Installation, data safety, scanner, playback, downloads
-
-### A. Install / launch
-
-**Precondition:** Obtain the v92 Preview APK from the intended trusted build
-source; note whether it is Core or Full.
-
-**Steps:** 1. Install the APK. 2. Launch it. 3. Open Library, Settings, and the
-player, then force-stop and relaunch.
-
-**Expected:** Installation completes and all screens open; the app starts after
-force-stop without a crash or database error.
-
-**Failure indicators:** Installer signature/package error, startup loop, crash,
-blank screens, or database-open failure.
-
-### B. Stable and Preview coexistence
-
-**Precondition:** Stable OuterTune is installed and contains a small known
-library; Preview APK is available.
-
-**Steps:** 1. Record Stable's library and settings. 2. Install Preview. 3. Open
-both apps in turn and inspect their libraries and settings. 4. Add a harmless
-test playlist in Preview and re-open Stable.
-
-**Expected:** Both apps install and retain separate app data; Preview changes
-do not appear in Stable.
-
-**Failure indicators:** Installer reports a package conflict, either app opens
-the other's data, or installing Preview changes/removes Stable data. Do not
-uninstall either app to troubleshoot without a backup.
-
-### C. Existing database / user data
-
-**Precondition:** Use an existing installation with playlists, likes, queue
-history, and settings; create a verified backup first.
-
-**Steps:** 1. Update using the offered same-package/same-signature APK if
-Android accepts it. 2. Open the app. 3. Check songs, playlists, likes, and
-settings. 4. Restart and check again.
-
-**Expected:** Existing data remains present and usable after startup and
-restart.
-
-**Failure indicators:** Empty/reset library, lost playlist membership, missing
-settings, migration crash, or repeated migration on each launch.
-
-### D. Scanner: complete scan
-
-**Precondition:** A folder/tree contains several supported audio files, nested
-folders, and at least one file with readable tags; grant the requested media or
-SAF access.
-
-**Steps:** 1. Run a full scan. 2. Compare the resulting songs with the test
-folder. 3. Scan again without changing files. 4. Play a scanned item.
-
-**Expected:** Accessible supported files appear once; a repeated scan does not
-duplicate songs or remove unchanged entries.
-
-**Failure indicators:** Songs disappear, duplicate, have broken paths, or the
-scan claims success while omitting accessible nested content.
-
-### D2. Scanner: incomplete traversal and retry (P0)
-
-**Precondition:** A SAF tree or removable/unavailable location has some
-accessible audio; have a second tree with a temporarily revoked or unavailable
-directory if practical.
-
-**Steps:** 1. Start a scan. 2. Make one location inaccessible during scan, or
-use a provider that returns a traversal error. 3. Observe the result. 4. Restore
-access and retry.
-
-**Expected:** Incomplete traversal is reported as incomplete/failed and does not
-reconcile away previously known songs; retry scans authoritative current
-content.
-
-**Failure indicators:** A partial scan is reported as complete, existing songs
-are deleted/disabled, or retry cannot recover the collection.
-
-### D3. Scanner: API/storage access
-
-**Precondition:** Android 10 or newer device (API 29+), local files in shared
-storage, and app's requested access granted.
-
-**Steps:** 1. Scan shared storage. 2. Open a song. 3. Revoke the relevant access
-from system settings and scan again. 4. Grant it again and retry.
-
-**Expected:** Accessible files scan and play; denied access is surfaced without
-mass-removing the known library; granting access permits recovery.
-
-**Failure indicators:** Crash, silent destructive reconciliation, stale
-permission assumptions, or no recovery after access is restored.
-
-### E. Restart and library preservation
-
-**Precondition:** Several local songs are scanned and one local playlist exists.
-
-**Steps:** 1. Record song and playlist counts. 2. Force-stop the app. 3. Launch
-again. 4. Restart the device if practical and re-open the app.
-
-**Expected:** Library and playlist membership remain intact across restarts.
-
-**Failure indicators:** Empty library, lost playlist membership, or songs
-disappearing before a deliberate successful scan.
-
-### F. Local music and recovered path
-
-**Precondition:** Have a readable local file present in the library. If testing
-the earlier reported lost-path case, identify a song whose audio path is still
-readable and whose database path is stale; do not move/delete the only copy.
-
-**Steps:** 1. Play the local song from Library. 2. Play it from a playlist and
-queue. 3. If stale-path test data is available, retry playback without scanning.
-4. Inspect the song after playback and restart.
-
-**Expected:** Local playback uses the readable file; recoverable paths can be
-recovered without changing song identity or playlist/like state. Unavailable
-files show a local-storage problem rather than a YouTube “video unavailable”
-error.
-
-**Failure indicators:** Local ID sent to YouTube resolution, wrong file played,
-identity/membership changes, or a generic remote-video error for a missing file.
-
-### J. Single download
-
-**Precondition:** Logged-in/usable YouTube Music account, stable network, and
-enough free storage; choose a short available track.
-
-**Steps:** 1. Download one track. 2. Wait for completion. 3. Confirm it in the
-download/library UI. 4. Play it with network disabled.
-
-**Expected:** One complete playable file is present and available offline.
-
-**Failure indicators:** Stuck progress, partial/corrupt file counted as
-complete, duplicate request, or offline playback requiring network.
-
-### K. Bulk download
-
-**Precondition:** A small playlist of available tracks and adequate storage.
-
-**Steps:** 1. Start bulk download. 2. Review the preflight summary. 3. Allow
-the queue to complete. 4. Compare completed items with the playlist.
-
-**Expected:** Summary distinguishes already downloaded, already queued,
-downloadable, and unavailable tracks; only needed items are submitted.
-
-**Failure indicators:** Every track is blindly queued, unavailable items block
-the batch, or summary and final results disagree.
-
-### L. Already-downloaded filtering
-
-**Precondition:** Playlist with at least one verified complete download and one
-not-yet-downloaded item.
-
-**Steps:** 1. Run bulk download twice. 2. Observe the completed item and queue.
-3. If safe test data permits, remove the downloaded file while leaving its DB
-marker and run bulk download again.
-
-**Expected:** Valid completed file is skipped without error; stale downloaded
-state is not treated as success and can be downloaded again.
-
-**Failure indicators:** Complete file is requeued, missing file is reported as
-available offline, or stale state cannot be repaired.
-
-### M. Parallel downloads: one worker
-
-**Precondition:** Parallel-download setting available; a playlist of several
-available tracks.
-
-**Steps:** 1. Set parallel downloads to 1. 2. Start a batch. 3. Observe the
-queue and wait for completion.
-
-**Expected:** No more than one active download; all available tracks complete
-or receive a clear individual error.
-
-**Failure indicators:** Overlapping duplicate work, queue stalls, silent
-failures, or unrelated playback stops.
-
-### R. Stream playback and retry
-
-**Precondition:** Network available and several playable YouTube Music tracks.
-
-**Steps:** 1. Play a remote track. 2. Seek and change tracks. 3. Repeat after
-letting a stream sit long enough to become stale, if practical. 4. Test next,
-previous, and return to the app after backgrounding.
-
-**Expected:** Valid stream plays; recoverable expired/rejected streams retry
-with refreshed information; player reports a clear failure for unavailable
-content.
-
-**Failure indicators:** Indefinite spinner, stale URL repeated forever, incorrect
-headers/client behavior, or player crash.
-
-### S. Playlist playback
-
-**Precondition:** Local and YouTube Music playlists available, with a mix of
-downloaded and streaming items if possible.
-
-**Steps:** 1. Start each playlist. 2. Let at least three tracks advance. 3. Use
-next/previous and seek. 4. Repeat with one playlist item unavailable.
-
-**Expected:** Correct tracks play in order; one unavailable item does not corrupt
-the queue or prevent later playable tracks.
-
-**Failure indicators:** Wrong source/file, queue loss, repeated failed item, or
-unrelated local/remote resolution.
-
-### AL. Permissions and data safety
-
-**Precondition:** App installed; know which media/tree permissions were granted.
-
-**Steps:** 1. Inspect permissions in Android settings. 2. Revoke media/tree
-access. 3. Attempt scan and local playback. 4. Grant access again and retry.
-
-**Expected:** App explains unavailable access and recovers after permission is
-restored; no unrelated permissions are requested.
-
-**Failure indicators:** Silent data deletion, crash, repeated permission prompt
-without user action, or access to unrelated files.
-
-## P1 — Main new features and functional regression
-
-### G. Local playlist
-
-**Precondition:** Create a local playlist with multiple local songs.
-
-**Steps:** 1. Open playlist. 2. Reorder songs. 3. Close and reopen it. 4. Play
-the playlist.
-
-**Expected:** Membership and order persist and playback uses the selected songs.
-
-**Failure indicators:** Items vanish, reorder is lost, or remote metadata replaces
-the local song.
-
-### H. YouTube Music playlist
-
-**Precondition:** YouTube Music login/network works and a remote playlist is
-available.
-
-**Steps:** 1. Open the playlist. 2. Refresh it. 3. Play one item. 4. Add or
-remove a song if account permissions allow.
-
-**Expected:** Playlist loads and account actions behave consistently with the
-service response.
-
-**Failure indicators:** Login loss, empty playlist despite service availability,
-incorrect IDs, or local playlist corruption.
-
-### I. Add playlist to library
-
-**Precondition:** Local playlist containing a mix of songs already in and absent
-from Library; include repeated entries if possible.
-
-**Steps:** 1. Use “Add to library” from playlist actions. 2. Read the result
-summary. 3. Verify Library and playlist entries. 4. Repeat the action.
-
-**Expected:** Existing song entities are reused; already-library songs and
-repeats are not duplicated; summary reports additions/skips; second press is
-idempotent.
-
-**Failure indicators:** Duplicate song IDs/entities, changed local paths, wrong
-YTM IDs, app freeze, or an error when everything was already in Library.
-
-### N. Parallel downloads: more than one worker
-
-**Precondition:** Network and several available tracks; a supported setting
-above 1.
-
-**Steps:** 1. Set 2 workers. 2. Start a batch and observe active count. 3. Try
-3 only if 2 remains stable. 4. Include one unavailable track if available.
-
-**Expected:** Active count respects the selected limit; successful tracks finish
-independently; one failure does not block other workers.
-
-**Failure indicators:** Duplicate/corrupt files, setting ignored, shared-state
-failures, app instability, or all work serial despite a higher setting.
-
-### N2. Shared download folder channel isolation
-
-**Precondition:** Both Stable and Preview are installed; use expendable tracks
-and a test SAF folder granted to both channels. Back up any existing downloads.
-
-**Steps:** 1. Download the same track in each channel into the test folder. 2.
-Confirm both files exist. 3. Delete the Preview download. 4. Play the Stable
-download, then reverse the test with a second track.
-
-**Expected:** Each channel indexes and deletes only its own named file; the
-other channel retains a playable copy. Separate folders remain recommended to
-avoid unrelated scanner overlap.
-
-**Failure indicators:** Removing one channel's download deletes or makes the
-other channel's copy unavailable, or either channel indexes the other's file.
-
-### N3. Legacy Preview custom-folder downloads
-
-**Precondition:** An earlier Preview installation has unprefixed `.mka` downloads
-in a custom folder. Back up the folder before upgrading. Do not use the only
-copy of a track for this test.
-
-**Steps:** 1. Record old downloaded tracks and filenames. 2. Upgrade Preview.
-3. Confirm the old files still exist in the folder. 4. Open one as a local file
-or download it again in Preview. 5. Check Stable's files remain untouched.
-
-**Expected:** Old files are preserved physically. Because their ownership
-cannot be distinguished from Stable files in a shared folder, Preview may no
-longer mark them as its own downloads; newly downloaded Preview files have an
-`otpreview-` prefix. No old file is silently deleted.
-
-**Failure indicators:** Upgrade deletes an old file, Preview deletes a Stable
-file, or a newly completed download is not recognized.
-
-### O. Download failure and retry
-
-**Precondition:** A track that can be made to fail safely (e.g. disable network
-during download), then restore network.
-
-**Steps:** 1. Start download. 2. Interrupt network. 3. Wait for failure state. 4.
-Restore network and retry manually.
-
-**Expected:** Failure is visible; retry obtains fresh stream information and
-headers and completes without a duplicate/stale partial download.
-
-**Failure indicators:** Permanent stale URL retry, duplicate entries, partial
-file marked complete, or failure that cannot be retried.
-
-### P. Background download
-
-**Precondition:** Multi-track batch and stable network.
-
-**Steps:** 1. Start download. 2. Background the app and use another app. 3. Lock
-the screen briefly. 4. Return and inspect progress and results.
-
-**Expected:** Service/worker continues as designed, and UI reconciles with final
-download state after return.
-
-**Failure indicators:** Unexpected cancellation, duplicate restart, frozen
-progress, or completed item missing after return.
-
-### Q. Offline playback and download file identity
-
-**Precondition:** At least two fully downloaded tracks; remote streaming works
-before disconnecting.
-
-**Steps:** 1. Enable airplane mode. 2. Play each download from Library, playlist,
-and queue. 3. Restart while offline and retry.
-
-**Expected:** Completed physical downloads play offline from each entry point;
-incomplete cache entries are not treated as playable downloads.
-
-**Failure indicators:** Network required for a complete download, wrong file
-selected, or partial cache reported as complete.
-
-### T. YouTube lyrics
-
-**Precondition:** Network available and a track known to have YouTube lyrics.
-
-**Steps:** 1. Open lyrics for the track. 2. Change track. 3. Reopen lyrics after
-backgrounding.
-
-**Expected:** Lyrics match the current track and refresh with track changes.
-
-**Failure indicators:** Lyrics from previous track, blank state with no recovery,
-or loading loop.
-
-### U. Lyrics fallback providers
-
-**Precondition:** Network and a track with lyrics available from a configured
-fallback provider; test a track with no likely match too.
-
-**Steps:** 1. Disable or make the primary source unavailable where practical.
-2. Open lyrics. 3. Compare title/artist/version. 4. Repeat for a live/remix track.
-
-**Expected:** Eligible fallback lyrics are shown; ambiguous versions are not
-silently mismatched; provider failure falls through cleanly.
-
-**Failure indicators:** Wrong song/version lyrics, crash, duplicate requests, or
-fallback never attempted when eligible.
-
-### V. Synchronized lyrics
-
-**Precondition:** Track has timed lyrics.
-
-**Steps:** 1. Play from the beginning. 2. Seek forward and backward. 3. Rotate
-or background/foreground the app.
-
-**Expected:** Highlight follows playback time and resynchronizes after seek.
-
-**Failure indicators:** Highlight drifts persistently, jumps to wrong line, or
-stops updating after seek.
-
-### W. Plain lyrics
-
-**Precondition:** Track has unsynchronized/plain lyrics.
-
-**Steps:** 1. Open lyrics. 2. Scroll. 3. Change track and return.
-
-**Expected:** Text is readable and remains associated with the correct track;
-no timing highlight is implied.
-
-**Failure indicators:** Truncated/unreadable text, stale lyrics, or crash.
-
-### X. Export JSON
-
-**Precondition:** Library and playlist contain local and remote entries; grant
-document destination access.
-
-**Steps:** 1. Export library JSON. 2. Export playlist JSON. 3. Open files in a
-text viewer and verify song identifiers and playlist membership are present.
-
-**Expected:** Valid parseable JSON represents the requested content and does not
-contain credentials or session secrets.
-
-**Failure indicators:** Invalid/truncated JSON, missing entries, secrets in
-export, or wrong destination.
-
-### Y. Export CSV
-
-**Precondition:** Library has titles/artists with commas or non-ASCII text.
-
-**Steps:** 1. Export CSV. 2. Open it in a spreadsheet/text viewer. 3. Check
-special characters and row/column alignment.
-
-**Expected:** Rows and fields are escaped correctly and text remains intact.
-
-**Failure indicators:** Shifted columns, broken quoting, mojibake, or omitted
-tracks.
-
-### Z. Export M3U8
-
-**Precondition:** Playlist has local songs and, if supported, remote songs.
-
-**Steps:** 1. Export M3U8. 2. Inspect text/encoding and entry paths. 3. Import it
-back using AA.
-
-**Expected:** UTF-8 playlist is readable; local paths remain meaningful on this
-device; unsupported remote references are represented or summarized clearly.
-
-**Failure indicators:** Invalid encoding, malformed paths, silent loss, or
-unexplained broken local entries.
-
-### AA. Import supported files
-
-**Precondition:** Test JSON, CSV, and M3U8 files, including a round-trip export.
-
-**Steps:** 1. Import each format. 2. Review preview/summary. 3. Confirm import.
-4. Verify resulting tracks and playlists.
-
-**Expected:** Format is identified; valid items import; unavailable local paths
-are reported rather than silently creating unusable songs.
-
-**Failure indicators:** Wrong format detection, app crash, malformed partial
-database state, or broken entries silently accepted.
-
-### AB. Import duplicates
-
-**Precondition:** Import file includes IDs/paths already present and a genuinely
-distinct version/remix with similar title/artist.
-
-**Steps:** 1. Import once. 2. Import the same file again. 3. Compare library
-counts and playlist contents.
-
-**Expected:** Stable IDs/paths are deduplicated; distinct versions are not merged
-solely because their titles/artists match.
-
-**Failure indicators:** Duplicate entities on re-import or distinct recordings
-collapsed into one song.
-
-### AD. Playlist folders
-
-**Precondition:** Several playlists; create a test folder; backup database first.
-
-**Steps:** 1. Move playlists into/out of folder. 2. Rename folder. 3. Reorder
-items if available. 4. Restart. 5. Test backup/restore in AI.
-
-**Expected:** Folder organization persists and playlist membership/content is
-unchanged; no playlist is lost.
-
-**Failure indicators:** Missing playlists, wrong folder, repeated folders, or
-database migration/restore crash.
-
-### AJ. Queue operations
-
-**Precondition:** Queue contains at least five distinct local and remote tracks.
-
-**Steps:** 1. Reorder queued songs. 2. Remove one middle item. 3. Clear queue.
-4. Add songs again and move to next/previous.
-
-**Expected:** Queue order/actions persist and clearing the final item does not
-crash.
-
-**Failure indicators:** Wrong track order, removed item returns, app crash on
-empty queue, or queue metadata resolves to the wrong source.
-
-### AK. Shuffle and repeat
-
-**Precondition:** Queue with at least four tracks.
-
-**Steps:** 1. Toggle shuffle and advance several tracks. 2. Toggle repeat-one.
-3. Toggle repeat-all and reach queue end.
-
-**Expected:** Shuffle changes progression; repeat-one repeats current track;
-repeat-all cycles queue as indicated.
-
-**Failure indicators:** Mode indicator disagrees with behavior, duplicate storm,
-or playback stops/loops incorrectly.
-
-### AF. Portrait UI
-
-**Precondition:** Device in portrait; library and player populated.
-
-**Steps:** 1. Visit Home, Library, playlist, settings, player, and dialogs. 2.
-Scroll and open menus.
-
-**Expected:** Controls and text are reachable, not clipped, and menus dismiss
-normally.
-
-**Failure indicators:** Overlapping controls, clipped actions, inaccessible
-buttons, or layout-triggered crash.
-
-### AG. Landscape UI
-
-**Precondition:** Auto-rotate available.
-
-**Steps:** 1. Rotate player, library, settings, and playlist screens. 2. Open a
-dialog/menu in landscape. 3. Rotate back.
-
-**Expected:** Layout adapts or remains usable; state and playback survive
-rotation.
-
-**Failure indicators:** Lost playback/selection, clipped dialogs, blank screen,
-or crash.
-
-### AH. Localization and RTL
-
-**Precondition:** Use system/app languages including Russian, English, and an
-RTL locale if available.
-
-**Steps:** 1. Change language. 2. Inspect navigation, queue, plural counts,
-download/transfer dialogs, and playlist actions. 3. In RTL, inspect text order
-and icons. 4. Switch back.
-
-**Expected:** Strings are translated where supplied; plural quantities read
-naturally; RTL layout remains understandable; no raw resource keys appear.
-
-**Failure indicators:** Missing keys, incorrect count grammar, clipped text,
-reversed identifiers, or broken navigation.
-
-### AI. Backup and restore
-
-**Precondition:** Verified backup destination and a separate test copy/device if
-available. Preserve the original backup.
-
-**Steps:** 1. Back up database/library. 2. Confirm file exists and is nonempty.
-3. Restore only in the test environment. 4. Inspect songs, folders, playlists,
-likes, and settings.
-
-**Expected:** Restore preserves supported data; malformed/partial restore does
-not silently replace valid current data.
-
-**Failure indicators:** Data loss, partial database state, wrong file selected,
-or failure to report invalid backup.
-
-### AM. Update from existing build
-
-**Precondition:** Existing same-channel app with data and a v92 update signed by
-the same key. Current public iteration remains v92.
-
-**Steps:** 1. Export/backup data. 2. Attempt in-place update. 3. If Android
-rejects same-version replacement, stop and retain the old install/data. 4. Only
-perform a clean reinstall if the test owner explicitly accepts data loss or a
-verified backup/restore route is available.
-
-**Expected:** Compatible update preserves data; incompatible same-version APK
-is clearly recognized as an installer limitation and no data is erased.
-
-**Failure indicators:** Silent uninstall/data wipe, misleading success, or
-unexpected change to the public revision.
-
-## P2 — Edge cases and platform checks
-
-### D4. Tag metadata scan failure
-
-**Precondition:** A small test folder with valid songs and one malformed or
-unreadable media file; keep a copy of the files.
-
-**Steps:** 1. Scan the folder. 2. Observe scan status and library. 3. Remove or
-replace the bad file. 4. Retry scan.
-
-**Expected:** A TagLib/read failure does not authorize destructive
-reconciliation; retry can complete and preserve known songs.
-
-**Failure indicators:** Other songs disappear, partial scan reports completion,
-or repeated failure prevents recovery after the bad file is removed.
-
-### M2. Parallel download boundaries and interruption
-
-**Precondition:** Several test tracks and a network connection that can be
-interrupted safely.
-
-**Steps:** 1. Try minimum 1. 2. Try allowed higher values one at a time. 3. Try
-invalid/out-of-range values only if UI permits. 4. Interrupt network and
-background/restart the app during a batch.
-
-**Expected:** Value stays within supported limits and never becomes zero; queue
-recovers without duplicate completed files or app crash.
-
-**Failure indicators:** Zero/unbounded workers, persistent corruption, queue
-deadlock, or crash after restart. Do not run a large stress batch on mobile data.
-
-### AC. Invalid import file
-
-**Precondition:** Copy of malformed JSON/CSV/M3U8 and an unrelated file.
-
-**Steps:** 1. Select each invalid file for import. 2. Cancel one import midway if
-possible. 3. Reopen Library and compare pre-test data.
-
-**Expected:** Clear validation error; cancellation or parse failure does not
-leave partially imported/corrupted database data.
-
-**Failure indicators:** Crash, app hang, wrong file accepted, or partial
-unexplained records.
-
-### AE. Keep screen on
-
-**Precondition:** Find the playback or relevant screen setting that controls
-screen-on behavior; note system timeout.
-
-**Steps:** 1. Enable the option and wait longer than timeout. 2. Disable it and
-repeat. 3. Leave screen and return.
-
-**Expected:** Screen behavior follows the option and normal lock behavior
-returns when disabled.
-
-**Failure indicators:** Screen never sleeps after disabling, or sleeps despite
-the enabled setting where it is meant to apply.
-
-### AL2. Security and diagnostics review
-
-**Precondition:** Diagnostics/export feature available; use a test account and
-non-sensitive test playlist where possible.
-
-**Steps:** 1. Review requested permissions. 2. Generate a diagnostic report if
-playback fails. 3. Inspect it before sharing. 4. Check exports for account
-tokens/session material.
-
-**Expected:** No credentials or session secrets are exposed; reports that may
-include IDs or local paths are clearly reviewed before public sharing.
-
-**Failure indicators:** Tokens/passwords, private account data, or unexpectedly
-broad file access appear in report/export.
-
-### T2. Provider and lyrics edge cases
-
-**Precondition:** Network can be disabled; have one track with known synced
-lyrics and one with no lyrics.
-
-**Steps:** 1. Open lyrics offline. 2. Change rapidly between tracks. 3. Seek
-repeatedly on timed lyrics. 4. Return online and reload.
-
-**Expected:** Offline/provider failures are graceful; stale responses do not
-replace current-track lyrics; timed display resumes after reconnect/reload.
-
-**Failure indicators:** Wrong-track lyrics, crash, stuck loading, or time
-highlight tied to a previous track.
+# Проверка OuterTune 0.11.1 v92 Preview на телефоне
+
+Все проверки ниже — ручные. Отмечайте `[x]` только после фактического прохождения; если нет подходящего телефона, файла, учётной записи или сети, пишите `SKIP` и причину — это не PASS. Сначала пройдите P0, затем P1 и доступные P2. При потере данных, падении или повреждении базы остановитесь, сохраните исходную резервную копию и сообщите ID проверки.
+
+## Запись устройства и сборки
+
+- Телефон / Android / дата: ______________________________
+- Сборка и канал (Stable или Preview), версия: ______________________________
+- APK SHA-256: ______________________________ (перепишите из опубликованного источника или локальной записи; не угадывайте)
+- Источник APK / ссылка: https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-preview.apk
+- Stable установлен? ___ Preview установлен? ___ Иконки и названия различимы? ___
+- До любых обновлений, импорта или восстановления сохраните копию библиотеки и резервную копию на отдельном носителе. Не публикуйте личные архивы, базу, медиа, пароли или cookies.
+
+Проверяйте Stable и Preview как два отдельных приложения: у каждого отдельно сравните Library и настройки. Если обе версии используют одну внешнюю папку загрузок, считайте её общей: не удаляйте/не перемещайте файлы и не включайте папку на запись для теста. Не удаляйте единственную Stable-установку ради проверки. Установка APK с тем же package/versionCode может быть отклонена Android даже при ожидаемом сценарии; запишите дословную ошибку и не удаляйте данные для обхода. Для restore используйте только Preview с независимой копией и планом восстановления. APK-хэш — поле для записи полученного значения, не заранее заданный хэш.
+
+В названиях экранов ориентируйтесь на видимые элементы приложения: `Настройки`, `Хранилище`, `Резервное копирование`, `Создать резервную копию`, `Восстановить из резервной копии`, `Ручное сканирование`, `Папки для поиска`, `Добавить новую папку`, `Параллельные загрузки`, `Не выключать экран`, `Пока отображается текст песни`, `Пока открыт проигрыватель`, `Никогда`. Переводы или размещение могут отличаться между сборками; используйте видимый эквивалент, не считайте отсутствующий пункт пройденным.
+
+## P0 — безопасность и основная работа
+
+### [ ] P0-01 — Установка и запуск Preview
+**Цель:** убедиться, что установлен именно подписанный APK Preview v92.
+**Шаги:** 1. Скачайте APK по ссылке выше и запишите его фактический SHA-256 и источник. 2. Установите APK обычным системным установщиком. 3. Откройте Preview, затем `Настройки` и сведения о версии/канале, если они доступны.
+**Ожидается:** установка завершается; Preview запускается, показывает версию 0.11.1 и канал Preview либо отличимую Preview-сборку.
+**Ошибка и безопасное свидетельство:** package/signature/version конфликт, аварийное завершение или неверный канал; пришлите ID, модель/Android, точный текст ошибки и снимок экрана без личных данных.
+
+### [ ] P0-02 — Stable и Preview рядом
+**Цель:** проверить раздельные приложения и пользовательские данные.
+**Шаги:** 1. В Stable запишите примерное число песен/плейлистов и настройки. Отметьте папки внешних загрузок обеих версий; если путь совпадает — не меняйте файлы и не очищайте папку. 2. Установите/откройте Preview и отдельно запишите те же сведения. 3. Создайте в Preview тестовый плейлист или настройку. 4. Вернитесь в Stable и сравните библиотеку, настройки и видимые загрузки. 5. Если есть общая папка загрузок, проверьте только чтение существующего тестового файла из неё.
+**Ожидается:** две записи запускаются отдельно; изменения библиотеки и настроек Preview не появляются в Stable. Общие файлы остаются нетронутыми; если оба приложения видят внешний файл, он распознаётся как общий файл, а не переносится/удаляется приложением.
+**Ошибка и свидетельство:** конфликт приложения, перепутанная база или неожиданные изменения/удаление общего файла; остановитесь и пришлите безопасные снимки, не сам файл.
+
+### [ ] P0-03 — Обновление уже установленной Preview
+**Цель:** проверить обновление Preview без необъяснимой потери данных.
+**Шаги:** 1. До установки экспортируйте/сохраните резервную копию Preview и отметьте её содержимое. 2. Установите полученный Preview APK поверх Preview тем же подписывающим ключом. 3. Откройте приложение и проверьте библиотеку и настройки.
+**Ожидается:** Android принимает совместимое обновление, данные доступны.
+**Ошибка и свидетельство:** Android отвергает замену, данные пропали или приложение не запускается. Запишите точную ошибку; не удаляйте Preview и не очищайте её данные. Сохраните копию.
+
+### [ ] P0-04 — Библиотека после обновления
+**Цель:** убедиться, что песни и связи базы пережили обновление.
+**Шаги:** 1. Сверьте Preview с записью до обновления: число песен, лайки, плейлисты, папки и состав локальных плейлистов. 2. Откройте несколько известных элементов. 3. Перезапустите Preview и сравните повторно.
+**Ожидается:** записи, лайки, порядок и принадлежность песен сохранены.
+**Ошибка и свидетельство:** пустая/сокращённая библиотека, пропавшие связи или ошибка миграции; сообщите сравнение чисел и безопасный снимок, не отправляя базу.
+
+### [ ] P0-05 — Запуск и перезапуск
+**Цель:** проверить сохранность локальных записей при обычном запуске и после force-stop.
+**Шаги:** 1. Запишите несколько известных локальных песен и их плейлист. 2. Закройте приложение обычным способом и запустите снова. 3. Через системные настройки выполните «Остановить»/Force stop, затем запустите. 4. Сравните до и после автоматического сканирования.
+**Ожидается:** записи и связи остаются; обычный запуск или автоскан не стирают их.
+**Ошибка и свидетельство:** записи исчезают без намеренного удаления; пришлите ID, этап исчезновения и снимки списка.
+
+### [ ] P0-06 — Ручное сканирование
+**Цель:** проверить успешное сканирование и отсутствие поломки библиотеки.
+**Шаги:** 1. В `Настройки` откройте `Ручное сканирование` и проверьте выбранные `Папки для поиска`. 2. Запустите ручное сканирование доступной папки с несколькими аудиофайлами. 3. Дождитесь результата, откройте песню и существующий плейлист.
+**Ожидается:** скан заканчивается без сбоя; доступные песни доступны и связи плейлистов целы.
+**Ошибка и свидетельство:** зависание, сбой, ложный успех при пропуске доступного содержимого или исчезновение записей; приложите снимок результата и безопасные числа до/после.
+
+### [ ] P0-07 — Нет выбранных путей
+**Цель:** убедиться, что отсутствие настроенных папок не трактуется как пустая библиотека.
+**Шаги:** 1. На отдельной Preview-копии запишите состав библиотеки и сделайте backup. 2. В `Настройки` → `Ручное сканирование` удалите выбранные папки, не удаляя файлы. 3. Запустите сканирование, затем верните папки и просканируйте снова.
+**Ожидается:** без папок TagLib не начинает обход; MediaStore может обнаруживать доступное аудио глобально. Оба режима работают без crash и сохраняют прежние песни и плейлисты; глобальное обнаружение не скрывает отсутствующие старые записи.
+**Ошибка и свидетельство:** очистка библиотеки, crash или невозможность восстановить сканирование; остановитесь, сохраните backup и сообщите безопасные счётчики.
+
+### [ ] P0-08 — Создание резервной копии
+**Цель:** получить реальный непустой архив и проверить понятную ошибку недоступного места.
+**Шаги:** 1. В Preview откройте `Настройки` → `Резервное копирование` → `Создать резервную копию`. 2. Выберите доступную личную папку и создайте архив. 3. В файловом менеджере проверьте, что файл существует и не пуст. 4. Если безопасно, повторите выбор места, к которому нет доступа, не удаляя первый архив.
+**Ожидается:** архив записан; недоступный адрес даёт понятную ошибку, экран не зависает.
+**Ошибка и свидетельство:** пустой/отсутствующий файл, зависание или сообщение об успехе при ошибке записи; пришлите размер, текст ошибки и снимок, не сам архив.
+
+### [ ] P0-09 — Локальное воспроизведение без сети
+**Цель:** проверить запуск существующего локального файла, перемотку и следующий трек офлайн.
+**Шаги:** 1. Убедитесь, что известная локальная песня доступна и входит в тестовый плейлист. 2. Включите авиарежим. 3. Запустите песню из библиотеки и плейлиста, перемотайте ближе к концу и перейдите к следующей.
+**Ожидается:** читаемый файл играет без сети; seek и next работают, локальная песня не требует сетевого поиска YouTube.
+**Ошибка и свидетельство:** не стартует при доступном файле, неверная запись или удалённая ошибка вместо локальной; запишите источник запуска и снимок плеера.
+
+### [ ] P0-10 — Поиск и потоковое воспроизведение YTM
+**Цель:** проверить онлайн-поиск, обычное воспроизведение и понятную ошибку недоступного видео.
+**Шаги:** 1. Подключитесь к сети и выполните поиск известной песни YouTube Music. 2. Откройте результат или playlist item, запустите, перемотайте и нажмите Next. 3. Если доступен заранее известный недоступный элемент, откройте его.
+**Ожидается:** доступная песня воспроизводится и перематывается; недоступная показывает понятное сообщение и не блокирует плеер.
+**Ошибка и свидетельство:** вечный индикатор загрузки, сбой, неверный трек или безликая ошибка; пришлите ID, название без аккаунтных данных и снимок.
+
+### [ ] P0-11 — Одна загрузка и офлайн seek
+**Цель:** проверить целостность одиночной загрузки, офлайн-воспроизведение и сохранение состояния.
+**Шаги:** 1. Выберите короткую доступную песню с достаточным местом. 2. Загрузите её и дождитесь статуса завершения. 3. Перезапустите приложение, отключите сеть, запустите загруженную песню, перемотайте почти к концу и прослушайте конец.
+**Ожидается:** статус завершён соответствует реально воспроизводимому целому файлу; офлайн seek и конец работают после перезапуска.
+**Ошибка и свидетельство:** застрявший прогресс, файл обрывается/не открывается, требуется сеть или статус сброшен; приложите безопасный снимок статуса и место сбоя.
+
+### [ ] P0-12 — Загрузка плейлиста
+**Цель:** проверить очереди, подсчёты и пропуск уже завершённых/активных загрузок.
+**Шаги:** 1. Подготовьте в Preview плейлист из новых песен, одной завершённой и одной уже поставленной в очередь/загружаемой. 2. Запустите bulk download из доступного меню плейлиста. 3. Сверьте показанные счётчики и очередь с фактическими файлами. 4. Откройте новые файлы офлайн.
+**Ожидается:** новые песни поставлены; готовые и активные не дублируются; недоступные отмечены отдельно, числа и статусы соответствуют результату.
+**Ошибка и свидетельство:** повторные задания, ложное завершение или неверные counts; пришлите безопасные числа до/после и снимок очереди.
+
+### [ ] P0-13 — Восстановление только на тестовой Preview-копии
+**Цель:** безопасно проверить backup/restore и отказ некорректному архиву.
+**Шаги:** 1. При необходимости создайте экспорт/backup Stable только как неизменяемый входной файл; не восстанавливайте его в Stable. Сохраните оригинал отдельно. 2. Создайте независимые тестовые данные и backup Preview; проверьте, что есть путь восстановления Preview. 3. Восстановите заведомо корректную копию только в Preview. 4. Сверьте песни, лайки, плейлисты, папки и настройки; перезапустите Preview и проверьте снова. 5. На отдельной тестовой копии по очереди выберите повреждённый, неизвестного будущего формата и несовместимый архив.
+**Ожидается:** корректный архив открывается со связями и настройками; неподдерживаемые/повреждённые архивы отклонены, текущая Preview-база остаётся доступна. Stable не затронута.
+**Ошибка и свидетельство:** архив принят частично, база Preview очищена/не запускается или изменился Stable; немедленно остановитесь и восстановите только из заранее сохранённого плана/копии. Не экспериментируйте поверх единственной Stable-базы. Пришлите ID, текст сообщения и безопасные counts.
+
+## P1 — основные возможности и обычные края
+
+### [ ] P1-01 — Добавление локального плейлиста в библиотеку
+**Цель:** проверить добавление локального списка и обновление уже известной записи.
+**Шаги:** 1. Выберите локальный плейлист с новыми и уже известными песнями. 2. Используйте его действие «Добавить в библиотеку» (или видимый эквивалент). 3. Найдите обе группы в Library.
+**Ожидается:** новые элементы появляются; известные записи обновляются без второй копии.
+**Ошибка и свидетельство:** пропуск, дубли или неверная принадлежность; пришлите названия тестовых файлов и безопасный снимок.
+
+### [ ] P1-02 — Повторное добавление и дубликаты
+**Цель:** проверить повторяемость добавления без изменения лайков и порядка.
+**Шаги:** 1. Запишите число записей, порядок и лайк для тестовых песен. 2. Дважды повторите добавление того же списка. 3. Сравните число, порядок, лайки и поиск.
+**Ожидается:** повтор не создаёт дубликатов и не сбрасывает пользовательские поля.
+**Ошибка и свидетельство:** рост числа копий, потеря лайка или перемешанный список; пришлите counts и снимок.
+
+### [ ] P1-03 — Смешанный плейлист и пустой список
+**Цель:** проверить local/YTM/downloaded identity и сообщение для пустого списка.
+**Шаги:** 1. В отдельной Preview создайте список из локальной, YTM и загруженной песен. 2. Добавьте его в Library и воспроизведите по очереди. 3. Откройте пустой список, если он доступен.
+**Ожидается:** каждый элемент сохраняет правильный источник и принадлежность; пустой список даёт ясную обратную связь.
+**Ошибка и свидетельство:** локальная запись уходит в сетевой поиск, теряется элемент или пустой экран без объяснения; приложите порядок шагов и снимок.
+
+### [ ] P1-04 — Очередь загрузок: параллельность 1
+**Цель:** проверить последовательную обработку очереди из 10–20 заданий.
+**Шаги:** 1. В `Настройки` → экран хранения выберите `Параллельные загрузки` = 1. 2. Сформируйте очередь из 10–20 песен, включив уже готовую, активную/queued, новые и одну заведомо недоступную. 3. Наблюдайте очередь и фактические файлы до конца.
+**Ожидается:** одновременно работает не более одной новой задачи; готовая/активная пропущена, новые завершены, недоступная получает отдельный отказ; интерфейс отвечает.
+**Ошибка и свидетельство:** застой, дубль, неверные skipped/new/failed числа или зависший экран; пришлите counts, число активных и снимок.
+
+### [ ] P1-05 — Очередь загрузок: параллельность 2
+**Цель:** проверить два задания и изоляцию ошибки одной песни.
+**Шаги:** 1. Подготовьте тот же набор тестовых состояний, включая completed, active/queued, новые и недоступную. 2. Выберите `Параллельные загрузки` = 2. 3. Запустите очередь и наблюдайте два прогресса; сравните итоговые counts и проиграйте успешные файлы офлайн.
+**Ожидается:** два независимых задания могут идти одновременно; ошибка недоступной не останавливает остальные; нет дубликатов.
+**Ошибка и свидетельство:** один отказ останавливает очередь, прогресс смешан, файл повреждён или counts расходятся; приложите снимок очереди и counts.
+
+### [ ] P1-06 — Очередь загрузок: максимум 3
+**Цель:** проверить верхнее доступное значение, локальное сохранение и сетевые повторы.
+**Шаги:** 1. На сети и свободном хранилище выберите `Параллельные загрузки` = 3. 2. Запустите набор с completed, active/queued, новыми и недоступной песней. 3. Наблюдайте число активных работ, прогресс и отклик UI. 4. Сравните счётчики и офлайн проиграйте новые файлы.
+**Ожидается:** не более трёх независимых активных работ; ошибки/повторы одной не меняют другие и не создают дублей.
+**Ошибка и свидетельство:** превышение значения, взаимное повреждение прогресса, остановка всех задач или неверные файлы; приложите безопасные counts и снимки.
+
+### [ ] P1-07 — Отсев файла и устаревший статус
+**Цель:** убедиться, что недостающий файл не считается готовым к офлайну.
+**Шаги:** 1. Используйте только тестовую Preview-копию и подтвердите backup. 2. Проверьте ранее настроенную дополнительную/пользовательскую папку загрузок: откройте `Настройки` → `Хранилище` и проверьте, виден ли тестовый файл. 3. В файловом менеджере сделайте недоступным один тестовый файл или переместите его в тестовой папке. 4. Если доступно действие пересканирования папок загрузок в `Дополнительно`, запустите его; повторите bulk download. 5. Восстановите тестовый файл/папку.
+**Ожидается:** legacy-папка и её доступные файлы не теряются после обновления; отсутствующий файл обнаруживается и может быть загружен снова; остальные готовые не стираются.
+**Ошибка и свидетельство:** missing file всё ещё считается доступным или операция затрагивает чужие загрузки; остановитесь и пришлите ID и статус.
+
+### [ ] P1-08 — Ошибка сети/403 и повтор загрузки
+**Цель:** проверить восстановление после временного сетевого отказа.
+**Шаги:** 1. Запустите тестовую загрузку. 2. Во время прогресса выключите сеть на короткое время либо используйте реально отображённую ошибку. 3. Восстановите сеть и нажмите повторить, если действие доступно. 4. Проверьте, что уже завершённая офлайн-копия другой песни осталась доступна.
+**Ожидается:** понятная ошибка и ограниченный успешный повтор со свежим потоком; один сбой не удаляет готовый файл и не зацикливается.
+**Ошибка и свидетельство:** бесконечные одинаковые повторы, повтор 403 без конца или потеря соседнего файла; снимок ошибки/очереди без URL-токенов.
+
+### [ ] P1-09 — Активная загрузка и отсутствующий трек
+**Цель:** проверить отмену и итоговые статусы смешанного batch.
+**Шаги:** 1. Запустите плейлистную загрузку с доступными и недоступной песней. 2. Во время работы найдите действие отмены и отмените batch. 3. Сверьте готовые, активные и оставшиеся элементы.
+**Ожидается:** отмена доступна; завершённое сохраняется, остановленное не помечено готовым, недоступное отдельно обозначено.
+**Ошибка и свидетельство:** отмена недоступна/зависла, файл помечен целым при обрыве или очередь врёт; пришлите снимок и counts.
+
+### [ ] P1-10 — Папки плейлистов
+**Цель:** проверить создание, перенос, переименование, удаление и корень.
+**Шаги:** 1. В экране плейлистов создайте папку. 2. Переместите в неё тестовый плейлист, переименуйте папку и верните один плейлист в корень (`Все плейлисты`, если так подписано). 3. Создайте папку с отличием только регистром, если UI разрешает. 4. Удалите тестовую папку и перезапустите приложение.
+**Ожидается:** перемещение и имена видны после перезапуска; при удалении папки плейлисты сохраняются в родителе.
+**Ошибка и свидетельство:** потеря плейлиста, конфликт имён ломает список или изменения не сохранились; пришлите безопасные названия и снимки.
+
+### [ ] P1-11 — «Не выключать экран»
+**Цель:** проверить режимы экрана и их завершение.
+**Шаги:** 1. Откройте `Настройки` проигрывателя и найдите `Не выключать экран`. 2. Выберите `Пока открыт проигрыватель`, оставьте экран включённым до обычного тайм-аута. 3. Выйдите из плеера/остановите воспроизведение. 4. Повторите с `Пока отображается текст песни`, затем `Никогда`.
+**Ожидается:** экран бодрствует только для выбранного состояния; после выхода/остановки/режима `Никогда` обычный тайм-аут работает.
+**Ошибка и свидетельство:** экран никогда не гаснет или гаснет вопреки выбранному режиму; запишите выбранный режим и действия.
+
+### [ ] P1-12 — Тексты YouTube
+**Цель:** проверить соответствие текста текущему треку и вид отображения.
+**Шаги:** 1. Запустите известную песню YTM с доступным текстом. 2. Откройте экран текстов. 3. Перейдите к другой песне и вернитесь; проверьте синхронные строки и обычный текст на подходящих песнях.
+**Ожидается:** текст относится к текущей записи; синхронизированный текст следует за воспроизведением, обычный отображается без выдуманного тайминга.
+**Ошибка и свидетельство:** текст от предыдущего трека, случайные строки или фиктивная синхронизация; пришлите названия песен и снимок без личной информации.
+
+### [ ] P1-13 — Временной fallback поверх обычного текста
+**Цель:** проверить появление реальных таймкодов при наличии timed fallback.
+**Шаги:** 1. Выберите известную тестовую песню, для которой один источник даёт только обычный текст, а доступный fallback — LRC/временные строки. 2. Откройте текст и перемотайте аудио в середину, затем назад.
+**Ожидается:** если timed текст действительно получен, строки следуют позициям; если нет, приложение показывает обычный текст, не подделывая времена.
+**Ошибка и свидетельство:** строки отмечены временем, но не следуют за seek, либо показана ложная синхронизация; укажите трек и seek позиции.
+
+### [ ] P1-14 — Обычный текст, NOT_FOUND и офлайн
+**Цель:** проверить честное отсутствие текста и повтор после возвращения сети.
+**Шаги:** 1. Откройте песню с plain lyrics и песню без найденного текста. 2. Перейдите в авиарежим и запросите текст для ещё не загруженной песни. 3. Верните сеть и повторите запрос.
+**Ожидается:** показывается только относящийся текст; отсутствие/офлайн обозначено ясно; после сети повтор возможен.
+**Ошибка и свидетельство:** текст случайной песни, ложный успех или вечная загрузка; приложите названия тестовых треков и экран.
+
+### [ ] P1-15 — Одинаковое название, разные записи
+**Цель:** проверить, что кэш не смешивает исполнителей и версии.
+**Шаги:** 1. Найдите два исполнения с одинаковым названием, но разными артистами; если есть, добавьте studio/live/remix или sped-up варианты. 2. Запросите тексты для каждого и поменяйте порядок запросов. 3. Сверьте исполнителя и версию в результатах.
+**Ожидается:** результат привязан к правильной записи; явно неподходящий кандидат не используется.
+**Ошибка и свидетельство:** текст или результат одной версии появляется у другой; запишите пары исполнителей/версий и снимки.
+
+### [ ] P1-16 — Источник текстов и обновление
+**Цель:** проверить переключение источника и ручное обновление.
+**Шаги:** 1. В настройках текстов переключите доступный источник, например `Включить источник текстов BetterLyrics`, если пункт показан. 2. Откройте тестовую песню. 3. Выполните ручное обновление текста, если оно доступно, и сравните после смены песни.
+**Ожидается:** отображается выбор текущего источника; старый текст не переносится на другой трек, обновление отражается в UI.
+**Ошибка и свидетельство:** настройка не действует, источник смешивает результаты или экран остаётся устаревшим; приложите видимые настройки и трек.
+
+### [ ] P1-17 — JSON библиотеки
+**Цель:** проверить export/import в отдельной Preview-копии.
+**Шаги:** 1. Запишите counts, источники песен, несколько лайков и метаданные. 2. Экспортируйте библиотеку JSON из меню импорта/экспорта. 3. Импортируйте копию только в тестовую Preview. 4. Сверьте counts, идентификаторы/источники, лайки и метаданные.
+**Ожидается:** структура и связи соответствуют экспорту; повторный импорт предсказуемо пропускает или обновляет дубликаты.
+**Ошибка и свидетельство:** лишние дубликаты, пропущенные источники/лайки или частичное изменение при отказе; сообщите counts и формат версии, не публикуя файл.
+
+### [ ] P1-18 — JSON плейлиста: local/YTM/mixed
+**Цель:** проверить порядок, метаданные и локальный snapshot удалённого списка.
+**Шаги:** 1. Экспортируйте локальный, YTM и смешанный плейлист JSON. 2. Импортируйте их в отдельную Preview-копию. 3. Сравните порядок и метаданные. 4. Проверьте, что импорт YTM-плейлиста создаёт локальный snapshot и не изменяет аккаунтную коллекцию.
+**Ожидается:** порядок и метаданные совпадают; импорт не отправляет изменения в YTM аккаунт.
+**Ошибка и свидетельство:** перестановка/потеря песен или изменение удалённого аккаунта; остановитесь и пришлите только безопасные counts и снимки.
+
+### [ ] P1-19 — CSV и старый совместимый файл
+**Цель:** проверить кавычки, переносы, Unicode и пустые/null значения.
+**Шаги:** 1. Подготовьте тестовый CSV с запятой и кавычками в названии, переносом строки, кириллицей/Unicode и пустым альбомом. 2. Импортируйте в изолированную Preview. 3. Если имеется старый совместимый экспорт, импортируйте его отдельно. 4. Сверьте поля и количество.
+**Ожидается:** значения не обрезаются и не смещаются по колонкам; пустой альбом остаётся пустым; старый совместимый файл читается.
+**Ошибка и свидетельство:** строки слились, кавычки/Unicode повреждены, неверно обработан null; сообщите безопасную минимальную строку примера.
+
+### [ ] P1-20 — M3U и M3U8
+**Цель:** проверить локальные, сетевые и недоступные чужие пути.
+**Шаги:** 1. Подготовьте M3U и M3U8 с локальным URI/путём, remote URL и несуществующим чужим путём. 2. Импортируйте в изолированную Preview. 3. Осмотрите итог и предупреждения; не предоставляйте доступ к личным каталогам ради чужого пути.
+**Ожидается:** формат определяется корректно; доступные элементы импортируются, недоступные пути отмечаются предупреждением, а не выдаются за рабочие.
+**Ошибка и свидетельство:** молчаливый сломанный импорт, неверная URI или приложение открывает неожиданный локальный путь; приложите искусственный пример без личных путей.
+
+### [ ] P1-21 — Миграция поддерживаемой базы и downgrade
+**Цель:** проверить миграцию старой поддерживаемой копии и безопасный отказ неподдерживаемой версии.
+**Шаги:** 1. На отдельной Preview-копии с восстановлением проверьте миграцию предоставленной поддерживаемой старой базы до текущей версии 22. 2. Сверьте песни, связи и папки. 3. Если имеется копия базы более новой/несовместимой версии, попробуйте её только на изолированной тестовой Preview.
+**Ожидается:** поддерживаемая миграция сохраняет данные; downgrade/неизвестная версия явно отклоняется, исходная тестовая копия остаётся восстанавливаемой.
+**Ошибка и свидетельство:** скрытая потеря/переименование связей, crash или молчаливый downgrade; сообщите версию копии и текст ошибки, не отправляя базу.
+
+## P2 — сбои, производительность и интерфейс
+
+### [ ] P2-01 — Отмена сканирования
+**Цель:** убедиться, что неполный проход не стирает прежние результаты.
+**Шаги:** 1. Запишите библиотеку и создайте копию. 2. Начните скан большой тестовой папки. 3. Отмените его в середине. 4. Проверьте старые песни и снова запустите полное сканирование.
+**Ожидается:** старые записи и связи остаются; новое полное сканирование возможно.
+**Ошибка и свидетельство:** частичный проход удалил записи, отмена зависла или следующий запуск невозможен; пришлите counts и экран.
+
+### [ ] P2-02 — Отзыв разрешения SAF
+**Цель:** проверить ясную ошибку и сохранность известных записей.
+**Шаги:** 1. Сохраните backup и запишите библиотеку. 2. В системных разрешениях отзовите доступ Preview к тестовой папке/SAF. 3. Запустите ручное сканирование. 4. Верните разрешение и повторите.
+**Ожидается:** приложение сообщает о недоступности; известные песни не удаляются; после возврата доступа сканирование работает.
+**Ошибка и свидетельство:** доступ трактуется как пустая библиотека, crash или нет восстановления; сообщите Android и экран ошибки.
+
+### [ ] P2-03 — Один корень недоступен
+**Цель:** проверить несколько выбранных мест, когда одно временно исчезло.
+**Шаги:** 1. Настройте два тестовых корня и запишите записи каждого. 2. Отключите/отмонтируйте один тестовый носитель либо временно отзовите его SAF-доступ. Если есть provider, который безопасно воспроизводит ошибку обхода вложенной папки, используйте тестовый каталог с несколькими читаемыми файлами и одной такой ошибкой. 3. Просканируйте доступный корень/дерево. 4. Верните доступ и повторите скан.
+**Ожидается:** ошибка обхода SAF или недоступность корня даёт неполный/ошибочный результат; записи недоступной ветки и связи плейлистов не стираются, после возврата доступа доступны снова.
+**Ошибка и свидетельство:** один корень удалён из базы из-за результата другого; пришлите counts по корням и экран.
+
+### [ ] P2-04 — Конкурирующие запросы сканера
+**Цель:** проверить повторные нажатия и запуск при автосканировании.
+**Шаги:** 1. Начните ручной scan и быстро нажмите кнопку ещё раз несколько раз. 2. Если приложение само запускает скан при старте, повторите сразу после открытия. 3. Дождитесь результата и проверьте библиотеку.
+**Ожидается:** один понятный прогресс/результат, нет падения, пропажи или взаимного сброса состояния.
+**Ошибка и свидетельство:** несколько конфликтующих индикаторов, crash, потеря записей или прогресс исчезает; снимите экран и время нажатий.
+
+### [ ] P2-05 — Сеть пропала при параллельных загрузках
+**Цель:** проверить изоляцию ошибок и сохранность готовых файлов.
+**Шаги:** 1. Запустите несколько тестовых загрузок при параллельности 2 или 3. 2. Отключите сеть во время прогресса. 3. Верните сеть и повторите неудавшиеся задания, если доступно. 4. Проверьте завершённые файлы офлайн.
+**Ожидается:** ошибки/повторы отдельных заданий; уже готовые файлы остаются целыми; очередь не создаёт дубликатов.
+**Ошибка и свидетельство:** один сетевой сбой ломает все задачи/готовые файлы или бесконечно повторяется; пришлите counts и снимок.
+
+### [ ] P2-06 — Фон, возврат и остановка процесса
+**Цель:** проверить поведение очереди при сворачивании и перезапуске.
+**Шаги:** 1. Запустите тестовую очередь. 2. Переключитесь в другое приложение и вернитесь. 3. Если безопасно, остановите Preview через Force stop посреди очереди и снова запустите. 4. Проверьте статусы и файлы.
+**Ожидается:** состояние понятно; нет невидимых «вечных» workers и дубликатов, завершённые файлы доступны.
+**Ошибка и свидетельство:** очередь заявлена активной без прогресса, дублируется или готовый файл повреждён; снимок состояния до/после.
+
+### [ ] P2-07 — Прерванное восстановление Preview
+**Цель:** проверить запуск и восстановление после сбоя только на независимой копии.
+**Шаги:** 1. Сохраните отдельный рабочий backup Preview и проверьте путь восстановления. 2. На тестовой Preview-копии начните restore подготовленного корректного архива; прерывайте только если UI/устройство само прервало операцию. 3. Перезапустите Preview и следуйте предложенному восстановлению. 4. Убедитесь, что Stable не затронута.
+**Ожидается:** восстановление завершается или ясно предлагает восстановимый путь; не появляется пустая база вместо прежней.
+**Ошибка и свидетельство:** Preview создаёт пустую базу/не запускается или затронут Stable; остановитесь, используйте сохранённый recovery plan, пришлите текст ошибки.
+
+### [ ] P2-08 — Повреждённые и небезопасные файлы импорта
+**Цель:** проверить безопасный отказ и неизменность Preview при плохом вводе.
+**Шаги:** 1. В отдельной тестовой копии используйте заведомо повреждённый JSON/CSV/M3U8, неверный UTF-8, слишком большой файл и искусственный чужой путь/URI. 2. Импортируйте по одному файлу. 3. После каждого отказа сравните counts и отклик экрана.
+**Ожидается:** неподдерживаемый ввод отклоняется с понятным сообщением; база не меняется частично, UI остаётся отзывчивым.
+**Ошибка и свидетельство:** частичная запись, авария, зависание или неожиданный доступ к файлам; сохраните только искусственный образец и снимок ошибки.
+
+### [ ] P2-09 — Большая библиотека
+**Цель:** заметить чрезмерные задержки на большом, но контролируемом наборе.
+**Шаги:** 1. Используйте тестовую библиотеку/плейлист размером 1 000–5 000 записей, только если она доступна. 2. Измерьте примерно импорт, экспорт, добавление и prefilter загрузок; попробуйте отмену. 3. Сравните отзывчивость и итоговые counts.
+**Ожидается:** операции завершаются или отменяются без зависания/дублирования; прогресс и числа правдоподобны.
+**Ошибка и свидетельство:** долгий полный freeze, рост дублей или counts не сходятся; запишите размер набора, время и снимок. Нет набора — `SKIP`.
+
+### [ ] P2-10 — Ориентация, очередь и системные панели
+**Цель:** проверить компоновку плеера и управления в разных ориентациях/навигации.
+**Шаги:** 1. В портретном режиме откройте полный плеер, мини-плеер, очередь и настройки. 2. Поверните экран в альбомный режим и проверьте те же экраны. 3. Проверьте жестовую или трёхкнопочную системную навигацию и переместите несколько песен в очереди. 4. Перезапустите приложение и проверьте порядок; при наличии перемешайте очередь и проверьте, что shuffle не повреждает исходный список.
+**Ожидается:** элементы доступны, системные панели не перекрывают действия; перестановка очереди и режим перемешивания согласованы после перезапуска.
+**Ошибка и свидетельство:** обрезанный/недоступный control, перекрытие или сброс порядка; снимок обоих состояний и тип навигации.
+
+### [ ] P2-11 — Русский, английский, локали и RTL
+**Цель:** увидеть обрезанные строки, неверные числа и направление интерфейса.
+**Шаги:** 1. Проверьте экран загрузки, папки, текстов и диалоги на русском. 2. Выберите English в системе/приложении и проверьте те же состояния. 3. Если можете безопасно выбрать другие поддерживаемые локали, включая RTL, повторите.
+**Ожидается:** строки и placeholders читаемы, числа/множественное число уместны, кнопки не обрезаны и направление согласовано.
+**Ошибка и свидетельство:** пустая/смешанная строка, обрезанный текст или сломанное RTL; пришлите снимок и язык. Нет локали/устройства — `SKIP`.
+
+### [ ] P2-12 — Android 10 и текущие разрешения
+**Цель:** проверить различия SAF/доступа на старой и текущей версии Android.
+**Шаги:** 1. Если доступен Android 10/API 29, проверьте выдачу разрешения, выбор папки и сканирование. 2. На текущем Android повторите путь через системный выбор папки/разрешения. 3. Отзовите и верните доступ.
+**Ожидается:** разрешённая папка сканируется, отказ ясно отражён, известная библиотека сохраняется.
+**Ошибка и свидетельство:** невозможный выбор, crash или массовое исчезновение; запишите точный Android/API и снимок. Если Android 10 недоступен, пометьте соответствующую часть `SKIP`.
+
+### [ ] P2-13 — Предупреждение Play Protect
+**Цель:** зафиксировать фактическое поведение Android при установке sideload APK.
+**Шаги:** 1. Запустите установку APK обычным способом и прочитайте системное предупреждение, если оно появится. 2. Запишите точный текст/результат и прекратите, если система блокирует установку или вы не хотите продолжать.
+**Ожидается:** наблюдение записано; предупреждение не обходится и принятие Play Protect не предполагается.
+**Ошибка и свидетельство:** любая неожиданная блокировка/предупреждение — сообщите текст и модель Android; не отключайте защиту ради прохождения.
+
+### [ ] P2-14 — Пустые/ошибочные состояния и диалоги
+**Цель:** проверить доступность отмены, статусов и длинного текста в основных экранах.
+**Шаги:** 1. Откройте пустую библиотеку/папку, если доступно. 2. Вызовите ошибку загрузки/импорта на тестовом файле. 3. Проверьте длинное название/metadata, отключённую кнопку, отмену, counts, диалоги папок, текстов и передачи/backup. 4. Закройте диалоги кнопкой Back и повторите действие.
+**Ожидается:** пустое/ошибочное состояние объяснено; длинные поля не скрывают действия, отмена работает, counts и диалоги согласованы.
+**Ошибка и свидетельство:** безымянный экран, недоступная отмена, обрезанная кнопка/число или зависший диалог; приложите снимок и шаги.
+
+## Как сообщить о сбое
+
+Укажите ID проверки, шаги, ожидаемый и фактический результат, модель телефона и Android, канал/версию Preview и записанный SHA-256. Приложите снимок экрана или безопасную выгрузку диагностики, если она доступна. Перед отправкой скройте личные имена/пути. Не отправляйте пароли, cookies, личные медиа, резервный архив или базу данных.

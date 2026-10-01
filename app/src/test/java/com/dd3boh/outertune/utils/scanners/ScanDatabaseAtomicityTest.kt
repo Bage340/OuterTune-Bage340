@@ -9,11 +9,14 @@ import com.dd3boh.outertune.db.InternalDatabase
 import com.dd3boh.outertune.db.MusicDatabase
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.db.entities.SongEntity
+import com.dd3boh.outertune.db.entities.PlaylistEntity
+import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.models.SongTempData
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -108,6 +111,99 @@ class ScanDatabaseAtomicityTest {
 
         assertTrue(failure is ScannerAbortException)
         assertEquals(listOf("existing"), database.allLocalDbSongs().map { it.song.id })
+    }
+
+    @Test
+    fun localDuplicateCleanupPreservesRemoteSongWithTheSamePath() = runBlocking {
+        val path = "/music/shared.mp3"
+        val remote = SongEntity(
+            id = "remote",
+            title = "Remote download",
+            isLocal = false,
+            localPath = path,
+        )
+        val local = localSong("local", path)
+        val playlist = PlaylistEntity(id = "playlist", name = "Saved songs")
+        database.insert(remote)
+        database.insert(local.song.song)
+        database.insert(playlist)
+        database.insert(PlaylistSongMap(playlistId = playlist.id, songId = remote.id))
+
+        scanner.syncDB(
+            database = database,
+            newSongs = arrayListOf(local),
+            matchStrength = ScannerMatchCriteria.LEVEL_1,
+            strictFileNames = true,
+            strictFilePaths = true,
+        )
+
+        assertNotNull(database.song(remote.id).first())
+        assertNotNull(database.song(local.song.id).first())
+        assertEquals(playlist.id, database.songMapsToPlaylist(remote.id).single().playlistId)
+    }
+
+    @Test
+    fun refreshingMetadataPreservesLikesLibraryDateDownloadAndPlaylistIdentity() = runBlocking {
+        val date = LocalDateTime.of(2025, 1, 2, 3, 4)
+        val original = localSong("existing", "/music/existing.mp3").song.song.copy(
+            liked = true, likedDate = date, inLibrary = date, dateDownload = date,
+        )
+        val playlist = PlaylistEntity(id = "playlist", name = "Saved songs")
+        database.insert(original)
+        database.insert(playlist)
+        database.insert(PlaylistSongMap(playlistId = playlist.id, songId = original.id))
+
+        scanner.syncDB(
+            database, arrayListOf(localSong("temporary-scan-id", original.localPath!!)),
+            ScannerMatchCriteria.LEVEL_1, true, true, refreshExisting = true, noDisable = true,
+        )
+
+        val updated = database.song(original.id).first()!!.song
+        assertTrue(updated.liked)
+        assertEquals(date, updated.likedDate)
+        assertEquals(date, updated.inLibrary)
+        assertEquals(date, updated.dateDownload)
+        assertEquals(playlist.id, database.songMapsToPlaylist(original.id).single().playlistId)
+        assertEquals("temporary-scan-id", updated.title)
+    }
+
+    @Test
+    fun reenablingKnownSongPreservesItsLikesAndDownloadDate() = runBlocking {
+        val date = LocalDateTime.of(2025, 1, 2, 3, 4)
+        val original = localSong("existing", "/music/existing.mp3").song.song.copy(
+            liked = true, likedDate = date, inLibrary = null, dateDownload = date,
+        )
+        database.insert(original)
+
+        scanner.syncDB(
+            database, arrayListOf(localSong("temporary-scan-id", original.localPath!!)),
+            ScannerMatchCriteria.LEVEL_1, true, true, noDisable = true,
+        )
+
+        val updated = database.song(original.id).first()!!.song
+        assertTrue(updated.liked)
+        assertEquals(date, updated.likedDate)
+        assertEquals(date, updated.dateDownload)
+        assertNotNull(updated.inLibrary)
+        assertEquals(original.title, updated.title)
+    }
+
+    @Test
+    fun scannerCleanupPreservesDuplicateLocalIdsAndTheirPlaylistLinks() = runBlocking {
+        val path = "/music/shared.mp3"
+        val first = localSong("first", path)
+        val second = localSong("second", path)
+        val playlist = PlaylistEntity(id = "playlist", name = "Saved songs")
+        database.insert(first.song.song)
+        database.insert(second.song.song.copy(liked = true))
+        database.insert(playlist)
+        database.insert(PlaylistSongMap(playlistId = playlist.id, songId = second.song.id))
+
+        scanner.syncDB(database, arrayListOf(first), ScannerMatchCriteria.LEVEL_1, true, true)
+
+        assertNotNull(database.song(first.song.id).first())
+        assertTrue(database.song(second.song.id).first()!!.song.liked)
+        assertEquals(playlist.id, database.songMapsToPlaylist(second.song.id).single().playlistId)
     }
 
     @Test

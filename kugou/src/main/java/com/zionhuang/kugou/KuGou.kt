@@ -14,8 +14,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.encodeURLParameter
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.lang.Integer.min
+import java.text.Normalizer
+import java.util.Locale
 import kotlin.io.encoding.Base64
 import kotlin.math.abs
 
@@ -59,44 +62,37 @@ object KuGou {
      * the search succeeded but had no candidate (or the track is instrumental) — a definitive absence —
      * and a failure when the request itself failed. Non-2xx responses throw because [expectSuccess] is set.
      */
-    suspend fun getLyrics(title: String, artist: String, duration: Int): Result<String?> =
+    suspend fun getLyrics(title: String, artist: String, duration: Int, album: String? = null): Result<String?> =
         runCatching {
             val keyword = generateKeyword(title, artist)
-            val candidate = getLyricsCandidate(keyword, duration) ?: return@runCatching null
-            val content = downloadLyrics(candidate.id, candidate.accesskey).content
-                .decodeBase64ToString().normalize()
-            // instrumental tracks report as having no lyrics
-            if ("纯音乐，请欣赏" in content || "酷狗音乐  就是歌多" in content) null else content
+            val candidate = getLyricsCandidate(keyword, duration, album) ?: return@runCatching null
+            normalizeDownloadedLyrics(downloadLyrics(candidate.id, candidate.accesskey).content.decodeBase64ToString())
         }
 
     suspend fun getAllPossibleLyricsOptions(
         title: String, artist: String, duration: Int, callback: (String) -> Unit
     ) {
         val keyword = generateKeyword(title, artist)
-        searchSongs(keyword).data.info.forEach {
-            if (duration == -1 || abs(it.duration - duration) <= DURATION_TOLERANCE) {
-                searchLyricsByHash(it.hash).candidates.firstOrNull()?.let { candidate ->
-                    downloadLyrics(candidate.id, candidate.accesskey).content.decodeBase64ToString()
-                        .normalize().let(callback)
-                }
+        matchingSongCandidates(searchSongs(keyword).data.info, title, artist, duration).forEach { song ->
+            matchingKeywordCandidates(searchLyricsByHash(song.hash).candidates, duration, title, artist).forEach { candidate ->
+                downloadLyrics(candidate.id, candidate.accesskey).content.decodeBase64ToString()
+                    .let(::normalizeDownloadedLyrics)?.let(callback)
             }
         }
-        matchingKeywordCandidates(searchLyricsByKeyword(keyword, duration).candidates, duration).forEach { candidate ->
+        matchingKeywordCandidates(searchLyricsByKeyword(keyword, duration).candidates, duration, title, artist).forEach { candidate ->
             downloadLyrics(candidate.id, candidate.accesskey).content.decodeBase64ToString()
-                .normalize().let(callback)
+                .let(::normalizeDownloadedLyrics)?.let(callback)
         }
     }
 
     suspend fun getLyricsCandidate(
-        keyword: Keyword, duration: Int
+        keyword: Keyword, duration: Int, album: String? = null,
     ): SearchLyricsResponse.Candidate? {
-        searchSongs(keyword).data.info.forEach { song ->
-            if (duration == -1 || abs(song.duration - duration) <= DURATION_TOLERANCE) { // if duration == -1, we don't care duration
-                val candidate = searchLyricsByHash(song.hash).candidates.firstOrNull()
-                if (candidate != null) return candidate
-            }
+        matchingSongCandidates(searchSongs(keyword).data.info, keyword.title, keyword.artist, duration, album).forEach { song ->
+            val candidate = matchingKeywordCandidates(searchLyricsByHash(song.hash).candidates, duration, keyword.title, keyword.artist).firstOrNull()
+            if (candidate != null) return candidate
         }
-        return matchingKeywordCandidates(searchLyricsByKeyword(keyword, duration).candidates, duration).firstOrNull()
+        return matchingKeywordCandidates(searchLyricsByKeyword(keyword, duration).candidates, duration, keyword.title, keyword.artist).firstOrNull()
     }
 
     suspend fun searchSongs(keyword: Keyword) =
@@ -109,7 +105,9 @@ object KuGou {
                 "keyword",
                 "${keyword.title} - ${keyword.artist}".encodeURLParameter(spaceToPlus = false)
             )
-        }.body<SearchSongResponse>()
+        }.body<SearchSongResponse>().also {
+            check(it.status == 1 && it.errcode == 0) { "KuGou song search failed: ${it.errcode} ${it.error}" }
+        }
 
     private suspend fun searchLyricsByKeyword(keyword: Keyword, duration: Int) =
         client.get("https://lyrics.kugou.com/search") {
@@ -117,13 +115,13 @@ object KuGou {
             parameter("man", "yes")
             parameter("client", "pc")
             parameter(
-                "duration", duration.takeIf { it != -1 }?.times(1000)
+                "duration", duration.takeIf { it != -1 }?.toLong()?.times(1000)
             ) // if duration == -1, we don't care duration
             url.encodedParameters.append(
                 "keyword",
                 "${keyword.title} - ${keyword.artist}".encodeURLParameter(spaceToPlus = false)
             )
-        }.body<SearchLyricsResponse>()
+        }.body<SearchLyricsResponse>().also(::requireSuccessfulLyricsSearch)
 
     private suspend fun searchLyricsByHash(hash: String) =
         client.get("https://lyrics.kugou.com/search") {
@@ -131,7 +129,7 @@ object KuGou {
             parameter("man", "yes")
             parameter("client", "pc")
             parameter("hash", hash)
-        }.body<SearchLyricsResponse>()
+        }.body<SearchLyricsResponse>().also(::requireSuccessfulLyricsSearch)
 
     private suspend fun downloadLyrics(id: Long, accessKey: String) =
         client.get("https://lyrics.kugou.com/download") {
@@ -143,18 +141,20 @@ object KuGou {
             parameter("accesskey", accessKey)
         }.body<DownloadLyricsResponse>()
 
-    private fun normalizeTitle(title: String) =
-        title.replace("\\(.*\\)".toRegex(), "").replace("（.*）".toRegex(), "")
-            .replace("「.*」".toRegex(), "").replace("『.*』".toRegex(), "")
-            .replace("<.*>".toRegex(), "").replace("《.*》".toRegex(), "")
-            .replace("〈.*〉".toRegex(), "").replace("＜.*＞".toRegex(), "")
-
-    private fun normalizeArtist(artist: String) =
-        artist.replace(", ", "、").replace(" & ", "、").replace(".", "").replace("和", "、")
-            .replace("\\(.*\\)".toRegex(), "").replace("（.*）".toRegex(), "")
-
     fun generateKeyword(title: String, artist: String) =
-        Keyword(normalizeTitle(title), normalizeArtist(artist))
+        Keyword(title.trim(), artist.trim())
+
+    private fun requireSuccessfulLyricsSearch(response: SearchLyricsResponse) {
+        check(response.status == 200 && response.errcode == 200) {
+            "KuGou lyrics search failed: ${response.errcode} ${response.errmsg}"
+        }
+    }
+
+    internal fun normalizeDownloadedLyrics(content: String): String? {
+        if ("纯音乐，请欣赏" in content || "酷狗音乐  就是歌多" in content) return null
+        return content.normalize().takeIf(String::isNotBlank)
+            ?: throw SerializationException("KuGou returned no parseable LRC lines")
+    }
 
     private fun String.normalize(): String =
         replace("&apos;", "'").lines().filter { line -> line.matches(ACCEPTED_REGEX) }
@@ -182,19 +182,50 @@ object KuGou {
             }
 
     @Suppress("RegExpRedundantEscape")
-    private val ACCEPTED_REGEX = "\\[(\\d\\d):(\\d\\d)\\.(\\d{2,3})\\].*".toRegex()
+    private val ACCEPTED_REGEX = "\\[\\d+:\\d{2}(?:[.:]\\d+)?].*".toRegex()
     private val BANNED_REGEX = ".+].+[:：].+".toRegex()
 
-    private const val DURATION_TOLERANCE = 8
 }
 
 /** KuGou's keyword endpoint can return other recordings even when given a duration hint. */
 internal fun matchingKeywordCandidates(
     candidates: List<SearchLyricsResponse.Candidate>,
     durationSeconds: Int,
+    title: String? = null,
+    artist: String? = null,
 ): List<SearchLyricsResponse.Candidate> {
-    if (durationSeconds == -1) return candidates
     val expectedMs = durationSeconds.toLong() * 1000
     val toleranceMs = 8_000L
-    return candidates.filter { it.duration in (expectedMs - toleranceMs)..(expectedMs + toleranceMs) }
+    return candidates.filter {
+        (durationSeconds == -1 || it.duration in (expectedMs - toleranceMs)..(expectedMs + toleranceMs)) &&
+            (title == null || sameTitle(it.song, title)) && (artist == null || sameArtist(it.singer, artist))
+    }
+}
+
+internal fun matchingSongCandidates(
+    songs: List<SearchSongResponse.Data.Info>,
+    title: String,
+    artist: String,
+    durationSeconds: Int,
+    album: String? = null,
+): List<SearchSongResponse.Data.Info> = songs.filter {
+    it.hash.isNotBlank() && sameTitle(it.songname, title) && sameArtist(it.singername, artist) &&
+        (album.isNullOrBlank() || it.albumName.isNullOrBlank() || sameTitle(it.albumName, album)) &&
+        (durationSeconds == -1 || abs(it.duration.toLong() - durationSeconds) <= 8)
+}
+
+private fun normalizedIdentity(value: String): String =
+    Normalizer.normalize(value, Normalizer.Form.NFKC).lowercase(Locale.ROOT)
+        .replace(Regex("[^\\p{L}\\p{N}]+"), " ").trim()
+
+private fun sameTitle(candidate: String?, requested: String): Boolean =
+    !candidate.isNullOrBlank() && normalizedIdentity(requested).isNotEmpty() &&
+        normalizedIdentity(candidate) == normalizedIdentity(requested)
+
+private fun sameArtist(candidate: String?, requested: String): Boolean {
+    if (candidate.isNullOrBlank()) return false
+    fun artists(value: String) = value.split(Regex("[,、;&/＋+]|\\s+&\\s+"))
+        .map(::normalizedIdentity).filter(String::isNotEmpty).toSet()
+    val expected = artists(requested)
+    return expected.isNotEmpty() && artists(candidate) == expected
 }

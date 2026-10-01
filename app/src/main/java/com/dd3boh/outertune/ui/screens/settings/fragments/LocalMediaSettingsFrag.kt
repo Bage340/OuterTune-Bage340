@@ -213,8 +213,10 @@ fun ColumnScope.LocalScannerFrag() {
                     val scanFailMessage = resources.getString(R.string.scanner_scan_fail)
                     // full rescan
                     if (fullRescan) {
+                        var scannerAcquired = false
                         try {
                             val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            scannerAcquired = true
                             if (scannerImpl == ScannerImpl.MEDIASTORE) {
                                 scanner.fullMediaStoreSync(
                                     database,
@@ -251,12 +253,14 @@ fun ColumnScope.LocalScannerFrag() {
                             )
                         } finally {
                             clearDtCache()
-                            destroyScanner(SCANNER_OWNER_LM)
+                            if (scannerAcquired) destroyScanner(SCANNER_OWNER_LM)
                         }
                     } else {
                         // quick scan
+                        var scannerAcquired = false
                         try {
                             val scanner = getScanner(context, scannerImpl, SCANNER_OWNER_LM)
+                            scannerAcquired = true
 
                             if (scannerImpl == ScannerImpl.MEDIASTORE) {
                                 scanner.fullMediaStoreSync(
@@ -297,7 +301,7 @@ fun ColumnScope.LocalScannerFrag() {
                             )
                         } finally {
                             clearDtCache()
-                            destroyScanner(SCANNER_OWNER_LM)
+                            if (scannerAcquired) destroyScanner(SCANNER_OWNER_LM)
                         }
                     }
 

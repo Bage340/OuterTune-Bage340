@@ -44,7 +44,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastAny
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -56,7 +55,6 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.button.IconButton
@@ -284,6 +282,7 @@ fun PlaylistMenu(
         }
 
         if (songs.fastAny { !it.song.isLocal }) {
+            val cancelDownload = downloadState == Download.STATE_QUEUED || downloadState == Download.STATE_DOWNLOADING
             DownloadGridMenu(
                 state = downloadState,
                 onDownload = {
@@ -291,7 +290,11 @@ fun PlaylistMenu(
                     downloadUtil.download(_songs)
                 },
                 onRemoveDownload = {
-                    showRemoveDownloadDialog = true
+                    if (cancelDownload) {
+                        downloadUtil.removeDownloads(songs.filterNot { it.song.isLocal }.map { it.id }, cancelOnly = true)
+                    } else {
+                        showRemoveDownloadDialog = true
+                    }
                 }
             )
         }
@@ -400,14 +403,7 @@ fun PlaylistMenu(
                 TextButton(
                     onClick = {
                         showRemoveDownloadDialog = false
-                        songs.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.song.id,
-                                false
-                            )
-                        }
+                        downloadUtil.removeDownloads(songs.filterNot { it.song.isLocal }.map { it.id }, cancelOnly = false)
                     }
                 ) {
                     Text(text = stringResource(android.R.string.ok))

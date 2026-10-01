@@ -204,6 +204,7 @@ object YTPlayerUtils {
         audioQuality: AudioQuality,
         connectivityManager: ConnectivityManager,
         clientStartIndex: Int = 0,
+        rejectedClient: String? = null,
     ): Result<PlaybackData> = runCatching {
         Log.d(TAG, "Playback info requested: $videoId")
 
@@ -237,10 +238,7 @@ object YTPlayerUtils {
 
         val diagnostics = mutableListOf<StreamClientDiagnostic>()
         var resolvedStream: ResolvedStream? = null
-        val normalizedStartIndex = Math.floorMod(clientStartIndex, STREAM_CLIENTS.size)
-        val orderedClients = STREAM_CLIENTS.indices.map { offset ->
-            STREAM_CLIENTS[(normalizedStartIndex + offset) % STREAM_CLIENTS.size]
-        }
+        val orderedClients = streamClientsForAttempt(clientStartIndex, rejectedClient)
 
         for ((clientIndex, client) in orderedClients.withIndex()) {
             Log.d(TAG, "Trying stream client ${clientIndex + 1}/${orderedClients.size}: ${client.clientName}")
@@ -411,6 +409,7 @@ object YTPlayerUtils {
                 audioQuality = audioQuality,
                 connectivityManager = connectivityManager,
                 clientStartIndex = startIndex + attempt - 1,
+                rejectedClient = rejectedClient,
             )
             if (result.isSuccess) return result
             Log.w(
@@ -419,6 +418,13 @@ object YTPlayerUtils {
             )
         }
         return checkNotNull(result)
+    }
+
+    internal fun streamClientsForAttempt(startIndex: Int, rejectedClient: String?): List<YouTubeClient> {
+        val normalizedStartIndex = Math.floorMod(startIndex, STREAM_CLIENTS.size)
+        return STREAM_CLIENTS.indices.map { offset ->
+            STREAM_CLIENTS[(normalizedStartIndex + offset) % STREAM_CLIENTS.size]
+        }.filterNot { it.clientName == rejectedClient }
     }
 
     /**

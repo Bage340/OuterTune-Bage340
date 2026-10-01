@@ -12,10 +12,11 @@ import com.dd3boh.outertune.db.entities.SongEntity
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
-import java.net.URI
 import java.time.LocalDateTime
 
 fun interface LocalReferenceAccess {
@@ -205,17 +206,20 @@ class TransferRepository(
         }
         val identities = HashSet<TrackIdentity>()
         byId.values.filterNot { it.isLocal }.forEach { identities.add(TrackIdentity(TrackSource.YOUTUBE, it.id)) }
-        byLocalPath.keys.forEach { identities.add(TrackIdentity(TrackSource.LOCAL, it)) }
+        byLocalPath.keys.forEach { reference -> identities.add(TrackIdentity(TrackSource.LOCAL, localReferenceKey(reference) ?: reference)) }
         return Inventory(byId, byLocalPath, identities)
     }
 
-    private fun MusicDatabase.applyImport(staged: StagedTransfer, inventory: Inventory): TransferImportResult {
+    private suspend fun MusicDatabase.applyImport(staged: StagedTransfer, inventory: Inventory): TransferImportResult {
+        val context = currentCoroutineContext()
         val now = LocalDateTime.now()
         val resolved = HashMap<TrackIdentity, SongEntity>()
+        val artistIdsByName = HashMap<String, String>()
         val reused = HashSet<TrackIdentity>()
         var createdSongs = 0
         val all = staged.library.asSequence() + staged.playlists.asSequence().flatMap { it.tracks.asSequence() }
         all.forEach { stagedTrack ->
+            context.ensureActive()
             if (stagedTrack.disposition == TransferDisposition.UNRESOLVED) return@forEach
             val track = stagedTrack.track
             val identity = portableIdentity(track)
@@ -224,7 +228,10 @@ class TransferRepository(
             if (song == null) {
                 song = insertNewSong(track, now, inventory.byId)
                 track.artists.forEachIndexed { index, name ->
-                    val artistId = resolveArtistId(name, track.source == TrackSource.LOCAL)
+                    context.ensureActive()
+                    val artistId = artistIdsByName.getOrPut(name) {
+                        resolveArtistId(name, track.source == TrackSource.LOCAL)
+                    }
                     insert(SongArtistMap(songId = song.id, artistId = artistId, position = index))
                 }
                 createdSongs++
@@ -248,6 +255,7 @@ class TransferRepository(
         var skippedDuplicateEntries = 0
         val playlistRows = playlistEntities().associateBy { it.id }
         staged.playlists.forEach { stagedPlaylist ->
+            context.ensureActive()
             val playlist = stagedPlaylist.playlist
             val existing = playlistRows[playlist.stableId]
             if (existing != null && !existing.isLocal) {
@@ -274,6 +282,7 @@ class TransferRepository(
             val membership = maps.mapTo(HashSet()) { it.songId }
             var nextPosition = (maps.maxOfOrNull { it.position } ?: -1).toLong() + 1
             stagedPlaylist.tracks.forEach { stagedTrack ->
+                context.ensureActive()
                 if (stagedTrack.disposition == TransferDisposition.UNRESOLVED) return@forEach
                 val song = resolved[portableIdentity(stagedTrack.track)] ?: TransferValidation.fail("Missing staged song")
                 if (!membership.add(song.id)) {
@@ -286,6 +295,7 @@ class TransferRepository(
                 addedEntries++
             }
         }
+        context.ensureActive()
         return TransferImportResult(
             createdSongs = createdSongs,
             reusedSongs = reused.size,
@@ -334,19 +344,8 @@ class TransferRepository(
         )
 
     private fun portableIdentity(track: TransferTrack): TrackIdentity = TrackIdentity(
-        track.source, if (track.source == TrackSource.LOCAL) track.localUri ?: track.stableId else track.stableId,
+        track.source, if (track.source == TrackSource.LOCAL) track.localUri?.let { localReferenceKey(it) ?: it } ?: track.stableId else track.stableId,
     )
-
-    private fun localReferenceKey(reference: String): String? = try {
-        if (!TransferValidation.safeLocalReference(reference)) null
-        else if (reference.startsWith("content://")) URI(reference).normalize().toString()
-        else {
-            val file = if (reference.startsWith("file://")) File(URI(reference)) else File(reference)
-            file.canonicalPath.replace('\\', '/')
-        }
-    } catch (_: Exception) {
-        null
-    }
 
     private fun toTransferTrack(song: Song, artistNames: List<String>): TransferTrack = TransferTrack(
         source = if (song.song.isLocal) TrackSource.LOCAL else TrackSource.YOUTUBE,

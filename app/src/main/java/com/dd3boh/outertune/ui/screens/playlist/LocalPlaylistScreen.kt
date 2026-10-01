@@ -88,7 +88,6 @@ import androidx.compose.ui.util.fastSumBy
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -116,7 +115,6 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.extensions.move
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AutoResizeText
 import com.dd3boh.outertune.ui.component.EmptyPlaceholder
@@ -133,6 +131,7 @@ import com.dd3boh.outertune.ui.dialog.DefaultDialog
 import com.dd3boh.outertune.ui.dialog.TextFieldDialog
 import com.dd3boh.outertune.ui.utils.backToMain
 import com.dd3boh.outertune.ui.utils.getNSongsString
+import com.dd3boh.outertune.utils.getDownloadState
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
@@ -157,6 +156,7 @@ fun LocalPlaylistScreen(
 ) {
     if (UI_DEBUG) Log.v("LocalPlaylistScreen", "P_RC-1")
     val context = LocalContext.current
+    val downloadUtil = LocalDownloadUtil.current
     val density = LocalDensity.current
     val menuState = LocalMenuState.current
     val database = LocalDatabase.current
@@ -290,20 +290,7 @@ fun LocalPlaylistScreen(
                 TextButton(
                     onClick = {
                         showRemoveDownloadDialog = false
-                        if (!editable) {
-                            database.transaction {
-                                playlistWithSongs.first?.id?.let { clearPlaylist(it) }
-                            }
-                        }
-
-                        playlistWithSongs.second.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.song.id,
-                                false
-                            )
-                        }
+                        downloadUtil.removeDownloads(playlistWithSongs.second.filterNot { it.song.song.isLocal }.map { it.song.id }, cancelOnly = false)
                     }
                 ) {
                     Text(text = stringResource(android.R.string.ok))
@@ -692,13 +679,14 @@ fun LocalPlaylistHeader(
         mutableIntStateOf(Download.STATE_STOPPED)
     }
 
-//    LaunchedEffect(songs) {
-//        val songs = songs.filterNot { it.song.song.isLocal }
-//        if (songs.isEmpty()) return@LaunchedEffect
-//        downloadUtil.downloads.collect { downloads ->
-//            downloadState = getDownloadState(songs.map { downloads[it.song.id] })
-//        }
-//    }
+    LaunchedEffect(songs) {
+        val remoteSongs = songs.filterNot { it.song.song.isLocal }
+        downloadState = Download.STATE_STOPPED
+        if (remoteSongs.isEmpty()) return@LaunchedEffect
+        downloadUtil.downloads.collect { downloads ->
+            downloadState = getDownloadState(remoteSongs.map { downloads[it.song.id] })
+        }
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -797,17 +785,10 @@ fun LocalPlaylistHeader(
                                 }
                             }
 
-                            Download.STATE_DOWNLOADING -> {
+                            Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                                 IconButton(
                                     onClick = {
-                                        songs.forEach { song ->
-                                            DownloadService.sendRemoveDownload(
-                                                context,
-                                                ExoDownloadService::class.java,
-                                                song.song.id,
-                                                false
-                                            )
-                                        }
+                                        downloadUtil.removeDownloads(songs.filterNot { it.song.song.isLocal }.map { it.song.id }, cancelOnly = true)
                                     }
                                 ) {
                                     CircularProgressIndicator(

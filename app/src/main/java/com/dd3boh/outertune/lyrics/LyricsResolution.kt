@@ -22,7 +22,7 @@ internal fun classifyLyricsFailure(cause: Throwable?): LyricsFailureKind {
     }
 }
 
-/** The preferred source owns its result even when fallback offers a timed version. */
+/** Timed lyrics win; keep a usable preferred plain result if no timed fallback is found. */
 internal suspend fun resolveWithPreferredProvider(
     providerName: String,
     fetchPreferred: suspend () -> LyricsFetchResult,
@@ -31,6 +31,7 @@ internal suspend fun resolveWithPreferredProvider(
 ): RemoteLyricsResult {
     var preferredWasAbsent = false
     var preferredFailure: LyricsFailureKind? = null
+    var preferredPlain: RemoteLyricsResult.Found? = null
     var attempt = 0
     while (attempt < 2) {
         attempt++
@@ -44,8 +45,12 @@ internal suspend fun resolveWithPreferredProvider(
         when (outcome) {
             is LyricsFetchResult.Found -> {
                 val kind = classifyFound(outcome.raw)
-                if (kind != FoundKind.UNPARSEABLE) {
-                    return RemoteLyricsResult.Found(providerName, outcome.raw, kind == FoundKind.SYNCED)
+                if (kind == FoundKind.SYNCED) {
+                    return RemoteLyricsResult.Found(providerName, outcome.raw, synced = true)
+                }
+                if (kind == FoundKind.UNSYNCED) {
+                    preferredPlain = RemoteLyricsResult.Found(providerName, outcome.raw, synced = false)
+                    break
                 }
                 preferredFailure = LyricsFailureKind.PARSE
                 break
@@ -63,7 +68,9 @@ internal suspend fun resolveWithPreferredProvider(
             }
         }
     }
-    return when (val fallback = fetchFallback()) {
+    val fallback = fetchFallback()
+    if (preferredPlain != null && (fallback !is RemoteLyricsResult.Found || !fallback.synced)) return preferredPlain
+    return when (fallback) {
         RemoteLyricsResult.DefinitiveNotFound, RemoteLyricsResult.Skipped ->
             if (preferredWasAbsent) RemoteLyricsResult.DefinitiveNotFound else RemoteLyricsResult.Indeterminate
         is RemoteLyricsResult.Found -> fallback.copy(preferredFailure = preferredFailure)

@@ -35,8 +35,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.Download.STATE_STOPPED
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -47,7 +47,6 @@ import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.items.AlbumListItem
 import com.dd3boh.outertune.ui.dialog.AddToPlaylistDialog
@@ -201,6 +200,7 @@ fun AlbumMenu(
             }
         }
         if (album.album.isLocal == false) {
+            val cancelDownload = downloadState == Download.STATE_QUEUED || downloadState == Download.STATE_DOWNLOADING
             DownloadGridMenu(
                 state = downloadState,
                 onDownload = {
@@ -210,14 +210,10 @@ fun AlbumMenu(
                     downloadUtil.download(_songs)
                 },
                 onRemoveDownload = {
-                    songs.forEach { song ->
-                        DownloadService.sendRemoveDownload(
-                            context,
-                            ExoDownloadService::class.java,
-                            song.id,
-                            false
-                        )
-                    }
+                    downloadUtil.removeDownloads(
+                        songs.filterNot { it.song.isLocal }.map { it.id },
+                        cancelOnly = cancelDownload,
+                    )
                 }
             )
         }

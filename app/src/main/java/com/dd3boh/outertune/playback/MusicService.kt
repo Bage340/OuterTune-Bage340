@@ -20,7 +20,6 @@ import android.os.Binder
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.getSystemService
-import androidx.core.net.toUri
 import androidx.datastore.preferences.core.edit
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -740,7 +739,7 @@ class MusicService : MediaLibraryService(),
             val dbSong = runBlocking { database.song(mediaId).first()?.toMediaMetadata() }
             val song = if (dbSong?.localPath != null) dbSong else queueSong ?: dbSong
 
-            val localFile = findLocalPlaybackFile(dbSong, queueSong)
+            val localDataSpec = resolveLocalPlaybackDataSpec(dataSpec, contentResolver, dbSong, queueSong)
             val isLocal = isLocalPlayback(mediaId, dbSong, queueSong)
 
             val isDownload = downloadUtil.isDownloadCompleted(mediaId) &&
@@ -753,7 +752,7 @@ class MusicService : MediaLibraryService(),
             when (
                 selectPlaybackSourceKind(
                     customDownloadFound = downloadedUri != null,
-                    databaseFileFound = localFile?.exists() == true,
+                    databaseFileFound = localDataSpec != null,
                     downloadCacheHit = isDownload,
                     playerCacheHit = isCache,
                     isLocal = isLocal,
@@ -765,12 +764,13 @@ class MusicService : MediaLibraryService(),
                 }
 
                 PlaybackSourceKind.DATABASE_FILE -> {
-                    if (SERVICE_DEBUG) Log.d(TAG, "PLAYING: DB local file")
-                    val file = checkNotNull(localFile)
-                    if (dbSong?.isLocal == true && dbSong.localPath != file.absolutePath) {
-                        database.query { restoreLocalSongPath(mediaId, file.absolutePath, dbSong.localPath) }
+                    if (SERVICE_DEBUG) Log.d(TAG, "PLAYING: DB local audio")
+                    val resolved = checkNotNull(localDataSpec)
+                    val physicalPath = resolved.uri.takeIf { it.scheme == "file" }?.path
+                    if (dbSong?.isLocal == true && physicalPath != null && dbSong.localPath != physicalPath) {
+                        database.query { restoreLocalSongPath(mediaId, physicalPath, dbSong.localPath) }
                     }
-                    return@Factory dataSpec.withUri(file.toUri())
+                    return@Factory resolved
                 }
 
                 PlaybackSourceKind.MISSING_LOCAL -> throw PlaybackException(
@@ -814,6 +814,7 @@ class MusicService : MediaLibraryService(),
                     mediaId,
                     audioQuality = audioQuality,
                     connectivityManager = connectivityManager,
+                    rejectedClient = songUrlCache.rejectedClient(mediaId),
                 )
             }.getOrElse { throwable ->
                 val sourceDiagnostics = buildString {
@@ -823,7 +824,7 @@ class MusicService : MediaLibraryService(),
                     append(", queueMediaId=").append(queueSong?.id)
                     append(", dbSongId=").append(dbSong?.id)
                     append(", localPath=").append(song?.localPath)
-                    append(", localPathExists=").append(localFile?.exists() == true)
+                    append(", localReferenceAccessible=").append(localDataSpec != null)
                     append(", customDownloadFound=").append(downloadedUri != null)
                     append(", downloadCacheHit=").append(isDownload)
                 }
@@ -1041,7 +1042,7 @@ class MusicService : MediaLibraryService(),
         }
         streamRefreshes[mediaId] = attempts + 1
 
-        val failedStream = songUrlCache.invalidate(mediaId)
+        val failedStream = songUrlCache.invalidateForRetry(mediaId)
         if (failedStream?.clientName == "WEB_REMIX") {
             YTPlayerUtils.markWebRemixFailed(mediaId)
         }

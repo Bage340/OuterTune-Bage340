@@ -70,8 +70,17 @@ internal object JsonTransfer {
     fun read(content: String): TransferDocument {
         val root = parseObject(content)
         if (root.requiredInt("schemaVersion") != 1) TransferValidation.fail("Unsupported schema version")
-        val library = root.requiredArray("library").map { readTrack(it.asObject()) }
-        val playlists = root.requiredArray("playlists").map { element ->
+        val libraryValues = root.requiredArray("library")
+        val playlistValues = root.requiredArray("playlists")
+        if (playlistValues.size > TransferLimits.MAX_PLAYLISTS) TransferValidation.fail("Too many playlists")
+        var trackCount = libraryValues.size.toLong()
+        for (playlist in playlistValues) {
+            trackCount += playlist.asObject().requiredArray("tracks").size
+            if (trackCount > TransferLimits.MAX_TRACKS) TransferValidation.fail("Too many tracks")
+        }
+        if (trackCount > TransferLimits.MAX_TRACKS) TransferValidation.fail("Too many tracks")
+        val library = libraryValues.map { readTrack(it.asObject()) }
+        val playlists = playlistValues.map { element ->
             val playlist = element.asObject()
             TransferPlaylist(
                 playlist.requiredString("stableId"),
@@ -113,12 +122,36 @@ internal object JsonTransfer {
         inLibrary = value.requiredBoolean("inLibrary"),
     )
 
-    fun parseObject(content: String): JsonObject = try {
-        Json.parseToJsonElement(content).asObject()
+    fun parseObject(content: String): JsonObject = parseElement(content).asObject()
+
+    fun parseElement(content: String): JsonElement = try {
+        requireBoundedJson(content)
+        Json.parseToJsonElement(content)
     } catch (error: TransferException) {
         throw error
     } catch (error: Exception) {
         throw TransferException("Malformed JSON", error)
+    }
+
+    private fun requireBoundedJson(content: String) {
+        var depth = 0
+        var separators = 0
+        var quoted = false
+        var escaped = false
+        for (char in content) {
+            if (quoted) {
+                if (escaped) escaped = false
+                else when (char) {
+                    '\\' -> escaped = true
+                    '"' -> quoted = false
+                }
+            } else when (char) {
+                '"' -> quoted = true
+                '[', '{' -> if (++depth > TransferLimits.MAX_JSON_DEPTH) TransferValidation.fail("JSON nesting exceeds limit")
+                ']', '}' -> depth--
+                ',', ':' -> if (++separators > TransferLimits.MAX_JSON_SEPARATORS) TransferValidation.fail("JSON structure exceeds limit")
+            }
+        }
     }
 
     private fun JsonElement.asObject(): JsonObject = this as? JsonObject ?: TransferValidation.fail("Expected JSON object")

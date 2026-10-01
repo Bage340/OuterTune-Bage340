@@ -204,7 +204,7 @@ class TagLibScanner : MetadataScanner {
                     bitrate = bitrate,
                     sampleRate = sampleRate,
                     bitsPerSample = bitsPerSample,
-                    contentLength = duration,
+                    contentLength = file.length(),
                     extraComment = if (extraData.isNotBlank()) extraData else null,
                 )
             )

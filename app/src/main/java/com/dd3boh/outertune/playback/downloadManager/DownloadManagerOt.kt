@@ -93,11 +93,11 @@ class DownloadManagerOt(
         }
     }
 
-    fun enqueue(mediaId: String, data: ByteArray, displayName: String? = null) {
+    fun enqueue(mediaId: String, data: ByteArray, displayName: String? = null): Uri {
         // if already exists, immediately emit success
         local.getFilePathIfExists(mediaId)?.let {
             _events.tryEmit(DownloadEvent.Success(mediaId, it))
-            return
+            return it
         }
 
         try {
@@ -134,11 +134,13 @@ class DownloadManagerOt(
             val saved = local.saveFile(mediaId, countingStream, displayName = displayName)
             if (saved != null) {
                 _events.tryEmit(DownloadEvent.Success(mediaId, saved))
+                return saved
             } else {
                 throw IOException("Failed to save file")
             }
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             _events.tryEmit(DownloadEvent.Failure(mediaId, e))
+            throw e
         }
     }
 

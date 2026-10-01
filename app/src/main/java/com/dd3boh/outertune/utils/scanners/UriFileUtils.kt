@@ -29,52 +29,33 @@ fun uriListFromString(str: String): List<Uri> {
 }
 
 fun fileFromUri(context: Context, uri: Uri): File? {
+    if (!DocumentsContract.isTreeUri(uri) && !DocumentsContract.isDocumentUri(context, uri)) return null
+    if (uri.authority != "com.android.externalstorage.documents") return null
+    val docId = if (uri.pathSegments.firstOrNull() == "document" || uri.pathSegments.getOrNull(2) == "document") {
+        DocumentsContract.getDocumentId(uri)
+    } else {
+        DocumentsContract.getTreeDocumentId(uri)
+    }
+    val parts = docId.split(":", limit = 2)
+    val rootId = parts[0]
+    val relativePath = parts.getOrElse(1) { "" }
+    val rootDir: File?
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (!DocumentsContract.isTreeUri(uri) && !DocumentsContract.isDocumentUri(context, uri)) return null
-        if (uri.authority != "com.android.externalstorage.documents") return null
-
-        val treeDocId = DocumentsContract.getDocumentId(uri)
-        val rootId: String
-        val relativePath: String
-
-        if (treeDocId.contains(":")) {
-            val parts = treeDocId.split(":", limit = 2)
-            rootId = parts[0]
-            relativePath = parts[1]
-        } else {
-            rootId = treeDocId
-            relativePath = ""
-        }
-
         val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
-
-        val rootDir = if (rootId.equals("primary", ignoreCase = true)) {
+        rootDir = if (rootId.equals("primary", ignoreCase = true)) {
             storageManager.primaryStorageVolume.directory
         } else {
             storageManager.storageVolumes.firstOrNull {
                 it.uuid != null && it.uuid.equals(rootId, ignoreCase = true)
             }?.directory
         }
-
-        return rootDir?.let { if (relativePath.isEmpty()) it else File(it, relativePath) }
     } else {
-        if (!DocumentsContract.isTreeUri(uri) && !DocumentsContract.isDocumentUri(context, uri)) return null
-
-        if (uri.authority != "com.android.externalstorage.documents") return null
-
-        val docId = DocumentsContract.getDocumentId(uri)
-        val parts = docId.split(":")
-
-        if (parts.size < 2) return null
-
-        val type = parts[0]
-        val relativePath = parts[1]
-
-        val rootDir = when (type.lowercase()) {
+        rootDir = when (rootId.lowercase()) {
             "primary" -> Environment.getExternalStorageDirectory()
             else -> {
                 // Try to handle secondary storage
-                val secondaryStorage = "/storage/$type"
+                if (rootId.isBlank() || rootId.any { it == '/' || it == '\\' } || rootId == "." || rootId == "..") return null
+                val secondaryStorage = "/storage/$rootId"
                 if (File(secondaryStorage).exists()) {
                     File(secondaryStorage)
                 } else {
@@ -82,9 +63,10 @@ fun fileFromUri(context: Context, uri: Uri): File? {
                 }
             }
         }
-
-        return rootDir?.let { File(it, relativePath) }
     }
+    val root = rootDir?.canonicalFile ?: return null
+    val file = if (relativePath.isEmpty()) root else File(root, relativePath).canonicalFile
+    return file.takeIf { it == root || it.path.startsWith(root.path.trimEnd(File.separatorChar) + File.separator) }
 }
 
 fun absoluteFilePathFromUri(context: Context, uri: Uri): String? {

@@ -61,4 +61,44 @@ class DownloadQueuePolicyTest {
 
         assertEquals(emptyList<DownloadCandidate>(), plan.toQueue)
     }
+
+    @Test
+    fun largeDuplicateBatchesKeepOneNewRequestPerIdAndTruthfulSkipCounts() {
+        for (size in listOf(0, 1, 10, 100, 1_000, 5_000)) {
+            val newSongs = (0 until size).map { DownloadCandidate("new-$it", "New $it") }
+            val completed = (0 until size).map {
+                DownloadCandidate("complete-$it", "Completed $it", state = Download.STATE_COMPLETED, hasCompleteCache = true)
+            }
+            val active = (0 until size).map { DownloadCandidate("active-$it", "Active $it", state = Download.STATE_DOWNLOADING) }
+
+            val plan = planDownloads(newSongs + completed + active + newSongs)
+
+            assertEquals((0 until size).map { "new-$it" }, plan.toQueue.map { it.id })
+            assertEquals(size, plan.alreadyDownloaded)
+            assertEquals(size, plan.alreadyQueued)
+            assertEquals(0, plan.unavailable)
+            assertEquals(emptySet<String>(), plan.staleMarkers)
+        }
+    }
+
+    @Test
+    fun mixedPlaylistCancellationLeavesCompletedAndCustomDownloadsUntouched() {
+        val requested = listOf("complete", "custom", "queued", "active", "failed", "missing", "queued")
+        val states = mapOf(
+            "complete" to Download.STATE_COMPLETED,
+            "queued" to Download.STATE_QUEUED,
+            "active" to Download.STATE_DOWNLOADING,
+            "failed" to Download.STATE_FAILED,
+        )
+
+        assertEquals(listOf("queued", "active"), planDownloadRemoval(requested, states, cancelOnly = true))
+    }
+
+    @Test
+    fun explicitRemovalIncludesCustomCopiesAndDeduplicatesSelectedIds() {
+        assertEquals(
+            listOf("complete", "custom"),
+            planDownloadRemoval(listOf("complete", "custom", "complete"), mapOf("complete" to Download.STATE_COMPLETED), cancelOnly = false),
+        )
+    }
 }

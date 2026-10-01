@@ -26,15 +26,31 @@ class LyricsPriorityTest {
         assertEquals(0, fallbackCalls)
     }
 
-    @Test fun youtubePlainLyricsAlsoStopFallbackSearch() = runBlocking {
+    @Test fun timedFallbackWinsOverPlainYoutubeLyrics() = runBlocking {
         var fallbackCalls = 0
         val result = resolveWithPreferredProvider("YouTube Music", { LyricsFetchResult.Found("plain") }, {
             fallbackCalls++
             RemoteLyricsResult.Found("LrcLib", "timed", true)
         }, classify)
 
+        assertEquals(RemoteLyricsResult.Found("LrcLib", "timed", true), result)
+        assertEquals(1, fallbackCalls)
+    }
+
+    @Test fun plainYoutubeLyricsWinWhenFallbackHasNoTimedLyrics() = runBlocking {
+        val result = resolveWithPreferredProvider("YouTube Music", { LyricsFetchResult.Found("plain") }, {
+            RemoteLyricsResult.Found("LrcLib", "plain", false)
+        }, classify)
+
         assertEquals(RemoteLyricsResult.Found("YouTube Music", "plain", false), result)
-        assertEquals(0, fallbackCalls)
+    }
+
+    @Test fun plainYoutubeLyricsRemainUsableWhenFallbackFails() = runBlocking {
+        val result = resolveWithPreferredProvider("YouTube Music", { LyricsFetchResult.Found("plain") }, {
+            RemoteLyricsResult.Indeterminate
+        }, classify)
+
+        assertEquals(RemoteLyricsResult.Found("YouTube Music", "plain", false), result)
     }
 
     @Test fun definitiveYoutubeAbsenceCanUseTimedFallback() = runBlocking {

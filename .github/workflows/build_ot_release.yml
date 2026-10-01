@@ -8,6 +8,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -35,16 +36,9 @@ jobs:
           KEYSTORE: ${{ secrets.KEYSTORE }}
           KEYSTORE_PROPERTIES: ${{ secrets.KEYSTORE_PROPERTIES }}
 
-      - name: Build Stable core release-candidate APK
-        run: ./gradlew assembleStableCoreRelease
-
-      - name: Resolve ffmpeg libs
-        run: |
-          git clone --no-checkout https://github.com/mikooomich/ffmpeg-android-maker-prebuilt/ ffMetadataEx/ffmpeg-android-maker
-          git -C ffMetadataEx/ffmpeg-android-maker checkout --detach fdd9e2482f232da676fdc5ef6622ca444238e9bc
-
-      - name: Build Stable full release-candidate APK
-        run: ./gradlew assembleStableFullRelease
+      - name: Test and build minified Stable release candidates
+        # Full consumes the tracked, licensed prebuilt/ffMetadataEx-release.aar.
+        run: ./gradlew testStableCoreDebugUnitTest testStableFullDebugUnitTest lintStableCoreRelease assembleStableCoreRelease assembleStableFullRelease --max-workers=2 --no-build-cache -DskipFormatKtlint
 
       - name: Verify Stable package, version, and signing identity
         shell: bash
@@ -52,6 +46,7 @@ jobs:
           set -euo pipefail
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
           AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          ZIPALIGN="$(find "$ANDROID_HOME/build-tools" -name zipalign -type f | sort -V | tail -n 1)"
           : > SHA256SUMS.txt
           for ABI in core full; do
             if [ "$ABI" = core ]; then FLAVOR=stableCore; else FLAVOR=stableFull; fi
@@ -61,8 +56,13 @@ jobs:
             grep -qi '98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736' "${ABI}-signature.txt"
             "$AAPT" dump badging "$APK" > "${ABI}-badging.txt"
             grep -q "package: name='com.dd3boh.outertune' versionCode='92' versionName='0.11.1'" "${ABI}-badging.txt"
+            ! grep -qE 'application-debuggable|application-testOnly' "${ABI}-badging.txt"
+            "$AAPT" dump xmltree "$APK" AndroidManifest.xml > "${ABI}-manifest.txt"
+            ! grep -qE '(debuggable|testOnly).*0xffffffff' "${ABI}-manifest.txt"
+            "$ZIPALIGN" -c -P 16 -v 4 "$APK" > "${ABI}-alignment.txt"
             sha256sum "$APK" >> SHA256SUMS.txt
           done
+          git rev-parse HEAD > SOURCE_COMMIT.txt
 
       - name: Upload signed release-candidate APKs
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -77,4 +77,9 @@ jobs:
             full-signature.txt
             core-badging.txt
             full-badging.txt
+            *-manifest.txt
+            *-alignment.txt
             SHA256SUMS.txt
+            SOURCE_COMMIT.txt
+            app/build/outputs/mapping/stableCoreRelease/
+            app/build/outputs/mapping/stableFullRelease/

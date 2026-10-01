@@ -15,7 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Check out source and submodules
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -39,8 +39,16 @@ jobs:
           python -m unittest scripts.tests.test_check_translations
           python scripts/check_translations.py
 
-      - name: Test, lint, and build both unsigned channels
-        run: ./gradlew testStableCoreDebugUnitTest testPreviewCoreDebugUnitTest compileStableFullDebugKotlin compilePreviewFullDebugKotlin lintStableCoreUserdebug lintPreviewCoreUserdebug assembleStableCoreUserdebug assemblePreviewCoreUserdebug --stacktrace -DskipFormatKtlint
+      - name: Test Core and Full, compile instrumentation, lint and build Release
+        run: >-
+          ./gradlew testStableCoreDebugUnitTest testPreviewCoreDebugUnitTest
+          testStableFullDebugUnitTest testPreviewFullDebugUnitTest
+          :kugou:test :simpmusic:test :lrclib:test :betterlyrics:test :innertube:test
+          compileStableCoreDebugAndroidTestKotlin compilePreviewCoreDebugAndroidTestKotlin
+          lintStableCoreUserdebug lintPreviewCoreUserdebug lintStableCoreRelease lintPreviewCoreRelease
+          assembleStableCoreUserdebug assemblePreviewCoreUserdebug
+          assembleStableCoreRelease assemblePreviewCoreRelease assembleStableFullRelease assemblePreviewFullRelease
+          --stacktrace --max-workers=2 --no-build-cache -DskipFormatKtlint
 
       - name: Verify package and version
         shell: bash
@@ -57,6 +65,7 @@ jobs:
             cp "$APK" "OuterTune-Bage340-0.11.1-v92-${CHANNEL}-unsigned.apk"
           done
           sha256sum OuterTune-Bage340-0.11.1-v92-*-unsigned.apk | tee SHA256SUMS.txt
+          git rev-parse HEAD > SOURCE_COMMIT.txt
 
       - name: Upload verified unsigned APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -68,3 +77,6 @@ jobs:
             OuterTune-Bage340-0.11.1-v92-*-unsigned.apk
             apk-*-badging.txt
             SHA256SUMS.txt
+            SOURCE_COMMIT.txt
+            app/build/reports/tests/
+            app/build/reports/lint-results-*.html

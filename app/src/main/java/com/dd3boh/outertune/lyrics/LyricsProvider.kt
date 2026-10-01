@@ -37,6 +37,10 @@ interface LyricsProvider {
     fun isEnabled(context: Context): Boolean
     suspend fun getLyrics(id: String, title: String, artist: String, duration: Int, album: String? = null): LyricsFetchResult
     suspend fun getAllLyrics(id: String, title: String, artist: String, duration: Int, callback: (String) -> Unit) {
-        (getLyrics(id, title, artist, duration) as? LyricsFetchResult.Found)?.let { callback(it.raw) }
+        when (val result = getLyrics(id, title, artist, duration)) {
+            is LyricsFetchResult.Found -> callback(result.raw)
+            LyricsFetchResult.NotFound -> Unit
+            is LyricsFetchResult.Failed -> throw result.cause ?: IllegalStateException("$name lyrics search failed")
+        }
     }
 }

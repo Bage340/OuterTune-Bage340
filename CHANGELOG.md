@@ -19,6 +19,17 @@ checklist in [docs/PHONE_TEST_PLAN.md](docs/PHONE_TEST_PLAN.md) has been run.
   while retaining a conservative default.
 - Expand lyrics provider matching/fallback behavior and improve localization
   coverage, including plural quantities and queue wording.
+- Preserve song IDs, likes, library/download dates and playlist links during
+  scans, including absent roots and unrestricted MediaStore discovery.
+- Validate backup archives and staged databases before closing live stores;
+  preserve coherent main/WAL snapshots and recover interrupted restores.
+- Reject incomplete, missing or unreadable cache files; save migrated audio
+  before removing its only cached copy. Cancel active jobs without deleting
+  completed files; removing audio preserves playlist membership.
+- Play readable local content/file URIs without remote fallback. Bound transfer
+  parsing, deduplicate canonical local aliases and roll back cancelled imports.
+- Match KuGou recording metadata and preserve real lyric timestamps; prevent
+  provider/recording cache collisions and allow retry after provider failures.
 
 This iteration remains a Preview/pre-release. No Stable release has been
 authorized by this changelog.

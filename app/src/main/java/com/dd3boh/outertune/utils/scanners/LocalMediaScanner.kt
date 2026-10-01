@@ -78,6 +78,30 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         ScannerImpl.TAGLIB, ScannerImpl.FFMPEG_EXT -> TagLibScanner()
         ScannerImpl.MEDIASTORE -> MediaStoreExtractor() // advanced extraction disabled
     }
+    private var scanRoots: List<DocumentFile>? = null
+    private var scanRootPaths: List<String> = emptyList()
+    private var excludedRootPaths: List<String> = emptyList()
+
+    private fun setScanCoverage(included: List<Uri>, excluded: List<Uri>) {
+        scanRoots = included.map { uri ->
+            documentFileFromUri(context, uri)
+                ?: throw ScannerAbortException("Could not access selected scan directory: $uri")
+        }
+        requireScanCoverage()
+        scanRootPaths = included.map { uri ->
+            absoluteFilePathFromUri(context, uri)
+                ?: throw ScannerAbortException("Could not access selected scan directory: $uri")
+        }
+        excludedRootPaths = excluded.map { uri ->
+            absoluteFilePathFromUri(context, uri)
+                ?: throw ScannerAbortException("Could not access excluded scan directory: $uri")
+        }
+    }
+
+    private fun requireScanCoverage() {
+        scanRoots?.let(::requireAvailableScanRoots)
+        if (scannerRequestCancel) throw ScannerAbortException("Scanner canceled")
+    }
 
     init {
         Log.i(
@@ -169,6 +193,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         val scanPaths = uriListFromString(scanPaths)
         val excludedScanPaths = uriListFromString(excludedScanPaths)
+        setScanCoverage(scanPaths, excludedScanPaths)
 
         getScanFiles(scanPaths, excludedScanPaths, context).forEach { uri ->
             if (SCANNER_DEBUG)
@@ -206,6 +231,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         noDisable: Boolean = false
     ) {
         database.withScannerTransaction {
+            requireScanCoverage()
             syncDBInTransaction(
                 database = database,
                 newSongs = newSongs,
@@ -215,6 +241,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 refreshExisting = refreshExisting,
                 noDisable = noDisable,
             )
+            requireScanCoverage()
         }
     }
 
@@ -257,6 +284,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         }
 
         val allLocalSongs = database.allLocalDbSongs()
+        val localSongsByPath = allLocalSongs.groupBy { it.song.localPath }
         // sync
         var runs = 0
         finalSongs.forEach { song ->
@@ -277,9 +305,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
 
             // check if this song is known to the library
-            val songMatch = allLocalSongs.filter {
-                compareSong(it, song.song, matchStrength, strictFileNames, strictFilePaths)
-            }
+            val songMatch = localSongsByPath[song.song.song.localPath]
+                ?: if (strictFilePaths) emptyList() else allLocalSongs.filter {
+                    compareSong(it, song.song, matchStrength, strictFileNames, strictFilePaths)
+                }
 
             if (SCANNER_DEBUG) {
                 Log.v(TAG, "Found songs that match: ${songMatch.size}")
@@ -294,7 +323,21 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                     Log.v(TAG, "Found in database, updating song: ${song.song.title} rescan = $refreshExisting")
 
                 val oldSong = songMatch.first().song
-                val songToUpdate = song.song.song.copy(id = oldSong.id, localPath = song.song.song.localPath)
+                val scanned = song.song.song
+                val songToUpdate = oldSong.copy(
+                    title = if (refreshExisting) scanned.title else oldSong.title,
+                    duration = if (refreshExisting) scanned.duration else oldSong.duration,
+                    thumbnailUrl = if (refreshExisting) scanned.thumbnailUrl else oldSong.thumbnailUrl,
+                    inLibrary = oldSong.inLibrary ?: scanned.inLibrary,
+                    localPath = scanned.localPath,
+                    trackNumber = if (refreshExisting) scanned.trackNumber else oldSong.trackNumber,
+                    discNumber = if (refreshExisting) scanned.discNumber else oldSong.discNumber,
+                    albumId = if (refreshExisting) scanned.albumId else oldSong.albumId,
+                    albumName = if (refreshExisting) scanned.albumName else oldSong.albumName,
+                    year = if (refreshExisting) scanned.year else oldSong.year,
+                    date = if (refreshExisting) scanned.date else oldSong.date,
+                    dateModified = if (refreshExisting) scanned.dateModified else oldSong.dateModified,
+                )
 
                 // don't run if we will update these values in rescan anyways
                 // always ensure inLibrary and local path values are valid
@@ -546,6 +589,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         }
 
         database.withScannerTransaction {
+            requireScanCoverage()
             if (finalSongs.isNotEmpty()) {
                 scannerState.value = 0
                 syncDBInTransaction(
@@ -567,6 +611,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             disableSongsByPath(converted, database)
             finalize(database)
             currentCoroutineContext().ensureActive()
+            requireScanCoverage()
         }
 
         scannerState.value = 0
@@ -742,6 +787,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
 
         val contentResolver: ContentResolver = context.contentResolver
+        setScanCoverage(scanPaths, excludedScanPaths)
         val scanRootPaths = scanPaths.map { scanPath ->
             absoluteFilePathFromUri(context, scanPath)
                 ?: throw ScannerAbortException("Could not access selected scan directory: $scanPath")
@@ -785,6 +831,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             val dateModifiedColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
             val pathColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
             val mimeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.MIME_TYPE)
+            val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
 
             var bitrateColumn: Int? = null
             var bitsPerSampleColumn: Int? = null
@@ -803,6 +850,8 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
 
             while (cursor.moveToNext()) {
+                currentCoroutineContext().ensureActive()
+                if (scannerRequestCancel) throw ScannerAbortException("Scanner canceled during MediaStore discovery")
                 val id = SongEntity.generateSongId()
                 val name = cursor.getString(nameColumn) // file name
                 var title = cursor.getString(titleColumn) // song title
@@ -813,6 +862,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 val rawDateModified = cursor.getString(dateModifiedColumn)
                 val path = cursor.getString(pathColumn)
                 val mime = cursor.getString(mimeColumn)
+                val size = cursor.getLong(sizeColumn)
                 if (excludedScanRootPaths.any { excludedPath ->
                         isWithinScanDirectory(path, excludedPath)
                     }) continue
@@ -901,8 +951,9 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                             mimeType = mime,
                             codecs = mime.substringAfter('/'),
                             bitrate = bitrate ?: -1,
-                            sampleRate = bitsPerSample,
-                            contentLength = duration.toLong(),
+                            sampleRate = null,
+                            bitsPerSample = bitsPerSample,
+                            contentLength = size,
                             loudnessDb = null,
                         )
                     )
@@ -927,6 +978,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         scannerProgressCurrent.value = finalSongs.size
         database.withScannerTransaction {
+            requireScanCoverage()
             if (finalSongs.isNotEmpty()) {
                 /**
                  * TODO: Delete all local format entity before scan
@@ -947,9 +999,13 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
             // we handle disabling songs here instead
             scannerState.value = 3
-            disableSongsByPath(mediaStoreSongs.mapNotNull { it.song.song.localPath }, database)
+            // An unrestricted index query cannot prove that every stored volume is available.
+            if (scanPaths.isNotEmpty()) {
+                disableSongsByPath(mediaStoreSongs.mapNotNull { it.song.song.localPath }, database)
+            }
             finalize(database)
             currentCoroutineContext().ensureActive()
+            requireScanCoverage()
         }
         scannerState.value = 0
 
@@ -961,8 +1017,8 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
     private suspend fun disableSongsByPath(newSongs: List<String>, database: MusicDatabase) {
         Log.i(TAG, "Start finalize (disableSongsByPath) job. Number of valid songs: ${newSongs.size}")
         // get list of all local songs in db
-        database.disableInvalidLocalSongs() // make sure path is existing
         val allSongs = database.allLocalSongs()
+        val validPaths = newSongs.toHashSet()
 
         // disable if not in directory anymore
         for (song in allSongs) {
@@ -970,13 +1026,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             if (scannerRequestCancel) {
                 throw ScannerAbortException("Scanner canceled while disabling missing local songs")
             }
-            if (song.song.localPath == null) {
-                continue
-            }
-
-            // new songs is all songs that are known to be valid
-            // delete all songs in the DB that do not match a path
-            if (newSongs.none { it == song.song.localPath }) {
+            val path = song.song.localPath ?: continue
+            val covered = (scanRootPaths.isEmpty() || scanRootPaths.any { isWithinScanDirectory(path, it) }) &&
+                excludedRootPaths.none { isWithinScanDirectory(path, it) }
+            if (covered && path !in validPaths && !File(path).exists()) {
                 if (SCANNER_DEBUG)
                     Log.v(TAG, "Disabling song ${song.song.localPath}")
                 database.disableLocalSong(song.song.id)
@@ -986,31 +1039,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
     }
 
     private suspend fun disableSongs(newSongs: List<Song>, database: MusicDatabase) {
-        Log.i(TAG, "Start finalize (disableSongs) job. Number of valid songs: ${newSongs.size}")
-
-        // get list of all local songs in db
-        database.disableInvalidLocalSongs() // make sure path is existing
-        val allSongs = database.allLocalSongs()
-
-        // disable if not in directory anymore
-        for (song in allSongs) {
-            currentCoroutineContext().ensureActive()
-            if (scannerRequestCancel) {
-                throw ScannerAbortException("Scanner canceled while disabling missing local songs")
-            }
-            if (song.song.localPath == null) {
-                continue
-            }
-
-            // new songs is all songs that are known to be valid
-            // delete all songs in the DB that do not match a path
-            if (newSongs.none { it.song.localPath == song.song.localPath }) {
-                if (SCANNER_DEBUG)
-                    Log.v(TAG, "Disabling song ${song.song.localPath}")
-                database.disableLocalSong(song.song.id)
-            }
-        }
-        Log.i(TAG, "Finished (disableSongs) job")
+        disableSongsByPath(newSongs.mapNotNull { it.song.localPath }, database)
     }
 
     /**
@@ -1019,31 +1048,7 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
     private suspend fun finalize(database: MusicDatabase) {
         Log.i(TAG, "Start finalize (database cleanup job)")
 
-        // remove duplicates
-        val dupes = database.duplicatedLocalSongs().toMutableList()
-        var index = 0
-
-        Log.d(TAG, "Start finalize (duplicate removal) job. Number of candidates: ${dupes.size}")
-        while (index < dupes.size) {
-            currentCoroutineContext().ensureActive()
-            if (scannerRequestCancel) {
-                throw ScannerAbortException("Scanner canceled during local database cleanup")
-            }
-            // collect all the duplicates
-            val contenders = ArrayList<Pair<SongEntity, Int>>()
-            val localPath = dupes[index].localPath
-            while (index < dupes.size && dupes[index].localPath == localPath) {
-                contenders.add(Pair(dupes[index], database.getLifetimePlayCount(dupes[index].id)))
-                index++
-            }
-            // yeet the lower play count songs
-            contenders.remove(contenders.maxByOrNull { it.second })
-            contenders.forEach {
-                if (SCANNER_DEBUG)
-                    Log.v(TAG, "Deleting song ${it.first.id} (${it.first.title})")
-                database.delete(it.first)
-            }
-        }
+        // Existing IDs may own distinct likes, history, or playlist links even when their paths match.
 
         // remove duplicated local artists
         val dbArtists: MutableList<Artist> = database.localArtistsByName().toMutableList()
@@ -1124,9 +1129,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
         private var ownerId = -1
         private var localScanner: LocalMediaScanner? = null
+        private val scannerOwnerLock = Any()
 
 
-        var scannerRequestCancel = false
+        @Volatile var scannerRequestCancel = false
 
         /**
          * -1: Inactive
@@ -1152,9 +1158,11 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         /**
          * Trust me bro, it should never be null
          */
-        fun getScanner(context: Context, scannerImpl: ScannerImpl, owner: Int): LocalMediaScanner {
-
-            if (localScanner == null) {
+        fun getScanner(context: Context, scannerImpl: ScannerImpl, owner: Int): LocalMediaScanner =
+            synchronized(scannerOwnerLock) {
+                if (localScanner != null) {
+                    throw ScannerAbortException("A local media scan is already in progress")
+                }
                 // migrate the legacy FFMPEG_EXT preference to TAGLIB (TagLib is always available)
                 if (scannerImpl == ScannerImpl.FFMPEG_EXT) {
                     CoroutineScope(lmScannerCoroutine).launch {
@@ -1167,26 +1175,26 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                 scannerProgressTotal.value = 0
                 scannerProgressCurrent.value = -1
                 scannerProgressProbe.value = 0
+                ownerId = owner
+                localScanner!!
             }
-
-            ownerId = owner
-            return localScanner!!
-        }
 
         suspend fun destroyScanner(owner: Int) {
-            if (owner != ownerId && ownerId != -1) {
-                Log.w(TAG, "Scanner instance can only be destroyed by the owner. Aborting. Check your ownerId.")
-                return
-            }
-            ownerId = -1
-            localScanner = null
-            scannerState.value = -1
-            scannerRequestCancel = false
-            scannerProgressTotal.value = -1
-            scannerProgressCurrent.value = -1
-            scannerProgressProbe.value = -1
+            synchronized(scannerOwnerLock) {
+                if (owner != ownerId && ownerId != -1) {
+                    Log.w(TAG, "Scanner instance can only be destroyed by the owner. Aborting. Check your ownerId.")
+                    return
+                }
+                ownerId = -1
+                localScanner = null
+                scannerState.value = -1
+                scannerRequestCancel = false
+                scannerProgressTotal.value = -1
+                scannerProgressCurrent.value = -1
+                scannerProgressProbe.value = -1
 
-            Log.i(TAG, "Scanner instance destroyed")
+                Log.i(TAG, "Scanner instance destroyed")
+            }
         }
 
 
@@ -1270,8 +1278,10 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             failFast: Boolean = false,
             validator: ((DocumentFile) -> Boolean)? = null
         ): DocumentFile? {
+            if (scannerRequestCancel) throw ScannerAbortException("Scanner canceled during file discovery")
             val files = dir.listFilesForScan(failFast)
             for (file in files) {
+                if (scannerRequestCancel) throw ScannerAbortException("Scanner canceled during file discovery")
                 if (!scanHidden && file.name?.startsWith(".") == true) continue
                 if (file.isDirectory && (scanHidden || !file.listFilesForScan(failFast).any { it.name == ".nomedia" })) {
                     // look into subdirs

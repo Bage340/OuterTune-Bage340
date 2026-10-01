@@ -1,12 +1,18 @@
 package com.dd3boh.outertune.utils.scanners
 
+import androidx.documentfile.provider.DocumentFile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
 import java.io.IOException
 
 class ScanPathPolicyTest {
+    @get:Rule val temporaryFolder = TemporaryFolder()
+
     @Test
     fun directoryBoundaryDoesNotMatchSimilarlyNamedSibling() {
         assertTrue(isWithinScanDirectory("/storage/Music/song.flac", "/storage/Music/"))
@@ -65,5 +71,18 @@ class ScanPathPolicyTest {
             existingLocalSongCount = 12,
             source = "TagLib scan",
         )
+    }
+
+    @Test
+    fun missingSecondMediaStoreRootAbortsBeforeAPartialResultCanReconcile() {
+        val availableRoot = temporaryFolder.newFolder("available")
+        val unavailableRoot = temporaryFolder.newFolder("unavailable")
+        assertTrue(unavailableRoot.delete())
+
+        assertThrows(ScannerAbortException::class.java) {
+            requireAvailableScanRoots(
+                listOf(DocumentFile.fromFile(availableRoot), DocumentFile.fromFile(unavailableRoot))
+            )
+        }
     }
 }

@@ -32,6 +32,42 @@ class TransferCodecTest {
         assertTrue(text.contains("\"Local\ntrack\""))
     }
 
+    @Test fun csvPreservesEmptyAlbumDistinctFromMissingAlbum() {
+        val emptyAlbum = youtube.copy(album = "")
+        val missingAlbum = youtube.copy(stableId = "ZyXwVu98765", album = null)
+        val source = TransferDocument(listOf(emptyAlbum, missingAlbum), emptyList())
+
+        assertEquals(source, TransferCodec.decode(TransferFormat.CSV, TransferCodec.encode(TransferFormat.CSV, source)))
+    }
+
+    @Test fun csvStillAcceptsPreviousHeaderWithoutAlbumPresenceColumn() {
+        val previous = "schemaVersion,kind,playlistId,playlistTitle,source,stableId,title,artists,album,durationSeconds,localUri,liked,inLibrary,playlistIsLocal,playlistBrowseId,playlistBookmarked\n" +
+            "1,library,,,youtube,AbCdEf12345,Song,[],Album,180,,false,true,,,\n"
+        val expected = TransferDocument(listOf(TransferTrack(TrackSource.YOUTUBE, "AbCdEf12345", "Song",
+            album = "Album", durationSeconds = 180, inLibrary = true)), emptyList())
+
+        assertEquals(expected, TransferCodec.decode(TransferFormat.CSV, previous.toByteArray(Charsets.UTF_8)))
+    }
+
+    @Test fun csvStillAcceptsLegacyThirteenColumnHeader() {
+        val legacy = "schemaVersion,kind,playlistId,playlistTitle,source,stableId,title,artists,album,durationSeconds,localUri,liked,inLibrary\n" +
+            "1,library,,,youtube,AbCdEf12345,Song,[],Album,180,,false,true\n"
+        val expected = TransferDocument(listOf(TransferTrack(TrackSource.YOUTUBE, "AbCdEf12345", "Song",
+            album = "Album", durationSeconds = 180, inLibrary = true)), emptyList())
+        assertEquals(expected, TransferCodec.decode(TransferFormat.CSV, legacy.toByteArray(Charsets.UTF_8)))
+    }
+
+    @Test fun jsonRejectsExcessiveNestingEvenInUnknownFields() {
+        val nested = "[".repeat(80) + "0" + "]".repeat(80)
+        val input = "{\"schemaVersion\":1,\"library\":[],\"playlists\":[],\"extra\":$nested}"
+        assertThrows(TransferException::class.java) { TransferCodec.decode(TransferFormat.JSON, input.toByteArray()) }
+    }
+
+    @Test fun jsonNestingCharactersInsideEscapedStringsRemainValid() {
+        val source = TransferDocument(listOf(youtube.copy(title = "[".repeat(80) + "\\\"" + "]".repeat(80))), emptyList())
+        assertEquals(source, TransferCodec.decode(TransferFormat.JSON, TransferCodec.encode(TransferFormat.JSON, source)))
+    }
+
     @Test fun csvFormulaCellsAreNeutralizedWithoutChangingDecodedValues() {
         val dangerous = youtube.copy(stableId = "-AbCdEf1234", title = "  =HYPERLINK(\"https://bad.test\")", album = "+SUM(1)", artists = listOf("@cmd"))
         val source = TransferDocument(listOf(dangerous), listOf(TransferPlaylist("-playlist", "-unsafe", listOf(dangerous))))

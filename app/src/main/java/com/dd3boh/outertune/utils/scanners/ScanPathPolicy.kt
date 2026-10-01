@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.utils.scanners
 
+import androidx.documentfile.provider.DocumentFile
 import java.io.IOException
 
 data class MediaStoreScanSelection(
@@ -55,6 +56,20 @@ fun requireSafeReconciliation(
         throw ScannerAbortException(
             "$source returned no songs; existing local library was left unchanged"
         )
+    }
+}
+
+/** A result from one configured tree cannot stand in for another unavailable tree. */
+fun requireAvailableScanRoots(roots: List<DocumentFile>) {
+    roots.forEach { root ->
+        val available = try {
+            root.exists() && root.isDirectory && root.canRead()
+        } catch (e: Exception) {
+            throw ScannerAbortException("Could not read selected scan directory: ${root.uri}", e)
+        }
+        if (!available) {
+            throw ScannerAbortException("Could not read selected scan directory: ${root.uri}")
+        }
     }
 }
 

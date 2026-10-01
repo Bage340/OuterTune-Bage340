@@ -83,9 +83,9 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
 
     fun saveFile(mediaId: String, input: InputStream, displayName: String?): Uri? {
         val resolver = context.contentResolver
-        val directory = DocumentFile.fromTreeUri(context, dir)
+        val directory = mainDir ?: throw IOException("Invalid directory")
 
-        if (directory == null || !directory.isDirectory) {
+        if (!directory.isDirectory) {
             throw IOException("Invalid directory")
         }
 
@@ -197,7 +197,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
 }
 
 internal fun isUsableDownloadFile(file: DocumentFile): Boolean =
-    file.isFile && file.exists() && file.length() > 0L
+    file.isFile && file.exists() && file.canRead() && file.length() > 0L
 
 internal fun indexDownloadFiles(files: Collection<DocumentFile>, previewChannel: Boolean = false): Map<String, DocumentFile> =
     files.asSequence()

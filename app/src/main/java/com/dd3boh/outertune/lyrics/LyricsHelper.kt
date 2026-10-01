@@ -53,7 +53,7 @@ class LyricsHelper @Inject constructor(
             KuGouLyricsProvider,
             YouTubeSubtitleLyricsProvider,
         )
-    private val cache = LruCache<String, List<LyricsResult>>(MAX_CACHE_SIZE)
+    private val cache = LruCache<ManualLyricsCacheKey, List<LyricsResult>>(MAX_CACHE_SIZE)
 
     /**
      * Per-videoId mutexes that make [fetchAndStoreRemote] single-flight: at most one fetch runs for a
@@ -199,9 +199,10 @@ class LyricsHelper @Inject constructor(
     /**
      * Lookup lyrics from remote providers.
      *
-     * YouTube Music is tried first when enabled, and either a synced or plain result wins. On absence
-     * or bounded failure, the other eligible providers run concurrently: their first synced result wins,
-     * with a plain result held as fallback. Each lookup and the whole resolution have time limits.
+     * YouTube Music is tried first when enabled. Its timed result wins immediately; a plain result
+     * remains available while eligible fallback providers look for actual timed lyrics. On absence
+     * or bounded failure, fallback providers can also supply plain lyrics. Each lookup and the whole
+     * resolution have time limits.
      *
      * The possible outcomes are: [RemoteLyricsResult.Found] when a usable result was adopted,
      * [RemoteLyricsResult.DefinitiveNotFound] only when every provider reported a definitive absence,
@@ -361,28 +362,6 @@ class LyricsHelper @Inject constructor(
         return null
     }
 
-    /**
-     * Run a single provider's candidate search behind the manual-search isolation boundary. Each
-     * provider is tried even if an earlier one threw: a contract-breaking exception is swallowed (after
-     * re-throwing cancellation) so the sequential search continues to the next provider and any
-     * candidates already delivered by callback are kept.
-     */
-    private suspend fun LyricsProvider.searchIsolated(
-        mediaId: String,
-        songTitle: String,
-        songArtists: String,
-        duration: Int,
-        callback: (String) -> Unit,
-    ) {
-        try {
-            getAllLyrics(mediaId, songTitle, songArtists, duration, callback)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            reportException(e)
-        }
-    }
-
     suspend fun getAllLyrics(
         mediaId: String,
         songTitle: String,
@@ -390,24 +369,16 @@ class LyricsHelper @Inject constructor(
         duration: Int,
         callback: (LyricsResult) -> Unit,
     ) {
-        val cacheKey = "$songArtists-$songTitle".replace(" ", "")
+        val selection = ProviderSelection.snapshot(context, lyricsProviders)
+        val cacheKey = manualLyricsCacheKey(mediaId, songTitle, songArtists, duration, selection.signature)
         cache.get(cacheKey)?.let { results ->
             results.forEach {
                 callback(it)
             }
             return
         }
-        val allResult = mutableListOf<LyricsResult>()
-        lyricsProviders.forEach { provider ->
-            if (provider.isEnabled(context)) {
-                provider.searchIsolated(mediaId, songTitle, songArtists, duration) { lyrics ->
-                    val result = LyricsResult(provider.name, lyrics)
-                    allResult += result
-                    callback(result)
-                }
-            }
-        }
-        cache.put(cacheKey, allResult)
+        searchManualLyrics(selection.providers, mediaId, songTitle, songArtists, duration, callback, ::reportException)
+            ?.takeIf { it.isNotEmpty() }?.let { cache.put(cacheKey, it) }
     }
 
     companion object {
@@ -424,6 +395,50 @@ class LyricsHelper @Inject constructor(
         private const val OVERALL_TIMEOUT_MS = 12000L
     }
 }
+
+internal suspend fun searchManualLyrics(
+    providers: List<LyricsProvider>,
+    mediaId: String,
+    songTitle: String,
+    songArtists: String,
+    duration: Int,
+    callback: (LyricsResult) -> Unit,
+    onFailure: (Exception) -> Unit,
+): List<LyricsResult>? {
+    val results = mutableListOf<LyricsResult>()
+    var failed = false
+    providers.forEach { provider ->
+        try {
+            provider.getAllLyrics(mediaId, songTitle, songArtists, duration) { lyrics ->
+                val result = LyricsResult(provider.name, lyrics)
+                results += result
+                callback(result)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            failed = true
+            onFailure(e)
+        }
+    }
+    return if (failed) null else results
+}
+
+internal data class ManualLyricsCacheKey(
+    val mediaId: String,
+    val songTitle: String,
+    val songArtists: String,
+    val duration: Int,
+    val providerSignature: String,
+)
+
+internal fun manualLyricsCacheKey(
+    mediaId: String,
+    songTitle: String,
+    songArtists: String,
+    duration: Int,
+    providerSignature: String,
+): ManualLyricsCacheKey = ManualLyricsCacheKey(mediaId, songTitle, songArtists, duration, providerSignature)
 
 /** Time a negative cache (LYRICS_NOT_FOUND) is trusted before a fresh remote fetch is attempted. */
 const val NEGATIVE_CACHE_TTL_MS = 7L * 24 * 60 * 60 * 1000

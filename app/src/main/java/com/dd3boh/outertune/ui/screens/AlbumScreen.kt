@@ -74,7 +74,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
@@ -91,7 +90,6 @@ import com.dd3boh.outertune.constants.ThumbnailCornerRadius
 import com.dd3boh.outertune.constants.TopBarInsets
 import com.dd3boh.outertune.db.entities.Album
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.ui.component.AsyncImageLocal
 import com.dd3boh.outertune.ui.component.AutoResizeText
@@ -288,14 +286,7 @@ fun AlbumScreen(
                                         Download.STATE_COMPLETED -> {
                                             IconButton(
                                                 onClick = {
-                                                    albumWithSongsLocal.songs.forEach { song ->
-                                                        DownloadService.sendRemoveDownload(
-                                                            context,
-                                                            ExoDownloadService::class.java,
-                                                            song.id,
-                                                            false
-                                                        )
-                                                    }
+                                                    downloadUtil.removeDownloads(albumWithSongsLocal.songs.filterNot { it.song.isLocal }.map { it.id }, cancelOnly = false)
                                                 }
                                             ) {
                                                 Icon(
@@ -305,17 +296,10 @@ fun AlbumScreen(
                                             }
                                         }
 
-                                        Download.STATE_DOWNLOADING -> {
+                                        Download.STATE_QUEUED, Download.STATE_DOWNLOADING -> {
                                             IconButton(
                                                 onClick = {
-                                                    albumWithSongsLocal.songs.forEach { song ->
-                                                        DownloadService.sendRemoveDownload(
-                                                            context,
-                                                            ExoDownloadService::class.java,
-                                                            song.id,
-                                                            false
-                                                        )
-                                                    }
+                                                    downloadUtil.removeDownloads(albumWithSongsLocal.songs.filterNot { it.song.isLocal }.map { it.id }, cancelOnly = true)
                                                 }
                                             ) {
                                                 CircularProgressIndicator(

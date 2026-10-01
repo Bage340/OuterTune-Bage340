@@ -2,6 +2,7 @@ package com.dd3boh.outertune.transfer
 
 import android.app.Application
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import androidx.test.core.app.ApplicationProvider
 import com.dd3boh.outertune.db.InternalDatabase
 import com.dd3boh.outertune.db.MusicDatabase
@@ -9,6 +10,10 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
@@ -18,6 +23,8 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.time.LocalDateTime
+import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [35])
@@ -236,6 +243,79 @@ class TransferRepositoryTest {
         assertEquals(2, count("SELECT COUNT(*) FROM song"))
         assertEquals("/music/one.mp3", database.song("LSactual").first()?.song?.localPath)
         assertEquals("/music/two.mp3", database.transferLocalSongEntities(listOf("/music/two.mp3")).single().localPath)
+    }
+
+    @Test fun equivalentLocalPathsInOneImportCreateOnlyOneSongAndPlaylistEntry() = runBlocking {
+        repository = TransferRepository(database, LocalReferenceAccess { true })
+        val alias = local.copy(stableId = "LSalias", localUri = "/music/./local.mp3")
+        val localhostAlias = local.copy(stableId = "LShostAlias", localUri = "file://localhost/music/local.mp3")
+        val document = TransferDocument(emptyList(), listOf(TransferPlaylist("aliases", "Aliases", listOf(local, alias, localhostAlias))))
+        val result = repository.import(TransferFormat.JSON, TransferCodec.encode(TransferFormat.JSON, document))
+        assertEquals(1, result.createdSongs)
+        assertEquals(1, result.addedPlaylistEntries)
+        assertEquals(2, result.skippedDuplicateEntries)
+        assertEquals(1, count("SELECT COUNT(*) FROM song"))
+        assertEquals(listOf(local.stableId), database.songMapsToPlaylist("aliases", 0).map { it.songId })
+    }
+
+    @Test fun excessivelyNestedJsonDoesNotWriteDatabase() = runBlocking {
+        val nested = "[".repeat(80) + "0" + "]".repeat(80)
+        val malicious = "{\"schemaVersion\":1,\"library\":[],\"playlists\":[],\"extra\":$nested}"
+        assertTrue(runCatching { repository.import(TransferFormat.JSON, malicious.toByteArray()) }.exceptionOrNull() is TransferException)
+        assertEquals(0, count("SELECT COUNT(*) FROM song"))
+        assertEquals(0, count("SELECT COUNT(*) FROM playlist"))
+    }
+
+    @Test fun sharedArtistsAreLookedUpOncePerImportAndKeepTheirOrder() = runBlocking {
+        val lookups = AtomicInteger()
+        recreateDatabaseWithQueryCallback { sql ->
+            if (sql.contains("FROM artist", ignoreCase = true) && sql.contains("WHERE name", ignoreCase = true)) {
+                lookups.incrementAndGet()
+            }
+        }
+        val tracks = (0 until 100).map { remote.copy(stableId = "%011d".format(it)) }
+        val result = repository.import(TransferFormat.JSON,
+            TransferCodec.encode(TransferFormat.JSON, TransferDocument(tracks, emptyList())))
+        assertEquals(100, result.createdSongs)
+        assertEquals(2, lookups.get())
+        assertEquals(2, count("SELECT COUNT(*) FROM artist"))
+        assertEquals(200, count("SELECT COUNT(*) FROM song_artist_map"))
+        assertEquals(listOf("One", "Two"), database.transferArtistNames(listOf(tracks.last().stableId)).map { it.name })
+    }
+
+    @Test fun cancellationDuringFinalPlaylistWriteRollsBackSongsArtistsAndMembership() = runBlocking {
+        lateinit var importJob: Job
+        val mapWrites = AtomicInteger()
+        recreateDatabaseWithQueryCallback { sql ->
+            if (sql.startsWith("INSERT", ignoreCase = true) && sql.contains("playlist_song_map", ignoreCase = true)) {
+                if (mapWrites.incrementAndGet() == 2) importJob.cancel()
+            }
+        }
+        val second = remote.copy(stableId = "ZyXwVu98765")
+        val document = TransferDocument(emptyList(), listOf(TransferPlaylist("cancel", "Cancel", listOf(remote, second))))
+        val preview = repository.prepareImport(TransferFormat.JSON, TransferCodec.encode(TransferFormat.JSON, document))
+        importJob = launch(Dispatchers.IO, start = CoroutineStart.LAZY) { repository.commitImport(preview) }
+        importJob.start()
+        importJob.join()
+        assertEquals("Cancellation must occur while executing real membership writes", 2, mapWrites.get())
+        assertTrue(importJob.isCancelled)
+        assertEquals(0, count("SELECT COUNT(*) FROM song"))
+        assertEquals(0, count("SELECT COUNT(*) FROM artist"))
+        assertEquals(0, count("SELECT COUNT(*) FROM song_artist_map"))
+        assertEquals(0, count("SELECT COUNT(*) FROM playlist"))
+        assertEquals(0, count("SELECT COUNT(*) FROM playlist_song_map"))
+    }
+
+    private fun recreateDatabaseWithQueryCallback(onQuery: (String) -> Unit) {
+        database.close()
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        database = MusicDatabase(Room.inMemoryDatabaseBuilder(context, InternalDatabase::class.java)
+            .allowMainThreadQueries()
+            .setQueryCallback(object : RoomDatabase.QueryCallback {
+                override fun onQuery(sqlQuery: String, bindArgs: List<Any?>) = onQuery(sqlQuery)
+            }, Executor { it.run() })
+            .build())
+        repository = TransferRepository(database, LocalReferenceAccess { it == "/music/local.mp3" })
     }
 
     private fun count(sql: String): Int = database.openHelper.readableDatabase.query(sql).use { it.moveToFirst(); it.getInt(0) }

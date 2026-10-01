@@ -1,6 +1,5 @@
 package com.dd3boh.outertune.transfer
 
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
 
@@ -9,14 +8,15 @@ internal object CsvTransfer {
         "schemaVersion", "kind", "playlistId", "playlistTitle", "source", "stableId", "title",
         "artists", "album", "durationSeconds", "localUri", "liked", "inLibrary",
     )
-    private val columns = legacyColumns + listOf("playlistIsLocal", "playlistBrowseId", "playlistBookmarked")
+    private val previousColumns = legacyColumns + listOf("playlistIsLocal", "playlistBrowseId", "playlistBookmarked")
+    private val columns = previousColumns + "albumPresent"
 
     fun write(document: TransferDocument): String = buildString {
         appendRow(columns)
         document.library.forEach { appendRow(trackRow("library", "", "", it)) }
         document.playlists.forEach { playlist ->
             appendRow(listOf("1", "playlist", playlist.stableId, playlist.title) + List(legacyColumns.size - 4) { "" } +
-                listOf(playlist.isLocal.toString(), playlist.browseId.orEmpty(), playlist.bookmarked.toString()))
+                listOf(playlist.isLocal.toString(), playlist.browseId.orEmpty(), playlist.bookmarked.toString(), ""))
             playlist.tracks.forEach { appendRow(trackRow("playlist-track", playlist.stableId, playlist.title, it)) }
         }
     }
@@ -24,8 +24,9 @@ internal object CsvTransfer {
     fun read(content: String): TransferDocument {
         val rows = parseRows(content)
         val header = rows.firstOrNull()
-        if (header != columns && header != legacyColumns) TransferValidation.fail("Invalid CSV header")
-        val hasPlaylistMetadata = header == columns
+        if (header != columns && header != previousColumns && header != legacyColumns) TransferValidation.fail("Invalid CSV header")
+        val hasPlaylistMetadata = header != legacyColumns
+        val hasAlbumPresence = header == columns
         val library = ArrayList<TransferTrack>()
         val playlists = LinkedHashMap<String, Pair<TransferPlaylist, MutableList<TransferTrack>>>()
         for (rowIndex in 1 until rows.size) {
@@ -34,11 +35,12 @@ internal object CsvTransfer {
             if (row.size != header.size || row[0] != "1") TransferValidation.fail("Invalid CSV row")
             when (row[1]) {
                 "library" -> {
-                    if (row[2].isNotEmpty() || row[3].isNotEmpty() || row.drop(legacyColumns.size).any { it.isNotEmpty() }) TransferValidation.fail("Invalid library row")
-                    library.add(readTrack(row))
+                    if (row[2].isNotEmpty() || row[3].isNotEmpty() || row.subList(legacyColumns.size, previousColumns.size.coerceAtMost(row.size)).any { it.isNotEmpty() }) TransferValidation.fail("Invalid library row")
+                    library.add(readTrack(row, hasAlbumPresence))
                 }
                 "playlist" -> {
-                    if (row[2].isEmpty() || playlists.containsKey(row[2]) || row.subList(4, legacyColumns.size).any { it.isNotEmpty() }) TransferValidation.fail("Invalid playlist row")
+                    if (row[2].isEmpty() || playlists.containsKey(row[2]) || row.subList(4, legacyColumns.size).any { it.isNotEmpty() } ||
+                        (hasAlbumPresence && row.last().isNotEmpty())) TransferValidation.fail("Invalid playlist row")
                     val playlist = TransferPlaylist(row[2], row[3], emptyList(),
                         isLocal = if (hasPlaylistMetadata) boolean(row[legacyColumns.size]) else true,
                         browseId = if (hasPlaylistMetadata) row[legacyColumns.size + 1].ifEmpty { null } else null,
@@ -47,8 +49,8 @@ internal object CsvTransfer {
                 }
                 "playlist-track" -> {
                     val playlist = playlists[row[2]] ?: TransferValidation.fail("Unknown playlist in CSV")
-                    if (playlist.first.title != row[3] || row.drop(legacyColumns.size).any { it.isNotEmpty() }) TransferValidation.fail("Inconsistent playlist metadata")
-                    playlist.second.add(readTrack(row))
+                    if (playlist.first.title != row[3] || row.subList(legacyColumns.size, previousColumns.size.coerceAtMost(row.size)).any { it.isNotEmpty() }) TransferValidation.fail("Inconsistent playlist metadata")
+                    playlist.second.add(readTrack(row, hasAlbumPresence))
                 }
                 else -> TransferValidation.fail("Unknown CSV row kind")
             }
@@ -60,12 +62,12 @@ internal object CsvTransfer {
     private fun trackRow(kind: String, playlistId: String, playlistTitle: String, track: TransferTrack) = listOf(
         "1", kind, playlistId, playlistTitle, track.source.name.lowercase(), track.stableId, track.title,
         JsonArray(track.artists.map(::JsonPrimitive)).toString(), track.album.orEmpty(), track.durationSeconds?.toString().orEmpty(),
-        track.localUri.orEmpty(), track.liked.toString(), track.inLibrary.toString(), "", "", "",
+        track.localUri.orEmpty(), track.liked.toString(), track.inLibrary.toString(), "", "", "", (track.album != null).toString(),
     )
 
-    private fun readTrack(row: List<String>): TransferTrack {
+    private fun readTrack(row: List<String>, hasAlbumPresence: Boolean): TransferTrack {
         val artists = try {
-            (Json.parseToJsonElement(row[7]) as? JsonArray)?.map { (it as? JsonPrimitive)?.takeIf { primitive -> primitive.isString }?.content ?: TransferValidation.fail("Invalid artist") }
+            (JsonTransfer.parseElement(row[7]) as? JsonArray)?.map { (it as? JsonPrimitive)?.takeIf { primitive -> primitive.isString }?.content ?: TransferValidation.fail("Invalid artist") }
                 ?: TransferValidation.fail("Invalid artists")
         } catch (error: TransferException) {
             throw error
@@ -79,7 +81,13 @@ internal object CsvTransfer {
                 else -> TransferValidation.fail("Unknown track source")
             },
             stableId = row[5], title = row[6], artists = artists,
-            album = row[8].ifEmpty { null },
+            album = if (hasAlbumPresence) {
+                if (boolean(row[previousColumns.size])) row[8]
+                else {
+                    if (row[8].isNotEmpty()) TransferValidation.fail("Inconsistent album metadata")
+                    null
+                }
+            } else row[8].ifEmpty { null },
             durationSeconds = row[9].ifEmpty { null }?.toIntOrNull() ?: if (row[9].isEmpty()) null else TransferValidation.fail("Invalid duration"),
             localUri = row[10].ifEmpty { null },
             liked = boolean(row[11]), inLibrary = boolean(row[12]),
@@ -134,7 +142,7 @@ internal object CsvTransfer {
         fun endRow() {
             endField()
             if (rows.isEmpty()) {
-                if (row != columns && row != legacyColumns) TransferValidation.fail("Invalid CSV header")
+                if (row != columns && row != previousColumns && row != legacyColumns) TransferValidation.fail("Invalid CSV header")
                 expectedColumns = row.size
             } else if (row.size != expectedColumns) {
                 TransferValidation.fail("Invalid CSV row width")

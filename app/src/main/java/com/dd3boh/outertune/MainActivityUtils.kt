@@ -43,6 +43,7 @@ import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -208,6 +209,7 @@ suspend fun scanInit(
         if (perms == PackageManager.PERMISSION_GRANTED) {
             // equivalent to (quick scan)
             var localScanSucceeded = false
+            var scannerAcquired = false
             try {
                 withContext(Dispatchers.Main) {
                     playerConnection?.player?.pause()
@@ -215,6 +217,7 @@ suspend fun scanInit(
                 val scanner = LocalMediaScanner.getScanner(
                     context, scannerImpl, SCANNER_OWNER_LM
                 )
+                scannerAcquired = true
                 if (scannerImpl == ScannerImpl.MEDIASTORE) {
                     scanner.fullMediaStoreSync(
                         database = database,
@@ -230,6 +233,8 @@ suspend fun scanInit(
                     scanner.quickSync(database, uris, scannerSensitivity, strictExtensions, strictFilePaths)
                 }
                 localScanSucceeded = true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: ScannerAbortException) {
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(
@@ -249,7 +254,7 @@ suspend fun scanInit(
                 reportException(e)
             } finally {
                 clearDtCache()
-                destroyScanner(SCANNER_OWNER_LM)
+                if (scannerAcquired) destroyScanner(SCANNER_OWNER_LM)
             }
 
             val updatedTimestamp = updatedStartupLastLocalScan(

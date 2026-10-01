@@ -8,6 +8,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -39,17 +40,19 @@ jobs:
           PREVIEW_KEYSTORE: ${{ secrets.PREVIEW_KEYSTORE }}
           PREVIEW_KEYSTORE_PROPERTIES: ${{ secrets.PREVIEW_KEYSTORE_PROPERTIES }}
 
-      - name: Test and build Preview core APK
-        run: ./gradlew testPreviewCoreDebugUnitTest assemblePreviewCoreUserdebug --no-daemon -DskipFormatKtlint
+      - name: Test and build minified Preview core Release APK
+        run: ./gradlew testPreviewCoreDebugUnitTest lintPreviewCoreRelease assemblePreviewCoreRelease --no-daemon --max-workers=2 --no-build-cache -DskipFormatKtlint
 
       - name: Verify signed test APK identity
         shell: bash
         run: |
           set -euo pipefail
-          APK="$(find app/build/outputs/apk/previewCore/userdebug -name '*universal*.apk' -print -quit)"
+          APK="$(find app/build/outputs/apk/previewCore/release -name '*universal*.apk' -print -quit)"
           test -n "$APK"
           APKSIGNER="$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -n 1)"
           AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          ZIPALIGN="$(find "$ANDROID_HOME/build-tools" -name zipalign -type f | sort -V | tail -n 1)"
+          "$ZIPALIGN" -c -P 16 -v 4 "$APK" > apk-alignment.txt
           "$APKSIGNER" verify --verbose --print-certs "$APK" | tee apk-signature.txt
           SIGNER="$(sed -n 's/^.*certificate SHA-256 digest: //p' apk-signature.txt | tr -d ':' | tr 'A-F' 'a-f')"
           test -n "$SIGNER"
@@ -57,8 +60,12 @@ jobs:
           test "$SIGNER" != '98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736'
           "$AAPT" dump badging "$APK" | tee apk-badging.txt
           grep -q "package: name='com.dd3boh.outertune.preview' versionCode='92' versionName='0.11.1'" apk-badging.txt
+          ! grep -qE 'application-debuggable|application-testOnly' apk-badging.txt
+          "$AAPT" dump xmltree "$APK" AndroidManifest.xml > apk-manifest.txt
+          ! grep -qE '(debuggable|testOnly).*0xffffffff' apk-manifest.txt
           cp "$APK" OuterTune-Bage340-0.11.1-v92-preview.apk
           sha256sum OuterTune-Bage340-0.11.1-v92-preview.apk | tee SHA256SUMS.txt
+          git rev-parse HEAD > SOURCE_COMMIT.txt
         env:
           PREVIEW_CERT_SHA256: ${{ vars.PREVIEW_CERT_SHA256 }}
 
@@ -72,4 +79,8 @@ jobs:
             OuterTune-Bage340-0.11.1-v92-preview.apk
             apk-signature.txt
             apk-badging.txt
+            apk-alignment.txt
+            apk-manifest.txt
             SHA256SUMS.txt
+            SOURCE_COMMIT.txt
+            app/build/outputs/mapping/previewCoreRelease/

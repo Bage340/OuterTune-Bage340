@@ -15,10 +15,18 @@ import io.ktor.client.request.headers
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
+import org.junit.Before
 import org.junit.Test
 
 class YouTubeTest {
     private val youTube = YouTube
+
+    @Before
+    fun requireLiveYouTubeTestOptIn() {
+        assumeTrue("Live YouTube integration requires explicit opt-in",
+            System.getenv("OUTERTUNE_LIVE_YOUTUBE_TESTS") == "true")
+    }
 
     @Test
     fun `Check 'player' endpoint`() = runBlocking {

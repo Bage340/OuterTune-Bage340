@@ -82,6 +82,7 @@ class LocalMediaScannerTest {
         val format = requireNotNull(database.format(song.id).first())
         assertEquals(song.id, format.id)
         assertEquals(44100, format.sampleRate)
+        assertEquals(file.length(), format.contentLength)
         assertTrue(format.bitrate > 0)
         assertTrue(format.mimeType.isNotBlank())
         assertTrue(format.codecs.isNotBlank())

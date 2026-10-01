@@ -11,26 +11,29 @@ Stable uses application ID `com.dd3boh.outertune`. Preview uses
 `com.dd3boh.outertune.preview`, so both can be installed side by side and keep
 separate app-private databases and files. They are separate apps, not a data
 migration path. Preview uses its own signing identity. Android may reject a
-replacement Preview APK when package, signing identity, and version code match
-an already installed build. Back up/export data before uninstalling; data
-retention after uninstall is not guaranteed. Never change the public revision
+replacement Preview APK for device-specific installation reasons. Preserve a
+backup/export first and try a normal update. If Android rejects it, retain the
+error and do not uninstall an application containing the only copy of data.
+Never change the public revision
 or signing key just to work around an installation failure.
 
 ## Build and signing
 
 Use JDK 21 and an Android SDK with the platforms and build tools required by
 the project. Clone with submodules. Core omits the additional FFmpeg decoder;
-Full includes it.
+Full includes it through the tracked `prebuilt/ffMetadataEx-release.aar`.
+The pinned source and licenses are in [prebuilt/README.md](prebuilt/README.md).
 
 ```text
-./gradlew :app:testStableCoreDebugUnitTest :app:lintPreviewCoreUserdebug :app:assemblePreviewCoreUserdebug -DskipFormatKtlint
-./gradlew :app:assembleStableCoreRelease :app:assemblePreviewCoreRelease
+./gradlew :app:testPreviewCoreDebugUnitTest :app:lintPreviewCoreRelease :app:assemblePreviewCoreRelease -DskipFormatKtlint
+./gradlew :app:testStableFullDebugUnitTest :app:assembleStableCoreRelease :app:assembleStableFullRelease -DskipFormatKtlint
 ```
 
 On Windows, use `gradlew.bat`. Release outputs are under
 `app/build/outputs/apk/<channel><Abi>/<buildType>/` (for example,
 `previewCore/userdebug` or `stableFull/release`); inspect the actual output
-variant before distributing it. CI must validate package ID, version, signing
+variant before distributing it. The published Preview candidate is Core Release
+with R8 and resource shrinking. CI must validate package ID, version, signing
 certificate, and SHA-256 before attaching an APK to a release.
 
 Stable signing reads ignored `keystore.properties`; preserve that key to allow
@@ -43,7 +46,9 @@ relevant properties are unsigned and are not publishable update packages.
 The expected Stable certificate SHA-256 is
 `98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736`.
 Verify the actual APK package, version, alignment, checksum, and certificate
-before distribution. Do not infer successful Play Protect review from a local
+before distribution. Preview's certificate SHA-256 is
+`25f64fa07f67e341a5847286f7111d59f92d189255d0cf37b1283375f340bf63`.
+Do not infer successful Play Protect review from a local
 build or signature check.
 
 ## Current iteration scope
@@ -58,6 +63,14 @@ automated tests do not establish real-device behavior. In particular, SAF
 provider behavior, Android lifecycle behavior, network retries, stream
 availability, installation/update behavior, and Play Protect outcomes require
 device or service validation.
+
+Unit tests use deterministic provider fixtures. Live KuGou checks require
+`OUTERTUNE_LIVE_LYRICS_TESTS=true`; live Innertube checks require
+`OUTERTUNE_LIVE_YOUTUBE_TESTS=true`. Otherwise those tests are reported as
+skipped, not passed. The final review is in
+[docs/V92_FINAL_REVIEW.md](docs/V92_FINAL_REVIEW.md). Release assets include
+`SOURCE_COMMIT.txt` and `SHA256SUMS.txt`: these identify the replacement APK
+even when the existing historical v92 tag remains on its original commit.
 
 ## Source history
 

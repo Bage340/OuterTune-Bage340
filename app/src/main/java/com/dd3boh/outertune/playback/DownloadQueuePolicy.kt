@@ -65,3 +65,13 @@ internal fun requiredCachedStreamLength(requestLength: Long, position: Long, con
         contentLength > position -> contentLength - position
         else -> null
     }
+
+internal fun planDownloadRemoval(requestedIds: List<String>, states: Map<String, Int>, cancelOnly: Boolean): List<String> =
+    requestedIds.distinct().filter { id ->
+        !cancelOnly || states[id] in setOf(
+            Download.STATE_QUEUED,
+            Download.STATE_DOWNLOADING,
+            Download.STATE_STOPPED,
+            Download.STATE_RESTARTING,
+        )
+    }

@@ -24,6 +24,7 @@ internal class StreamUrlCache(
 ) {
     private val lock = Any()
     private val entries = HashMap<String, CachedStreamUrl>()
+    private val rejectedClients = HashMap<String, String>()
 
     init {
         require(expirySafetyMarginMillis >= 0) { "expirySafetyMarginMillis must not be negative" }
@@ -55,7 +56,10 @@ internal class StreamUrlCache(
             expiresAtMillis = currentTimeMillis() + usableLifetimeMillis,
             clientName = clientName,
             requestHeaders = requestHeaders.toMap(),
-        ).also { entries[mediaId] = it }
+        ).also {
+            entries[mediaId] = it
+            rejectedClients.remove(mediaId)
+        }
     }
 
     /** Returns the removed entry so a failed request can be attributed to its issuing client. */
@@ -63,10 +67,18 @@ internal class StreamUrlCache(
         entries.remove(mediaId)
     }
 
+    fun invalidateForRetry(mediaId: String): CachedStreamUrl? = synchronized(lock) {
+        entries.remove(mediaId)?.also { rejectedClients[mediaId] = it.clientName }
+    }
+
+    fun rejectedClient(mediaId: String): String? = synchronized(lock) {
+        rejectedClients[mediaId]
+    }
+
     /** Invalidates an actual request URL after the upstream server rejects it. */
     fun invalidateUrl(url: String): CachedStreamUrl? = synchronized(lock) {
         val entry = entries.entries.firstOrNull { it.value.url == url } ?: return@synchronized null
-        entries.remove(entry.key)
+        entries.remove(entry.key)?.also { rejectedClients[it.mediaId] = it.clientName }
     }
 
     private companion object {

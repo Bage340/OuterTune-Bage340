@@ -42,7 +42,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -52,7 +51,6 @@ import com.dd3boh.outertune.db.entities.PlaylistEntity
 import com.dd3boh.outertune.db.entities.PlaylistSongMap
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.button.IconButton
@@ -123,9 +121,7 @@ fun YouTubePlaylistMenu(
     LaunchedEffect(songs) {
         if (songs.isEmpty()) return@LaunchedEffect
         downloadUtil.downloads.collect { downloads ->
-            downloadUtil.downloads.collect { downloads ->
-                downloadState = getDownloadState(songs.map { downloads[it.id] })
-            }
+            downloadState = getDownloadState(songs.map { downloads[it.id] })
         }
     }
 
@@ -268,6 +264,7 @@ fun YouTubePlaylistMenu(
         }
 
         if (songs.isNotEmpty()) {
+            val cancelDownload = downloadState == Download.STATE_QUEUED || downloadState == Download.STATE_DOWNLOADING
             DownloadGridMenu(
                 state = downloadState,
                 onDownload = {
@@ -275,7 +272,11 @@ fun YouTubePlaylistMenu(
                     downloadUtil.download(_songs)
                 },
                 onRemoveDownload = {
-                    showRemoveDownloadDialog = true
+                    if (cancelDownload) {
+                        downloadUtil.removeDownloads(songs.map { it.id }, cancelOnly = true)
+                    } else {
+                        showRemoveDownloadDialog = true
+                    }
                 }
             )
         }
@@ -442,14 +443,7 @@ fun YouTubePlaylistMenu(
                 TextButton(
                     onClick = {
                         showRemoveDownloadDialog = false
-                        songs.forEach { song ->
-                            DownloadService.sendRemoveDownload(
-                                context,
-                                ExoDownloadService::class.java,
-                                song.id,
-                                false
-                            )
-                        }
+                        downloadUtil.removeDownloads(songs.map { it.id }, cancelOnly = false)
                     }
                 ) {
                     Text(text = stringResource(android.R.string.ok))

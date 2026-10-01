@@ -1,21 +1,19 @@
 package com.dd3boh.outertune.lyrics
 
-import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertFalse
+import com.zionhuang.kugou.KuGou
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class KuGouLyricsProviderTest {
-    @Test fun versionedTitlesNeedCandidateIdentityThatKugouDoesNotReturn() {
-        assertTrue(requiresVersionSensitiveMatching("Song (Live)"))
-        assertTrue(requiresVersionSensitiveMatching("Song - Remix"))
-        assertTrue(requiresVersionSensitiveMatching("Song (Sped Up)"))
-        assertTrue(requiresVersionSensitiveMatching("Song (Cover)"))
-        assertFalse(requiresVersionSensitiveMatching("Song of Love"))
+    @Test fun versionedTitlesKeepIdentityInKugouSearch() {
+        for (title in listOf("Song (Live)", "Song - Remix", "Song (Sped Up)", "Song (Cover)")) {
+            assertEquals(title, KuGou.generateKeyword(title, "Artist").title)
+        }
     }
 
-    @Test fun versionedTitleIsInconclusiveWithoutMakingNetworkRequest() = runBlocking {
-        val result = KuGouLyricsProvider.getLyrics("id", "Song (Live)", "Artist", 200)
+    @Test fun providerFailureDoesNotBecomeDefinitiveAbsence() {
+        val result = Result.failure<String?>(IllegalStateException("KuGou server error")).toFetchResult()
         assertTrue(result is LyricsFetchResult.Failed)
     }
 }
