@@ -8,15 +8,15 @@ import com.dd3boh.outertune.lyrics.LyricsFetchRole
 import com.dd3boh.outertune.lyrics.LyricsHelper
 import com.dd3boh.outertune.lyrics.LyricsResult
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.utils.reportException
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import org.akanework.gramophone.logic.utils.SemanticLyrics
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,6 +25,7 @@ class LyricsMenuViewModel @Inject constructor(
     val database: MusicDatabase,
 ) : ViewModel() {
     private var job: Job? = null
+    private var refreshJob: Job? = null
     val results = MutableStateFlow(emptyList<LyricsResult>())
     val isLoading = MutableStateFlow(false)
 
@@ -53,13 +54,18 @@ class LyricsMenuViewModel @Inject constructor(
         job = null
     }
 
-    fun refetchLyrics(mediaMetadata: MediaMetadata, onDone: (SemanticLyrics?) -> Unit) {
-        CoroutineScope(Dispatchers.IO).launch {
-            withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
-                // Keep the existing row until its replacement is ready so cancellation does not discard usable lyrics.
-                lyricsHelper.fetchAndStoreRemote(mediaMetadata, LyricsFetchRole.MANUAL, forceRefresh = true)
-                val lyrics = lyricsHelper.getLyrics(mediaMetadata)
-                onDone(lyrics)
+    fun refetchLyrics(mediaMetadata: MediaMetadata) {
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
+                    // Keep the existing row until its replacement is ready so cancellation does not discard usable lyrics.
+                    lyricsHelper.fetchAndStoreRemote(mediaMetadata, LyricsFetchRole.MANUAL, forceRefresh = true)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                reportException(e)
             }
         }
     }

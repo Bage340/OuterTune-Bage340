@@ -412,7 +412,7 @@ fun LyricsMenu(
             title = R.string.refetch
         ) {
             onDismiss()
-            viewModel.refetchLyrics(mediaMetadataProvider()) { onRefreshRequest(it) }
+            viewModel.refetchLyrics(mediaMetadataProvider())
         }
         GridMenuItem(
             icon = Icons.Rounded.Search,

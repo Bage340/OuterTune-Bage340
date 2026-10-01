@@ -259,6 +259,36 @@ this source review.
 
 ## Review decision
 
+### Poco follow-up: lyrics loading after an offline failure
+
+Phone case P1-14 reproduced an indefinite loading indicator on the signed
+Preview artifact built from `ef541562124bcd7639937eb411584f0449f6701d`:
+uncached lyrics still showed loading 26 seconds after requesting them offline,
+beyond the helper's 12-second aggregate fetch budget. An indeterminate result
+correctly left the database unchanged, but the UI had no terminal fetch state.
+
+Current/manual requests now publish bounded, per-track ephemeral fetch state.
+Transient failure ends loading and offers retry without creating a negative
+cache entry; cached/local lyrics remain visible. Request tokens prevent an old
+request from replacing a newer result. Manual refresh uses a retained ViewModel
+scope and one forced fetch, with cancellation propagated and other exceptions
+reported. Prefetch does not drive the current track's loading indicator.
+
+The focused lyrics suite passed 44 tests. The full Preview Core Debug JVM suite
+passed **289 tests, zero failures/errors/skips**, together with Preview Core
+Release lint. Regression coverage includes coroutine state/cancellation and
+real Room/helper/ViewModel refresh integration; restoring the old second fetch
+made the single-fetch assertion fail. Independent source review found no
+blocking defect in this change. The pre-existing service collector exception
+boundary for internal DB/DataStore failures remains outside this bounded fix;
+provider network errors are normalized by the existing provider layer.
+
+Aislop 0.16.1 reported no errors/warnings but marks Kotlin NOT_SCORED; that is
+not a substitute for the tests and independent review. The corrected APK still
+requires the same-SHA CI/signing gates and a phone retest. Final provenance and
+individual phone outcomes belong to the published validation attachments;
+this local source gate does not claim that every phone case passed.
+
 **PASSED FOR MANUAL VERIFICATION** for the tested corrected source: 22
 requirements mapped, 20 findings evaluated, 19 corrected and historical finding
 O disproved on current source, no known unresolved technical blocker.

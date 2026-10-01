@@ -29,6 +29,8 @@ import com.dd3boh.outertune.extensions.getCurrentQueueIndex
 import com.dd3boh.outertune.extensions.getQueueWindows
 import com.dd3boh.outertune.extensions.metadata
 import com.dd3boh.outertune.models.MediaMetadata
+import com.dd3boh.outertune.lyrics.LyricsFetchStatus
+import com.dd3boh.outertune.lyrics.lyricsDisplayStatus
 import com.dd3boh.outertune.playback.queues.Queue
 import com.dd3boh.outertune.utils.reportException
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +49,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.akanework.gramophone.logic.utils.LrcUtils
 import org.akanework.gramophone.logic.utils.SemanticLyrics
+
+data class LyricsDisplayState(
+    val mediaId: String? = null,
+    val lyrics: SemanticLyrics? = null,
+    val status: LyricsFetchStatus = LyricsFetchStatus.IDLE,
+)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlayerConnection(
@@ -70,15 +78,26 @@ class PlayerConnection(
     val currentSong = mediaMetadata.flatMapLatest {
         database.song(it?.id)
     }
-    // Fetching is Service-driven (see MusicService); this only watches the DB row so every
-    // collector shares one query and one parse instead of triggering its own fetch.
-    val currentLyrics: Flow<SemanticLyrics?> = mediaMetadata.flatMapLatest { mediaMetadata ->
+    // Fetching is Service-driven. Observe both persisted lyrics and ephemeral completion/failure.
+    val currentLyricsDisplay = mediaMetadata.flatMapLatest { mediaMetadata ->
         if (mediaMetadata != null) {
-            database.lyrics(mediaMetadata.id).map { dbLyrics -> resolveLyrics(mediaMetadata, dbLyrics) }
+            combine(database.lyrics(mediaMetadata.id), service.lyricsHelper.fetchStates) { dbLyrics, states ->
+                val lyrics = resolveLyrics(mediaMetadata, dbLyrics)
+                LyricsDisplayState(
+                    mediaMetadata.id,
+                    lyrics,
+                    lyricsDisplayStatus(
+                        lyrics != null && lyrics != uninitializedLyric,
+                        dbLyrics?.lyrics == LYRICS_NOT_FOUND,
+                        states[mediaMetadata.id] ?: LyricsFetchStatus.IDLE,
+                    ),
+                )
+            }
         } else {
-            flowOf(null)
+            flowOf(LyricsDisplayState())
         }
-    }.stateIn(scope, SharingStarted.Lazily, null)
+    }.stateIn(scope, SharingStarted.Lazily, LyricsDisplayState())
+    val currentLyrics: Flow<SemanticLyrics?> = currentLyricsDisplay.map { it.lyrics }
 
     /**
      * Resolve the display lyrics for a song from its DB row and, when applicable, its local
@@ -93,13 +112,13 @@ class PlayerConnection(
         val lyricsHelper = service.lyricsHelper
         val parserOptions = lyricsHelper.getParserOptions()
         val prefLocal = lyricsHelper.isLocalPreferred()
-        val localLyrics = if (prefLocal || dbLyrics?.lyrics == LYRICS_NOT_FOUND) {
+        val localLyrics = if (prefLocal || dbLyrics == null || dbLyrics.lyrics == LYRICS_NOT_FOUND) {
             lyricsHelper.getLocalLyrics(mediaMetadata, parserOptions)
         } else null
 
         when {
             prefLocal && localLyrics != null -> localLyrics
-            dbLyrics == null -> null
+            dbLyrics == null -> localLyrics
             dbLyrics.lyrics == LYRICS_NOT_FOUND -> localLyrics ?: uninitializedLyric
             else -> LrcUtils.parseLyrics(dbLyrics.lyrics, null, parserOptions, null)
         }

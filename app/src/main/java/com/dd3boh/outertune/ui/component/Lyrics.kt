@@ -38,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -89,6 +90,9 @@ import com.dd3boh.outertune.constants.ShowLyricsKey
 import com.dd3boh.outertune.constants.Speed
 import com.dd3boh.outertune.db.entities.LyricsEntity
 import com.dd3boh.outertune.db.entities.LyricsEntity.Companion.uninitializedLyric
+import com.dd3boh.outertune.lyrics.LyricsFetchStatus
+import com.dd3boh.outertune.viewmodels.LyricsMenuViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.dd3boh.outertune.extensions.isPowerSaver
 import com.dd3boh.outertune.ui.component.button.IconButton
 import com.dd3boh.outertune.ui.component.shimmer.ShimmerHost
@@ -141,8 +145,11 @@ fun Lyrics(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
 
     // NOTE: lyricsModel is the current display lyrics that is updated by playerLyrics AND/OR manually
-    val playerLyrics by playerConnection.currentLyrics.collectAsState(initial = null)
-    var lyricsModel by remember { mutableStateOf(playerLyrics) }
+    val displayState by playerConnection.currentLyricsDisplay.collectAsState()
+    val playerLyrics = displayState.lyrics.takeIf { displayState.mediaId == mediaMetadata?.id }
+    val fetchStatus = if (displayState.mediaId == mediaMetadata?.id) displayState.status else LyricsFetchStatus.IDLE
+    val lyricsMenuViewModel: LyricsMenuViewModel = hiltViewModel()
+    var lyricsModel by remember(mediaMetadata?.id) { mutableStateOf(playerLyrics) }
 
     val lines: SnapshotStateList<LyricLine> = remember { mutableStateListOf<LyricLine>() }
 
@@ -150,7 +157,7 @@ fun Lyrics(
         lyricsModel is SemanticLyrics.SyncedLyrics
     }
 
-    LaunchedEffect(playerLyrics) {
+    LaunchedEffect(mediaMetadata?.id, playerLyrics) {
         lyricsModel = playerLyrics
     }
 
@@ -293,7 +300,7 @@ fun Lyrics(
         ) {
             val displayedCurrentLineIndex = if (isSeeking) deferredCurrentLineIndex else currentLineIndex
 
-            if (lyricsModel == null) {
+            if (lyricsModel == null && fetchStatus == LyricsFetchStatus.LOADING) {
                 item {
                     ShimmerHost {
                         repeat(10) {
@@ -312,7 +319,7 @@ fun Lyrics(
                         }
                     }
                 }
-            } else if (lyricsModel != uninitializedLyric) {
+            } else if (lyricsModel != null && lyricsModel != uninitializedLyric) {
                 val maxW = maxWidth - 48.dp
                 itemsIndexed(
                     items = lines
@@ -424,7 +431,19 @@ fun Lyrics(
             }
         }
 
-        if (lyricsModel == uninitializedLyric) {
+        if (lyricsModel == null && fetchStatus == LyricsFetchStatus.FAILED) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = stringResource(R.string.error_unknown),
+                    fontSize = lyricsFontSize.sp,
+                    color = textColor,
+                    fontWeight = FontWeight.Bold,
+                )
+                TextButton(onClick = { mediaMetadata?.let(lyricsMenuViewModel::refetchLyrics) }) {
+                    Text(stringResource(R.string.retry), color = textColor)
+                }
+            }
+        } else if (lyricsModel == uninitializedLyric || (lyricsModel == null && fetchStatus == LyricsFetchStatus.NOT_FOUND)) {
             Text(
                 text = stringResource(R.string.lyrics_not_found),
                 fontSize = lyricsFontSize.sp,
@@ -460,6 +479,7 @@ fun Lyrics(
                     onClick = {
                         menuState.show {
                             LyricsMenu(
+                                viewModel = lyricsMenuViewModel,
                                 lyricsProvider = {
                                     var dbLyric = runBlocking(Dispatchers.IO) {
                                         playerConnection.service.database.lyrics(mediaMetadata.id).first()
@@ -475,7 +495,9 @@ fun Lyrics(
                                     dbLyric
                                 },
                                 mediaMetadataProvider = { mediaMetadata },
-                                onRefreshRequest = { lyricsModel = it },
+                                onRefreshRequest = {
+                                    if (playerConnection.mediaMetadata.value?.id == mediaMetadata.id) lyricsModel = it
+                                },
                                 onDismiss = menuState::dismiss,
                             )
                         }

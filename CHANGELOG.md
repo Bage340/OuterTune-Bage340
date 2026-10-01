@@ -33,6 +33,9 @@ replace every case in that checklist.
   parsing, deduplicate canonical local aliases and roll back cancelled imports.
 - Match KuGou recording metadata and preserve real lyric timestamps; prevent
   provider/recording cache collisions and allow retry after provider failures.
+- Finish the lyrics loading indicator after an offline/provider failure and
+  offer retry without saving a false NOT_FOUND result. Keep cached/local lyrics
+  visible during refresh and avoid a second fetch after manual refresh.
 
 This iteration remains a Preview/pre-release. No Stable release has been
 authorized by this changelog.

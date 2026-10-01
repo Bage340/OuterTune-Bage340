@@ -54,6 +54,8 @@ class LyricsHelper @Inject constructor(
             YouTubeSubtitleLyricsProvider,
         )
     private val cache = LruCache<ManualLyricsCacheKey, List<LyricsResult>>(MAX_CACHE_SIZE)
+    private val fetchCoordinator = LyricsFetchCoordinator()
+    val fetchStates = fetchCoordinator.states
 
     /**
      * Per-videoId mutexes that make [fetchAndStoreRemote] single-flight: at most one fetch runs for a
@@ -129,43 +131,48 @@ class LyricsHelper @Inject constructor(
      * stored as a negative cache; Indeterminate and Skipped leave any existing row untouched, so a
      * transient failure never becomes a persistent negative cache, even with [forceRefresh].
      *
-     * @param role which caller started this fetch, used only for log correlation
+     * @param role which caller started this fetch; current/manual requests also publish UI state
      */
     suspend fun fetchAndStoreRemote(
         mediaMetadata: MediaMetadata,
         role: LyricsFetchRole,
         forceRefresh: Boolean = false,
     ) {
-        fetchMutexFor(mediaMetadata.id).withLock {
-            try {
-                // The enabled providers and their signature are pinned once here so the search set, the
-                // all-NotFound decision and the stored signature all use the same snapshot.
-                val selection = ProviderSelection.snapshot(context, lyricsProviders)
-                val existing = database.lyrics(mediaMetadata.id).first()
-                if (!shouldFetchLyrics(existing, selection.signature, System.currentTimeMillis(), forceRefresh)) {
-                    return
-                }
-                val result = getRemoteLyrics(mediaMetadata, role, selection)
-                val now = System.currentTimeMillis()
-                val entity = lyricsEntityForResult(mediaMetadata.id, result, selection.signature, now, existing)
-                if (entity != null) {
-                    withContext(Dispatchers.IO) {
-                        database.upsert(entity)
+        val fetch: suspend () -> RemoteLyricsResult? = {
+            fetchMutexFor(mediaMetadata.id).withLock {
+                try {
+                    // The enabled providers and their signature are pinned once here so the search set, the
+                    // all-NotFound decision and the stored signature all use the same snapshot.
+                    val selection = ProviderSelection.snapshot(context, lyricsProviders)
+                    val existing = database.lyrics(mediaMetadata.id).first()
+                    if (!shouldFetchLyrics(existing, selection.signature, System.currentTimeMillis(), forceRefresh)) {
+                        return@withLock null
                     }
-                    Log.d(
-                        TAG,
-                        "saved: videoId=${mediaMetadata.id} role=${role.log} " +
-                            "provider=${entity.provider ?: "NOT_FOUND"} " +
-                            "preferredFailure=${preferredFailureIn(entity.providerSignature)}"
-                    )
-                } else {
-                    Log.d(TAG, "not saved: videoId=${mediaMetadata.id} role=${role.log} result=${result::class.simpleName}")
+                    val result = getRemoteLyrics(mediaMetadata, role, selection)
+                    val now = System.currentTimeMillis()
+                    val entity = lyricsEntityForResult(mediaMetadata.id, result, selection.signature, now, existing)
+                    if (entity != null) {
+                        withContext(Dispatchers.IO) {
+                            database.upsert(entity)
+                        }
+                        Log.d(
+                            TAG,
+                            "saved: videoId=${mediaMetadata.id} role=${role.log} " +
+                                "provider=${entity.provider ?: "NOT_FOUND"} " +
+                                "preferredFailure=${preferredFailureIn(entity.providerSignature)}"
+                        )
+                    } else {
+                        Log.d(TAG, "not saved: videoId=${mediaMetadata.id} role=${role.log} result=${result::class.simpleName}")
+                    }
+                    result
+                } catch (e: CancellationException) {
+                    Log.d(TAG, "cancelled: videoId=${mediaMetadata.id} role=${role.log}")
+                    throw e
                 }
-            } catch (e: CancellationException) {
-                Log.d(TAG, "cancelled: videoId=${mediaMetadata.id} role=${role.log}")
-                throw e
             }
         }
+        if (role == LyricsFetchRole.PREFETCH) fetch()
+        else fetchCoordinator.fetch(mediaMetadata.id, fetch)
     }
 
     /**
