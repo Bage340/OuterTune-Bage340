@@ -1108,7 +1108,7 @@ class MusicService : MediaLibraryService(),
 
         Toast.makeText(
             this@MusicService,
-            "plr: ${error.message} (${error.errorCode}): ${error.cause?.message ?: ""} ",
+            getString(playbackErrorMessageResource(error)),
             Toast.LENGTH_LONG
         ).show()
     }

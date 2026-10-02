@@ -50,6 +50,7 @@ import com.dd3boh.outertune.constants.DarkMode
 import com.dd3boh.outertune.constants.DarkModeKey
 import com.dd3boh.outertune.constants.PlayerBackgroundStyle
 import com.dd3boh.outertune.constants.PlayerBackgroundStyleKey
+import com.dd3boh.outertune.playback.playbackErrorMessageResource
 import com.dd3boh.outertune.ui.utils.fadingEdge
 import com.dd3boh.outertune.utils.rememberEnumPreference
 
@@ -81,7 +82,7 @@ fun ThumbnailPlaybackError(
                 MaterialTheme.colorScheme.onPrimary
     }
 
-    var showStackTrace by remember { mutableStateOf(false) }
+    var showStackTrace by remember(error) { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -103,13 +104,15 @@ fun ThumbnailPlaybackError(
                 tint = MaterialTheme.colorScheme.error
             )
             Text(
-                text = "${error.message} (${error.errorCode}): ${
-                    error.cause?.message ?: error.cause?.cause?.message ?: stringResource(
-                        R.string.error_unknown
-                    )
-                }",
+                text = stringResource(playbackErrorMessageResource(error)),
                 color = textColor,
                 style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        TextButton(onClick = retry) {
+            Text(
+                text = stringResource(R.string.retry),
+                color = textColor,
             )
         }
         AnimatedVisibility(!showStackTrace) {
@@ -130,7 +133,7 @@ fun ThumbnailPlaybackError(
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .padding(top = 64.dp)
-                    .pointerInput(Unit) {
+                    .pointerInput(error) {
                         detectTapGestures(
                             onTap = {
                                 val systemInfo =

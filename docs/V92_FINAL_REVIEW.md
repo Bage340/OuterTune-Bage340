@@ -289,7 +289,27 @@ requires the same-SHA CI/signing gates and a phone retest. Final provenance and
 individual phone outcomes belong to the published validation attachments;
 this local source gate does not claim that every phone case passed.
 
-**PASSED FOR MANUAL VERIFICATION** for the tested corrected source: 22
+## Follow-up playback presentation gate
+
+On the signed `abab9c30f` Preview, phone testing found verbose resolver
+diagnostics in the default unavailable-track error and Toast. The default
+message now uses existing localized network, timeout, unavailable-stream or
+unknown-error resources after inspecting the actual nested playback causes.
+Technical diagnostics remain behind the explicit details/copy action. Retry
+prepares and resumes the player; expanded details reset for a different error.
+Plain lyric rendering also joins source lines with newlines without inserting
+the default comma separator. This changes presentation, not cached text.
+
+Six new Robolectric regression tests use the real wrapped Media3 source-error
+shape and cover network/timeout precedence, remote fallback, unknown failures
+and cause cycles. The full Preview Core Debug suite passed **295 tests with
+zero failures/errors/skips**, and Preview Core Release lint passed after the
+final UI changes. Translation audit: 51 locales, 574 canonical keys, zero
+defects. Independent review found no remaining blocker after correcting the
+paused retry callback. The same-source signed CI artifact and rendered phone
+retest remain release gates; the release validation attachments record them.
+
+**PASSED FOR MANUAL VERIFICATION** for the original reviewed source: 22
 requirements mapped, 20 findings evaluated, 19 corrected and historical finding
 O disproved on current source, no known unresolved technical blocker.
 Independent Sol review supplied additional corrective findings; a separate
@@ -297,4 +317,5 @@ Luna High review checked their finished patches. Root integration used the
 Superpowers debugging/verification workflows and the limited Aislop gate.
 Publication remains conditional on the same-SHA CI/signing gates above; their
 completed results and the distributed bytes are in the finalized release
-report. The 48 phone cases remain unchecked and related issues remain open.
+report. The 48 phone cases have individual results in that report; incomplete
+provider/device acceptance remains open instead of being inferred from CI.

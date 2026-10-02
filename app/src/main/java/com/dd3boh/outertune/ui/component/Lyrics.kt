@@ -176,7 +176,7 @@ fun Lyrics(
             } else {
                 lines.add(
                     LyricLine(
-                        model.unsyncedText.joinToString { "${it.first}\n" }, 0L.toULong(), 0L.toULong(),
+                        model.unsyncedText.joinToString(separator = "\n") { it.first }, 0L.toULong(), 0L.toULong(),
                         null, null, false
                     )
                 )

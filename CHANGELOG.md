@@ -36,6 +36,10 @@ replace every case in that checklist.
 - Finish the lyrics loading indicator after an offline/provider failure and
   offer retry without saving a false NOT_FOUND result. Keep cached/local lyrics
   visible during refresh and avoid a second fetch after manual refresh.
+- Show concise, localized playback errors and a working Retry action. Keep
+  technical diagnostics behind the existing details action instead of showing
+  them in the default player message and Toast.
+- Keep plain lyric lines separated by newlines without inserting extra commas.
 
 This iteration remains a Preview/pre-release. No Stable release has been
 authorized by this changelog.
