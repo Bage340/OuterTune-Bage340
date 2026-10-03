@@ -96,7 +96,7 @@ fun LyricsMenu(
             onDismiss = { showEditDialog = false },
             icon = { Icon(imageVector = Icons.Rounded.Edit, contentDescription = null) },
             title = { Text(text = mediaMetadataProvider().title) },
-            initialTextFieldValue = TextFieldValue(lyricsProvider()?.lyrics.orEmpty()),
+            initialTextFieldValue = TextFieldValue(lyricsEditorInput(lyricsProvider()?.lyrics)),
             singleLine = false,
             onDone = {
                 database.query {

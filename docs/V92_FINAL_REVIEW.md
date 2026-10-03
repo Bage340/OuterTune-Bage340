@@ -1,6 +1,6 @@
 # OuterTune 0.11.1 v92: final review
 
-Review started 2026-09-30, continued 2026-10-01. This document separates source review, automated evidence,
+Review started 2026-09-30, continued through 2026-10-03. This document separates source review, automated evidence,
 and device acceptance. It does not authorize a Stable publication.
 
 ## Source and preservation
@@ -308,6 +308,27 @@ final UI changes. Translation audit: 51 locales, 574 canonical keys, zero
 defects. Independent review found no remaining blocker after correcting the
 paused retry callback. The same-source signed CI artifact and rendered phone
 retest remain release gates; the release validation attachments record them.
+
+## Follow-up negative-cache lyrics editor gate
+
+Phone testing of the signed Preview found that Edit exposed the internal
+`LYRICS_NOT_FOUND` negative-cache marker as editable lyrics. The editor now
+starts empty for that exact marker or a missing value. Real plain and timed
+text, including whitespace and line endings, remains unchanged; stored caches,
+provider metadata, save/cancel callbacks and the database schema are preserved.
+
+Five regression cases exercise the input policy used by the actual dialog.
+The negative-cache case failed with the previous mapping and all five passed
+after the correction. Full source/build and signed-artifact checks, independent
+review and the rendered phone retest are separate gates recorded in the
+published validation attachments. This bounded fix adds no user-facing strings
+or version change.
+
+The integrated Preview Core Debug suite passed 300 tests with zero failures,
+errors or skips; Preview Core Release lint and the minified Release build
+passed. The translation audit passed for 51 locales and 574 canonical keys,
+with all 16 auditor tests passing. Independent Sol review found no blocking
+issue in the editor change. Aislop 0.16.1 remains NOT_SCORED for Kotlin.
 
 **PASSED FOR MANUAL VERIFICATION** for the original reviewed source: 22
 requirements mapped, 20 findings evaluated, 19 corrected and historical finding

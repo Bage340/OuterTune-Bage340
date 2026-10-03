@@ -40,6 +40,8 @@ replace every case in that checklist.
   technical diagnostics behind the existing details action instead of showing
   them in the default player message and Toast.
 - Keep plain lyric lines separated by newlines without inserting extra commas.
+- Open an empty lyrics editor when no text was found, instead of exposing the
+  internal negative-cache marker. Preserve existing plain and timed lyrics.
 
 This iteration remains a Preview/pre-release. No Stable release has been
 authorized by this changelog.
