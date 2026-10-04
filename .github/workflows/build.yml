@@ -39,16 +39,52 @@ jobs:
           python -m unittest scripts.tests.test_check_translations
           python scripts/check_translations.py
 
-      - name: Test Core and Full, compile instrumentation, lint and build Release
+      - name: Test Core and Full and compile instrumentation
         run: >-
           ./gradlew testStableCoreDebugUnitTest testPreviewCoreDebugUnitTest
           testStableFullDebugUnitTest testPreviewFullDebugUnitTest
           :kugou:test :simpmusic:test :lrclib:test :betterlyrics:test :innertube:test
           compileStableCoreDebugAndroidTestKotlin compilePreviewCoreDebugAndroidTestKotlin
-          lintStableCoreUserdebug lintPreviewCoreUserdebug lintStableCoreRelease lintPreviewCoreRelease
-          assembleStableCoreUserdebug assemblePreviewCoreUserdebug
-          assembleStableCoreRelease assemblePreviewCoreRelease assembleStableFullRelease assemblePreviewFullRelease
-          --stacktrace --max-workers=2 --no-build-cache -DskipFormatKtlint
+          --stacktrace --no-daemon --max-workers=2 --no-build-cache -DskipFormatKtlint
+
+      - name: Lint Core Userdebug and Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          for TASK in lintStableCoreUserdebug lintPreviewCoreUserdebug lintStableCoreRelease lintPreviewCoreRelease; do
+            ./gradlew "$TASK" --stacktrace --no-daemon --max-workers=2 --no-build-cache -DskipFormatKtlint
+          done
+
+      - name: Build Core Userdebug and Core and Full Release
+        shell: bash
+        # Fresh Gradle heaps and one worker keep APK compression isolated from validation and other variants.
+        run: |
+          set -euo pipefail
+          for TASK in assembleStableCoreUserdebug assemblePreviewCoreUserdebug assembleStableCoreRelease assemblePreviewCoreRelease assembleStableFullRelease assemblePreviewFullRelease; do
+            ./gradlew "$TASK" --stacktrace --no-daemon --max-workers=1 --no-build-cache -DskipFormatKtlint
+          done
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: OuterTune-Bage340-0.11.1-v92-validation
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            app/build/reports/tests/
+            app/build/test-results/
+            app/build/reports/lint-results-*
+            kugou/build/reports/tests/
+            kugou/build/test-results/
+            simpmusic/build/reports/tests/
+            simpmusic/build/test-results/
+            lrclib/build/reports/tests/
+            lrclib/build/test-results/
+            betterlyrics/build/reports/tests/
+            betterlyrics/build/test-results/
+            innertube/build/reports/tests/
+            innertube/build/test-results/
 
       - name: Verify package and version
         shell: bash
@@ -78,5 +114,3 @@ jobs:
             apk-*-badging.txt
             SHA256SUMS.txt
             SOURCE_COMMIT.txt
-            app/build/reports/tests/
-            app/build/reports/lint-results-*.html
