@@ -20,6 +20,9 @@ replace every case in that checklist.
 - Add playlist-to-library and library/playlist transfer workflows.
 - Improve download prefiltering, retry handling, and configurable concurrency
   while retaining a conservative default.
+- Bound optional YouTube PoToken initialization and requests to 30 seconds so
+  a lost WebView callback cannot indefinitely occupy download workers. Preserve
+  healthy shared sessions when another request times out or is cancelled.
 - Expand lyrics provider matching/fallback behavior and improve localization
   coverage, including plural quantities and queue wording.
 - Preserve song IDs, likes, library/download dates and playlist links during

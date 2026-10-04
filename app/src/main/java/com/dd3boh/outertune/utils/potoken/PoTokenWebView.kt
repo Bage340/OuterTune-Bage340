@@ -1,14 +1,14 @@
 package com.dd3boh.outertune.utils.potoken
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.webkit.ConsoleMessage
 import com.dd3boh.outertune.constants.POTOKEN_DEBUG
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
-import androidx.annotation.MainThread
-import androidx.collection.ArrayMap
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.dd3boh.outertune.BuildConfig
@@ -25,20 +25,37 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.Collections
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
+import java.util.concurrent.TimeUnit
+import org.json.JSONObject
 
-class PoTokenWebView private constructor(
-    context: Context,
-    // to be used exactly once only during initialization!
-    private val continuation: Continuation<PoTokenWebView>,
-) {
+class PoTokenWebView private constructor(context: Context) : PoTokenBackend {
     private val webView = WebView(context)
     private val scope = MainScope()
-    private val poTokenContinuations =
-        Collections.synchronizedMap(ArrayMap<String, Continuation<String>>())
+    private val initialization = PoTokenPendingRequests<Unit>()
+    @Volatile
+    private var initializationId: String? = null
+    private val poTokenContinuations = PoTokenPendingRequests<String>()
+    private val ownedWork = PoTokenOwnedWork(
+        cancelScope = {
+            scope.cancel()
+            val error = PoTokenException("PoToken WebView closed")
+            initialization.failAll(error)
+            poTokenContinuations.failAll(error)
+        },
+        destroy = {
+            val destroyOnMain = Runnable {
+                webView.stopLoading()
+                webView.clearHistory()
+                webView.loadUrl("about:blank")
+                webView.onPause()
+                webView.removeJavascriptInterface(JS_INTERFACE)
+                webView.removeAllViews()
+                webView.destroy()
+            }
+            if (Looper.myLooper() == Looper.getMainLooper()) destroyOnMain.run()
+            else Handler(Looper.getMainLooper()).post(destroyOnMain)
+        },
+    )
     private val exceptionHandler = CoroutineExceptionHandler { _, t ->
         onInitializationErrorCloseAndCancel(t)
     }
@@ -72,10 +89,16 @@ class PoTokenWebView private constructor(
                     Log.e(TAG, "This WebView implementation is broken: $fmt")
 
                     onInitializationErrorCloseAndCancel(exception)
-                    popAllPoTokenContinuations().forEach { (_, cont) -> cont.resumeWithException(exception) }
                 }
                 return super.onConsoleMessage(m)
             }
+        }
+    }
+
+    override suspend fun initialize() = withContext(Dispatchers.Main) {
+        suspendCancellableCoroutine<Unit> { continuation ->
+            initializationId = initialization.add(continuation) { close() }
+            if (!ownedWork.isClosed) loadHtmlAndObtainBotguard()
         }
     }
 
@@ -149,7 +172,7 @@ class PoTokenWebView private constructor(
         if (POTOKEN_DEBUG) Log.d(TAG, "botguardResponse: $botguardResponse")
         makeBotguardServiceRequest(
             "https://www.youtube.com/api/jnn/v1/GenerateIT",
-            "[ \"$REQUEST_KEY\", \"$botguardResponse\" ]",
+            "[ \"$REQUEST_KEY\", ${JSONObject.quote(botguardResponse)} ]",
         ) { responseBody ->
             if (POTOKEN_DEBUG) Log.d(TAG, "GenerateIT response: $responseBody")
             val (integrityToken, expirationTimeInSeconds) = parseIntegrityTokenData(responseBody)
@@ -159,28 +182,33 @@ class PoTokenWebView private constructor(
 
             webView.evaluateJavascript("this.integrityToken = $integrityToken") {
                 if (POTOKEN_DEBUG) Log.d(TAG, "initialization finished, expiration=${expirationTimeInSeconds}s")
-                continuation.resume(this)
+                initializationId?.let { initialization.complete(it, Result.success(Unit)) }
             }
         }
     }
     //endregion
 
     //region Obtaining poTokens
-    suspend fun generatePoToken(identifier: String): String {
+    override suspend fun generatePoToken(identifier: String): String {
         return withContext(Dispatchers.Main) {
             suspendCancellableCoroutine { cont ->
                 if (POTOKEN_DEBUG) Log.d(TAG, "generatePoToken() called with identifier $identifier")
-                addPoTokenEmitter(identifier, cont)
+                val requestId = poTokenContinuations.add(cont)
+                if (ownedWork.isClosed) {
+                    poTokenContinuations.complete(requestId, Result.failure(PoTokenException("PoToken WebView closed")))
+                    return@suspendCancellableCoroutine
+                }
+                if (!cont.isActive) return@suspendCancellableCoroutine
                 webView.evaluateJavascript(
-                    """try {
-                        identifier = "$identifier"
-                        u8Identifier = ${stringToU8(identifier)}
-                        poTokenU8 = obtainPoToken(webPoSignalOutput, integrityToken, u8Identifier)
-                        poTokenU8String = poTokenU8.join(",")
-                        $JS_INTERFACE.onObtainPoTokenResult(identifier, poTokenU8String)
+                    """(function () { try {
+                        const requestId = ${JSONObject.quote(requestId)}
+                        const u8Identifier = ${stringToU8(identifier)}
+                        const poTokenU8 = obtainPoToken(webPoSignalOutput, integrityToken, u8Identifier)
+                        const poTokenU8String = poTokenU8.join(",")
+                        $JS_INTERFACE.onObtainPoTokenResult(requestId, poTokenU8String)
                     } catch (error) {
-                        $JS_INTERFACE.onObtainPoTokenError(identifier, error + "\n" + error.stack)
-                    }""",
+                        $JS_INTERFACE.onObtainPoTokenError(${JSONObject.quote(requestId)}, error + "\n" + error.stack)
+                    } })()""",
                     null
                 )
             }
@@ -192,11 +220,11 @@ class PoTokenWebView private constructor(
      * JavaScript `obtainPoToken()` function.
      */
     @JavascriptInterface
-    fun onObtainPoTokenError(identifier: String, error: String) {
+    fun onObtainPoTokenError(requestId: String, error: String) {
         if (BuildConfig.DEBUG) {
             Log.e(TAG, "obtainPoToken error from JavaScript: $error")
         }
-        popPoTokenContinuation(identifier)?.resumeWithException(buildExceptionForJsError(error))
+        poTokenContinuations.complete(requestId, Result.failure(buildExceptionForJsError(error)))
     }
 
     /**
@@ -204,51 +232,19 @@ class PoTokenWebView private constructor(
      * result of the JavaScript `obtainPoToken()` function.
      */
     @JavascriptInterface
-    fun onObtainPoTokenResult(identifier: String, poTokenU8: String) {
-        if (POTOKEN_DEBUG) Log.d(TAG, "Generated poToken (before decoding): identifier=$identifier poTokenU8=$poTokenU8")
+    fun onObtainPoTokenResult(requestId: String, poTokenU8: String) {
         val poToken = try {
             u8ToBase64(poTokenU8)
         } catch (t: Throwable) {
-            popPoTokenContinuation(identifier)?.resumeWithException(t)
+            poTokenContinuations.complete(requestId, Result.failure(t))
             return
         }
 
-        if (POTOKEN_DEBUG) Log.d(TAG, "Generated poToken: identifier=$identifier poToken=$poToken")
-        popPoTokenContinuation(identifier)?.resume(poToken)
+        poTokenContinuations.complete(requestId, Result.success(poToken))
     }
 
-    val isExpired: Boolean
-        get() = Instant.now().isAfter(expirationInstant)
-    //endregion
-
-    //region Handling multiple emitters
-    /**
-     * Adds the ([identifier], [continuation]) pair to the [poTokenContinuations] list. This makes
-     * it so that multiple poToken requests can be generated in parallel, and the results will be
-     * notified to the right continuations.
-     */
-    private fun addPoTokenEmitter(identifier: String, continuation: Continuation<String>) {
-        poTokenContinuations[identifier] = continuation
-    }
-
-    /**
-     * Extracts and removes from the [poTokenContinuations] list a [Continuation] based on its
-     * [identifier]. The continuation is supposed to be used immediately after to either signal a
-     * success or an error.
-     */
-    private fun popPoTokenContinuation(identifier: String): Continuation<String>? {
-        return poTokenContinuations.remove(identifier)
-    }
-
-    /**
-     * Clears [poTokenContinuations] and returns its previous contents. The continuations are supposed
-     * to be used immediately after to either signal a success or an error.
-     */
-    private fun popAllPoTokenContinuations(): Map<String, Continuation<String>> {
-        val result = poTokenContinuations.toMap()
-        poTokenContinuations.clear()
-        return result
-    }
+    override val isExpired: Boolean
+        get() = ownedWork.isClosed || Instant.now().isAfter(expirationInstant)
     //endregion
 
     //region Utils
@@ -257,8 +253,7 @@ class PoTokenWebView private constructor(
      * [onInitializationErrorCloseAndCancel] in case of any network errors and also if the response
      * does not have HTTP code 200, therefore this is supposed to be used only during
      * initialization. Calls [handleResponseBody] with the response body if the response is
-     * successful. The request is performed in the background and a disposable is added to
-     * [disposables].
+     * successful. The backend owns each call until its response body has been consumed.
      */
     private fun makeBotguardServiceRequest(
         url: String,
@@ -276,48 +271,36 @@ class PoTokenWebView private constructor(
                     "x-user-agent" to "grpc-web-javascript/0.1",
                 ).toHeaders())
                 .url(url)
-            val response = withContext(Dispatchers.IO) {
-                httpClient.newCall(requestBuilder.build()).execute()
-            }
-            val httpCode = response.code
-            if (httpCode != 200) {
-                onInitializationErrorCloseAndCancel(PoTokenException("Invalid response code: $httpCode"))
-            } else {
+            val call = httpClient.newCall(requestBuilder.build())
+            val cancellation = ownedWork.track { call.cancel() }
+            try {
                 val body = withContext(Dispatchers.IO) {
-                    response.body!!.string()
+                    call.execute().use { response ->
+                        if (response.code != 200) throw PoTokenException("Invalid response code: ${response.code}")
+                        response.body?.string() ?: throw PoTokenException("Empty BotGuard response")
+                    }
                 }
-                handleResponseBody(body)
+                if (!ownedWork.isClosed) handleResponseBody(body)
+            } finally {
+                ownedWork.release(cancellation)
             }
         }
     }
 
     /**
      * Handles any error happening during initialization, releasing resources and sending the error
-     * to [continuation].
+     * to the initialization waiter. Late or duplicate callbacks are harmless.
      */
     private fun onInitializationErrorCloseAndCancel(error: Throwable) {
+        initializationId?.let { initialization.complete(it, Result.failure(error)) }
+        poTokenContinuations.failAll(error)
         close()
-        continuation.resumeWithException(error)
     }
 
     /**
      * Releases all [webView] resources.
      */
-    @MainThread
-    fun close() {
-        scope.cancel()
-
-        webView.clearHistory()
-        // clears RAM cache and disk cache (globally for all WebViews)
-        webView.clearCache(true)
-
-        // ensures that the WebView isn't doing anything when destroying it
-        webView.loadUrl("about:blank")
-
-        webView.onPause()
-        webView.removeAllViews()
-        webView.destroy()
-    }
+    override fun close() = ownedWork.close()
     //endregion
 
     companion object {
@@ -330,14 +313,18 @@ class PoTokenWebView private constructor(
 
         private val httpClient = OkHttpClient.Builder()
             .proxy(YouTube.proxy)
+            .callTimeout(30, TimeUnit.SECONDS)
             .build()
 
-        suspend fun getNewPoTokenGenerator(context: Context): PoTokenWebView {
-            return withContext(Dispatchers.Main) {
-                suspendCancellableCoroutine { cont ->
-                    val potWv = PoTokenWebView(context, cont)
-                    potWv.loadHtmlAndObtainBotguard()
+        internal suspend fun create(context: Context): PoTokenWebView {
+            var candidate: PoTokenWebView? = null
+            try {
+                return withContext(Dispatchers.Main) {
+                    PoTokenWebView(context).also { candidate = it }
                 }
+            } catch (error: Throwable) {
+                candidate?.close()
+                throw error
             }
         }
     }

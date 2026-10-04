@@ -31,6 +31,7 @@ import com.zionhuang.innertube.models.YouTubeClient.Companion.TVHTML5
 import com.zionhuang.innertube.models.YouTubeClient.Companion.VISIONOS
 import com.zionhuang.innertube.models.YouTubeClient.Companion.WEB_REMIX
 import com.zionhuang.innertube.models.response.PlayerResponse
+import kotlinx.coroutines.CancellationException
 import okhttp3.OkHttpClient
 import java.util.concurrent.ConcurrentHashMap
 
@@ -381,7 +382,7 @@ object YTPlayerUtils {
             streamClient = selected.clientName,
             streamHeaders = selected.headers,
         )
-    }
+    }.onFailure { if (it is CancellationException) throw it }
 
     /**
      * Retries transient player-resolution failures a few times. YouTube can briefly answer
@@ -525,13 +526,15 @@ object YTPlayerUtils {
     }
 
     // Reports exceptions; returns null on failure.
-    private fun getWebClientPoTokenOrNull(videoId: String, visitorData: String?): PoTokenResult? {
+    private suspend fun getWebClientPoTokenOrNull(videoId: String, visitorData: String?): PoTokenResult? {
         if (visitorData == null) {
             Log.d(TAG, "[$videoId] visitorData is null")
             return null
         }
         try {
             return poTokenGenerator.getWebClientPoToken(videoId, visitorData)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             reportException(e)
         }

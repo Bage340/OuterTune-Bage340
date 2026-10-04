@@ -19,6 +19,7 @@ An independent public fork of [OuterTune](https://github.com/OuterTune/OuterTune
 - Playback of local audio files alongside YouTube Music content
 - Local-library scanning, browsing, filtering, playlist-to-library actions, JSON/CSV library and playlist transfer, and M3U8 playlist transfer
 - Download queue filtering and retry handling, with the configured parallel-download limit kept conservative by default
+- A bounded optional YouTube PoToken step, with independent cancellation of concurrent requests
 - Stable and Preview build channels, with distinct package IDs and separate app data
 - A Material 3 Android interface, multiple playback queues, Android Auto, audio effects, and multilingual resources
 - Targeted reliability work and selected backports, with scope documented in this repository's history and pull requests
