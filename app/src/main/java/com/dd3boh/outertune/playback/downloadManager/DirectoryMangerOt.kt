@@ -2,8 +2,10 @@ package com.dd3boh.outertune.playback.downloadManager
 
 import android.content.Context
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.util.Log
 import androidx.documentfile.provider.DocumentFile
+import androidx.documentfile.provider.TreeDocumentFileOt
 import com.dd3boh.outertune.BuildConfig
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scanDfRecursive
@@ -18,6 +20,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
     var allDirs: List<DocumentFile> = mutableListOf()
 
     private val fileIndexLock = Any()
+    private var configuredDirs: List<Uri> = emptyList()
     private var availableFiles: Set<DocumentFile> = emptySet()
     private var availableFilesById: Map<String, DocumentFile> = emptyMap()
     private val previewChannel = BuildConfig.FLAVOR.startsWith("preview")
@@ -30,6 +33,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
         Log.i(TAG, "Initializing download manager (directory configured=${dir != Uri.EMPTY})")
         this.context = context
         this.dir = dir
+        configuredDirs = (listOf(dir) + extraDirs).filter { it != Uri.EMPTY }.distinct()
         try {
             mainDir = documentFileFromUri(context, dir)
             if (mainDir == null || !mainDir!!.isDirectory) {
@@ -45,7 +49,7 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
             newAllDirs.add(mainDir!!)
             if (extraDirs.isNotEmpty()) {
                 newAllDirs.addAll(
-                    documentFileFromUri(context, extraDirs.filterNot { it == dir }).filter { it.isDirectory }
+                    documentFileFromUri(context, configuredDirs.filterNot { it == dir }).filter { it.isDirectory }
                 )
             }
             allDirs = newAllDirs.toList()
@@ -145,13 +149,61 @@ class DownloadDirectoryManagerOt(private var context: Context, private var dir: 
             }
         }
 
+        ensureDirectoriesReadable()
         val result = ArrayList<DocumentFile>()
         for (dir in allDirs) {
-            scanDfRecursive(dir, result, true)
+            scanDfRecursive(dir, result, scanHidden = true, failFast = true)
         }
-        replaceFileIndex(result)
+        val indexed = result.mapNotNull { file ->
+            val id = mediaIdFromDownloadFileName(file.name, previewChannel) ?: return@mapNotNull null
+            if (isValidatedDownloadFile(file)) id to file else null
+        }.distinctBy { it.first }.toMap()
+        synchronized(fileIndexLock) {
+            availableFiles = result.toSet()
+            availableFilesById = indexed
+        }
         return synchronized(fileIndexLock) {
             availableFilesById.mapValues { it.value.uri }
+        }
+    }
+
+    fun getValidatedFilePathIfExists(mediaId: String): Uri? {
+        val file = synchronized(fileIndexLock) { availableFilesById[mediaId] } ?: return null
+        return file.uri.takeIf { isValidatedDownloadFile(file) }
+    }
+
+    private fun isValidatedDownloadFile(file: DocumentFile): Boolean {
+        if (file is TreeDocumentFileOt) {
+            val columns = arrayOf(
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_SIZE,
+            )
+            val cursor = context.contentResolver.query(file.uri, columns, null, null, null)
+                ?: throw IOException("Downloaded file metadata is unavailable")
+            cursor.use {
+                if (!it.moveToFirst() || it.isNull(0) || it.isNull(1)) {
+                    throw IOException("Downloaded file metadata is incomplete")
+                }
+                if (!file.canRead()) throw IOException("Downloaded file is unreadable")
+                val size = it.getLong(1)
+                if (it.getString(0).isNullOrBlank() || size < 0) {
+                    throw IOException("Downloaded file metadata is invalid")
+                }
+                return it.getString(0) != DocumentsContract.Document.MIME_TYPE_DIR && size > 0
+            }
+        }
+        if (!file.canRead()) throw IOException("Downloaded file is unreadable")
+        return isUsableDownloadFile(file)
+    }
+
+    fun ensureDirectoriesReadable() {
+        if (configuredDirs.isNotEmpty() && configuredDirs.size != allDirs.size) {
+            throw IOException("A configured download directory is unavailable")
+        }
+        for (directory in allDirs) {
+            if (!directory.exists() || !directory.isDirectory || !directory.canRead()) {
+                throw IOException("A download directory is unreadable")
+            }
         }
     }
 

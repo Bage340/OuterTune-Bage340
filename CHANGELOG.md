@@ -35,6 +35,9 @@ replace every case in that checklist.
 - Reject incomplete, missing or unreadable cache files; save migrated audio
   before removing its only cached copy. Cancel active jobs without deleting
   completed files; removing audio preserves playlist membership.
+- Reconcile download readiness against actual complete cached bytes or a
+  readable external file, including after migration. Preserve registry and
+  metadata when a configured download folder cannot be fully scanned.
 - Play readable local content/file URIs without remote fallback. Bound transfer
   parsing, deduplicate canonical local aliases and roll back cancelled imports.
 - Match KuGou recording metadata and preserve real lyric timestamps; prevent
