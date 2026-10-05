@@ -13,6 +13,9 @@ replace every case in that checklist.
   stored metadata and album relationships, including an existing album.
 - Keep scanner database reconciliation atomic and contain manual scan failures;
   SAF traversal and retries remain authoritative.
+- Refresh the scanner permission label immediately after access is granted or
+  denied, and when returning from Android settings. Granting access does not
+  start a scan automatically.
 - Improve recovery of local playback paths and avoid treating local IDs as
   YouTube IDs. Prefer valid local/downloaded files and retry remote streams with
   refreshed stream information where applicable.

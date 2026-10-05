@@ -8,9 +8,7 @@
 
 package com.dd3boh.outertune.ui.screens.settings.fragments
 
-import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,6 +43,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,7 +61,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat.requestPermissions
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalPlayerConnection
 import com.dd3boh.outertune.LocalSnackbarHostState
@@ -125,7 +124,17 @@ fun ColumnScope.LocalScannerFrag() {
     val scannerProgressCurrent by scannerProgressCurrent.collectAsState()
 
     var scannerFailure = false
-    var mediaPermission by remember { mutableStateOf(true) }
+    val mediaPermission = remember(context) { ScannerMediaPermissionState(context) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+        mediaPermission::onPermissionResult,
+    )
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle, mediaPermission) {
+        lifecycle.addObserver(mediaPermission)
+        mediaPermission.refresh()
+        onDispose { lifecycle.removeObserver(mediaPermission) }
+    }
 
     /**
      * True = include folders
@@ -178,9 +187,8 @@ fun ColumnScope.LocalScannerFrag() {
                 }
 
                 // check permission
-                if (context.checkSelfPermission(MEDIA_PERMISSION_LEVEL)
-                    != PackageManager.PERMISSION_GRANTED
-                ) {
+                mediaPermission.refresh()
+                if (!mediaPermission.granted) {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
                             message = resources.getString(R.string.scanner_missing_storage_perm),
@@ -189,17 +197,8 @@ fun ColumnScope.LocalScannerFrag() {
                         )
                     }
 
-                    requestPermissions(
-                        context as Activity,
-                        arrayOf(MEDIA_PERMISSION_LEVEL), PackageManager.PERMISSION_GRANTED
-                    )
-
-                    mediaPermission = false
+                    permissionLauncher.launch(MEDIA_PERMISSION_LEVEL)
                     return@Button
-                } else if (context.checkSelfPermission(MEDIA_PERMISSION_LEVEL)
-                    == PackageManager.PERMISSION_GRANTED
-                ) {
-                    mediaPermission = true
                 }
 
                 scannerFailure = false
@@ -321,7 +320,7 @@ fun ColumnScope.LocalScannerFrag() {
                     stringResource(R.string.scanner_scan_fail)
                 } else if (scannerState >= 4) {
                     stringResource(R.string.scanner_progress_complete)
-                } else if (!mediaPermission) {
+                } else if (!mediaPermission.granted) {
                     stringResource(R.string.scanner_missing_storage_perm)
                 } else {
                     stringResource(R.string.scanner_btn_idle)
