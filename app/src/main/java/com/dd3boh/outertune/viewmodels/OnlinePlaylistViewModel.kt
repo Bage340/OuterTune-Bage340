@@ -10,6 +10,7 @@ import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -48,30 +49,38 @@ class OnlinePlaylistViewModel @Inject constructor(
 
     fun loadMoreSongs() {
         continuation?.let {
-            isLoading.value = true
             viewModelScope.launch(Dispatchers.IO) {
-                getContinuation(it)
+                isLoading.value = true
+                try {
+                    getContinuation(it)
+                } finally {
+                    isLoading.value = false
+                }
             }
-            isLoading.value = false
         }
     }
 
     fun loadRemainingSongs() {
         viewModelScope.launch(Dispatchers.IO) {
             isLoading.value = true
-            while (continuation != null) {
-                getContinuation(continuation!!)
+            try {
+                while (continuation != null) {
+                    if (!getContinuation(continuation!!)) break
+                }
+            } finally {
+                isLoading.value = false
             }
-            isLoading.value = false
         }
     }
 
-    suspend fun getContinuation(continuation: String) {
+    suspend fun getContinuation(continuation: String): Boolean {
         val continuationPage = YouTube.playlistContinuation(continuation).getOrElse { e ->
+            if (e is CancellationException) throw e
             reportException(e)
-            return
+            return false
         }
         playlistSongs.value = playlistSongs.value + continuationPage.songs
         this.continuation = continuationPage.continuation
+        return true
     }
 }

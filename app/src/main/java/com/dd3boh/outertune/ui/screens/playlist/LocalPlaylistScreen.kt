@@ -755,10 +755,9 @@ fun LocalPlaylistHeader(
                         IconButton(
                             onClick = {
                                 scope.launch {
-                                    val playlistSyncedMessage = resources.getString(R.string.playlist_synced)
-                                    syncUtils.syncPlaylist(playlist.playlist.browseId, playlist.id)
+                                    val synced = syncUtils.syncPlaylist(playlist.playlist.browseId, playlist.id)
                                     snackbarHostState.showSnackbar(
-                                        message = playlistSyncedMessage,
+                                        message = resources.getString(if (synced) R.string.playlist_synced else R.string.error_unknown),
                                         withDismissAction = true
                                     )
                                 }

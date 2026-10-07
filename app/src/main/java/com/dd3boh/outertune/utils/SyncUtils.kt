@@ -45,6 +45,7 @@ import com.zionhuang.innertube.models.SongItem
 import com.zionhuang.innertube.utils.completed
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -590,37 +591,18 @@ class SyncUtils @Inject constructor(
         }
     }
 
-    suspend fun syncPlaylist(browseId: String, playlistId: String) {
+    suspend fun syncPlaylist(browseId: String, playlistId: String): Boolean {
         // this is also used for individual playlist sync
         if (!context.isInternetConnected()) {
-            return
+            return false
         }
-        YouTube.playlist(browseId).completed().onSuccess { playlistPage ->
-            if (!context.isInternetConnected()) {
-                return
-            }
-
-            runBlocking {
-                launch(Dispatchers.IO) {
-                    database.transaction {
-                        clearPlaylist(playlistId)
-                        val songEntities = playlistPage.songs
-                            .map(SongItem::toMediaMetadata)
-                            .onEach { insert(it) }
-
-                        val playlistSongMaps = songEntities.mapIndexed { position, song ->
-                            PlaylistSongMap(
-                                songId = song.id,
-                                playlistId = playlistId,
-                                position = position,
-                                setVideoId = song.setVideoId
-                            )
-                        }
-                        playlistSongMaps.forEach { insert(it) }
-                    }
-                }
-            }
+        val result = YouTube.playlist(browseId).completed()
+        result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
+        val playlistPage = result.getOrNull() ?: return false
+        if (!context.isInternetConnected()) {
+            return false
         }
+        return database.replaceSyncedPlaylist(playlistId, playlistPage)
     }
 
     suspend fun syncRecentActivity(bypass: Boolean = false) {

@@ -340,3 +340,45 @@ Publication remains conditional on the same-SHA CI/signing gates above; their
 completed results and the distributed bytes are in the finalized release
 report. The 48 phone cases have individual results in that report; incomplete
 provider/device acceptance remains open instead of being inferred from CI.
+
+## Follow-up playlist refresh preservation gate — 2026-10-06
+
+Signed Preview testing completed a real account-playlist export and an
+isolated import/re-export without authentication or network access. All 99
+track objects and their order matched; the imported snapshot was local and
+had no account authority. This evidence belongs to source `f9014426`.
+
+A separate refresh attempt exposed local cache loss: 99 playlist mappings
+disappeared while song rows, authentication and queue remained intact. The
+original service response was not captured, so its exact cause is unproven.
+A normal restore from the fresh post-login backup recovered all 22 database
+tables and all typed preferences exactly. Private backups and account values
+remain excluded from the repository and release attachments.
+
+The corrective path rejects missing playlist/continuation containers and
+marks partially parsed responses incomplete. Browsing still shows valid
+songs, but a completed snapshot cannot silently omit unsupported rows. An
+empty or incomplete result cannot replace a nonempty local cache. Successful
+replacement uses an awaited Room transaction; failures roll back, and the UI
+shows success only after a committed result. A failed bulk continuation stops
+without losing the token needed for a later retry.
+
+This deliberately conservative policy can retain stale local membership when
+the remote playlist has genuinely become empty. Full sync/export also refuses
+an unconsumed secondary-section continuation whose completeness is unproven;
+initial browsing can still display the available songs. No remote account writes,
+database migration, signing change or public revision change are introduced.
+Parser, actual Room preservation/rollback and continuation regression results,
+same-source CI/signing checks and installed-artifact evidence are recorded in
+the replacement release attachments. Issue #14 tracks the remaining
+authenticated phone refresh check; this section does not establish that check
+or authorize Stable promotion.
+
+Fresh local validation confirmed 348 Preview Full Debug tests in 58 suites
+with zero failures, errors or skips, 37 Innertube tests with zero failures or
+errors and 14 opt-in live-service skips, successful Preview Core Release lint
+and the minified release build. The 29 new targeted cases include 18 parser,
+10 Room and one real ViewModel regression. Translation audit: 51 locales,
+574 canonical keys, zero defects. Independent source review found no remaining
+introduced blocker. Kotlin remains outside Aislop's supported languages;
+manual review supplies the applicable quality and data-preservation gate.

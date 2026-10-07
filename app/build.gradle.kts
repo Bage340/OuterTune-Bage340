@@ -350,6 +350,8 @@ dependencies {
     implementation("androidx.webkit:webkit:1.14.0")
 
     testImplementation(libs.junit)
+    testImplementation(libs.ktor.client.okhttp)
+    testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.robolectric)
     testImplementation(libs.room.testing)

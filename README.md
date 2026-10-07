@@ -16,6 +16,8 @@ An independent public fork of [OuterTune](https://github.com/OuterTune/OuterTune
 ## What this fork provides
 
 - YouTube Music browsing, streaming, playlists, account synchronization, lyrics, and optional offline downloads
+- Playlist refresh preserves a nonempty local cache when the remote response is incomplete or empty without reliable confirmation; a genuinely emptied remote playlist may retain its previous cache.
+- Full playlist sync/export refuses unconsumed continuation metadata whose completeness is unproven; browsing still displays available songs.
 - Playback of local audio files alongside YouTube Music content
 - Local-library scanning, browsing, filtering, playlist-to-library actions, JSON/CSV library and playlist transfer, and M3U8 playlist transfer
 - Download queue filtering and retry handling, with the configured parallel-download limit kept conservative by default

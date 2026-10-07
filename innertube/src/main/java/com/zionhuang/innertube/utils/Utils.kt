@@ -8,10 +8,13 @@ import java.security.MessageDigest
 @JvmName("completedLibrary")
 suspend fun Result<PlaylistPage>.completed(): Result<PlaylistPage> = runCatching {
     val page = getOrThrow()
+    require(page.snapshotComplete) { "Incomplete playlist snapshot" }
+    require(page.continuation == null) { "Unconsumed playlist section continuation" }
     val songs = page.songs.toMutableList()
     var continuation = page.songsContinuation
     while (continuation != null) {
         val continuationPage = YouTube.playlistContinuation(continuation).getOrThrow()
+        require(continuationPage.snapshotComplete) { "Incomplete playlist continuation" }
         songs += continuationPage.songs
         continuation = continuationPage.continuation
     }

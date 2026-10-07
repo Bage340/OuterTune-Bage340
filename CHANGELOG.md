@@ -20,6 +20,10 @@ replace every case in that checklist.
   YouTube IDs. Prefer valid local/downloaded files and retry remote streams with
   refreshed stream information where applicable.
 - Add safer playlist-folder organization and restore handling.
+- Preserve cached playlist membership when a remote refresh returns an
+  incomplete or unrecognized response. Report refresh success only after the
+  local replacement commits; an unconfirmed empty result keeps a nonempty
+  cache instead of erasing it.
 - Add playlist-to-library and library/playlist transfer workflows.
 - Improve download prefiltering, retry handling, and configurable concurrency
   while retaining a conservative default.

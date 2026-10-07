@@ -44,7 +44,6 @@ import com.zionhuang.innertube.pages.MoodAndGenres
 import com.zionhuang.innertube.pages.NewReleaseAlbumPage
 import com.zionhuang.innertube.pages.NextPage
 import com.zionhuang.innertube.pages.NextResult
-import com.zionhuang.innertube.pages.PlaylistContinuationPage
 import com.zionhuang.innertube.pages.PlaylistPage
 import com.zionhuang.innertube.pages.RelatedPage
 import com.zionhuang.innertube.pages.SearchPage
@@ -366,42 +365,7 @@ object YouTube {
             setLogin = true
         ).body<BrowseResponse>()
 
-        val base = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-        val header = base?.musicResponsiveHeaderRenderer ?: base?.musicEditablePlaylistDetailHeaderRenderer?.header?.musicResponsiveHeaderRenderer
-
-        val editable = base?.musicEditablePlaylistDetailHeaderRenderer != null
-
-        PlaylistPage(
-            playlist = PlaylistItem(
-                id = playlistId,
-                title = header?.title?.runs?.firstOrNull()?.text ?: "",
-                author = header?.straplineTextOne?.runs?.firstOrNull()?.let {
-                    Artist(
-                        name = it.text,
-                        id = it.navigationEndpoint?.browseEndpoint?.browseId
-                    )
-                },
-                songCountText = header?.secondSubtitle?.runs?.firstOrNull()?.text,
-                thumbnail = response.background?.musicThumbnailRenderer?.getThumbnailUrl(),
-                playEndpoint = header?.buttons?.getOrNull(1)?.musicPlayButtonRenderer
-                    ?.playNavigationEndpoint?.watchEndpoint,
-                shuffleEndpoint = header?.buttons?.getOrNull(2)?.menuRenderer?.items?.find {
-                    it.menuNavigationItemRenderer?.icon?.iconType == "MUSIC_SHUFFLE"
-                }?.menuNavigationItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
-                radioEndpoint = header?.buttons?.getOrNull(2)?.menuRenderer?.items?.find {
-                    it.menuNavigationItemRenderer?.icon?.iconType == "MIX"
-                }?.menuNavigationItemRenderer?.navigationEndpoint?.watchPlaylistEndpoint,
-                isEditable = editable
-            ),
-            songs = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
-                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.getItems()?.mapNotNull {
-                    PlaylistPage.fromMusicResponsiveListItemRenderer(it)
-                } ?: emptyList(),
-            songsContinuation = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
-                ?.contents?.firstOrNull()?.musicPlaylistShelfRenderer?.contents?.getContinuation(),
-            continuation = response.contents?.twoColumnBrowseResultsRenderer?.secondaryContents?.sectionListRenderer
-                ?.continuations?.getContinuation()
-        )
+        PlaylistPage.fromBrowseResponse(response, playlistId)
     }
 
     suspend fun playlistContinuation(continuation: String) = runCatching {
@@ -410,27 +374,8 @@ object YouTube {
             continuation = continuation,
             setLogin = true
         ).body<BrowseResponse>()
-
-        val musicPlaylistShelfContinuation = response.continuationContents?.musicPlaylistShelfContinuation
-        if (musicPlaylistShelfContinuation != null) {
-            PlaylistContinuationPage(
-                songs = musicPlaylistShelfContinuation.contents.getItems().mapNotNull {
-                    PlaylistPage.fromMusicResponsiveListItemRenderer(it)
-                },
-                continuation = musicPlaylistShelfContinuation.continuations?.getContinuation()
-            )
-        } else {
-            val continuationItems = response.onResponseReceivedActions?.firstOrNull()
-                ?.appendContinuationItemsAction?.continuationItems
-            PlaylistContinuationPage(
-                songs = continuationItems?.getItems()?.mapNotNull {
-                        PlaylistPage.fromMusicResponsiveListItemRenderer(it)
-                    } ?: emptyList(),
-                continuation = continuationItems?.getContinuation()
-            )
-        }
+        PlaylistPage.continuationFromBrowseResponse(response)
     }
-
     suspend fun home(continuation: String? = null, params: String? = null): Result<HomePage> = runCatching {
         if (continuation != null) {
             return@runCatching homeContinuation(continuation).getOrThrow()
