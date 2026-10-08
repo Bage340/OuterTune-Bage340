@@ -12,7 +12,11 @@ import com.dd3boh.outertune.constants.ScannerImpl
 import com.dd3boh.outertune.constants.ScannerMatchCriteria
 import com.dd3boh.outertune.db.InternalDatabase
 import com.dd3boh.outertune.db.MusicDatabase
+import com.dd3boh.outertune.db.entities.AlbumEntity
+import com.dd3boh.outertune.db.entities.ArtistEntity
 import com.dd3boh.outertune.db.entities.Song
+import com.dd3boh.outertune.db.entities.SongAlbumMap
+import com.dd3boh.outertune.db.entities.SongArtistMap
 import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.models.SongTempData
 import kotlinx.coroutines.runBlocking
@@ -130,6 +134,103 @@ class PartialTagLibSyncTest {
 
     private fun localFile(name: String): File = File(directory, name).also {
         check(it.createNewFile())
+    }
+
+    @Test
+    fun unexpectedTagLibFailureCannotReplaceExistingMetadataWithFallback() = runBlocking {
+        val a = localFile("tagged.flac")
+        val b = localFile("readable.flac")
+        seed(a, b)
+        database.insert(ArtistEntity("LAretained", "Retained Artist", isLocal = true))
+        database.insert(AlbumEntity("LBretained", title = "Retained Album", songCount = 1, duration = 123, isLocal = true))
+        database.insert(SongArtistMap(a.name, "LAretained", 0))
+        database.insert(SongAlbumMap(a.name, "LBretained", 0))
+        val original = database.allLocalDbSongs().first { it.id == a.name }.song
+        database.update(original.copy(title = "Retained Title", duration = 123, liked = true,
+            albumId = "LBretained", albumName = "Retained Album"))
+        val before = database.allLocalDbSongs().toSet()
+        val scannerField = LocalMediaScanner::class.java.getDeclaredField("advancedScannerImpl")
+        scannerField.isAccessible = true
+        scannerField.set(scanner, object : MetadataScanner {
+            override suspend fun getAllMetadataFromFile(file: File): SongTempData {
+                if (file == a) throw RuntimeException("TagLib failed to read metadata")
+                return SongTempData(Song(SongEntity("new-${file.name}", "Changed Title",
+                    isLocal = true, inLibrary = LocalDateTime.now(), localPath = file.absolutePath),
+                    artists = emptyList()), format = null)
+            }
+        })
+
+        assertThrows(ScannerAbortException::class.java) {
+            runBlocking {
+                scanner.fullSync(database, listOf(uri(b), uri(a)), ScannerMatchCriteria.LEVEL_2,
+                    strictFileNames = false, strictFilePaths = true)
+            }
+        }
+        assertEquals(before, database.allLocalDbSongs().toSet())
+    }
+
+    @Test
+    fun repeatedScansRetainDistinctExistingAlbumIdentitiesAndSavedState() = runBlocking {
+        val a = localFile("album-a.flac")
+        val b = localFile("album-b.flac")
+        seed(a, b)
+        val savedAt = LocalDateTime.of(2026, 1, 1, 0, 0)
+        val albums = listOf(
+            AlbumEntity("LBone", title = "Same Title", songCount = 1, duration = 30,
+                isLocal = true, bookmarkedAt = savedAt, lastUpdateTime = savedAt),
+            AlbumEntity("LBtwo", title = "Same Title", songCount = 1, duration = 40,
+                isLocal = true, bookmarkedAt = savedAt.plusDays(1), lastUpdateTime = savedAt),
+        )
+        albums.forEach(database::insert)
+        for ((file, album) in listOf(a to albums[0], b to albums[1])) {
+            val original = database.allLocalDbSongs().first { it.id == file.name }.song
+            database.update(original.copy(albumId = album.id, albumName = album.title, duration = album.duration))
+            database.insert(SongAlbumMap(file.name, album.id, 7))
+        }
+        val before = database.allLocalDbSongs().toSet()
+        for (refreshExisting in listOf(false, true, true)) {
+            LocalMediaScanner.scannerState.value = 0
+            scanner.syncDB(database, ArrayList(before.map { SongTempData(it, format = null) }),
+                ScannerMatchCriteria.LEVEL_2, strictFileNames = false, strictFilePaths = true,
+                refreshExisting = refreshExisting, noDisable = true)
+
+            assertEquals(before, database.allLocalDbSongs().toSet())
+            assertEquals(albums.toSet(), database.allLocalAlbumsByName().toSet())
+            assertEquals(listOf(7, 7), listOf(a, b).map { database.songAlbumMaps(it.name).single().index })
+        }
+    }
+
+    @Test
+    fun retaggingAndRemovingAlbumRecomputeBothAlbumTotalsWithoutLosingBookmarks() = runBlocking {
+        val file = localFile("retagged.flac")
+        seed(file)
+        val savedAt = LocalDateTime.of(2026, 1, 1, 0, 0)
+        val oldAlbum = AlbumEntity("LBold", title = "Old Album", songCount = 1, duration = 30,
+            isLocal = true, bookmarkedAt = savedAt, lastUpdateTime = savedAt)
+        val newAlbum = AlbumEntity("LBnew", title = "New Album", songCount = 0, duration = 0,
+            isLocal = true, bookmarkedAt = savedAt.plusDays(1), lastUpdateTime = savedAt)
+        listOf(oldAlbum, newAlbum).forEach(database::insert)
+        val original = database.allLocalDbSongs().single().song
+        database.update(original.copy(albumId = oldAlbum.id, albumName = oldAlbum.title, duration = 30))
+        database.insert(SongAlbumMap(file.name, oldAlbum.id, 3))
+
+        val before = database.allLocalDbSongs().single()
+        scanner.syncDB(database, arrayListOf(SongTempData(before.copy(
+            song = before.song.copy(duration = 45, albumName = newAlbum.title), album = newAlbum), null)),
+            ScannerMatchCriteria.LEVEL_2, false, true, refreshExisting = true, noDisable = true)
+        assertEquals(oldAlbum.copy(songCount = 0, duration = 0), database.albumById(oldAlbum.id))
+        assertEquals(newAlbum.copy(songCount = 1, duration = 45), database.albumById(newAlbum.id))
+        assertEquals(newAlbum.id, database.allLocalDbSongs().single().song.albumId)
+        assertEquals(listOf(SongAlbumMap(file.name, newAlbum.id, 0)), database.songAlbumMaps(file.name))
+
+        LocalMediaScanner.scannerState.value = 0
+        val retagged = database.allLocalDbSongs().single()
+        scanner.syncDB(database, arrayListOf(SongTempData(retagged.copy(
+            song = retagged.song.copy(albumId = null, albumName = null), album = null), null)),
+            ScannerMatchCriteria.LEVEL_2, false, true, refreshExisting = true, noDisable = true)
+        assertEquals(newAlbum, database.albumById(newAlbum.id))
+        assertEquals(null, database.allLocalDbSongs().single().song.albumId)
+        assertEquals(emptyList<SongAlbumMap>(), database.songAlbumMaps(file.name))
     }
 
     private fun seed(vararg files: File) {

@@ -7,7 +7,6 @@ import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.BrowseEndpoint
 import com.zionhuang.innertube.models.GridRenderer
 import com.zionhuang.innertube.models.MusicCarouselShelfRenderer
-import com.zionhuang.innertube.models.MusicShelfRenderer
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SearchSuggestions
 import com.zionhuang.innertube.models.SongItem
@@ -38,7 +37,6 @@ import com.zionhuang.innertube.pages.BrowseResult
 import com.zionhuang.innertube.pages.ExplorePage
 import com.zionhuang.innertube.pages.HistoryPage
 import com.zionhuang.innertube.pages.HomePage
-import com.zionhuang.innertube.pages.LibraryContinuationPage
 import com.zionhuang.innertube.pages.LibraryPage
 import com.zionhuang.innertube.pages.MoodAndGenres
 import com.zionhuang.innertube.pages.NewReleaseAlbumPage
@@ -478,35 +476,7 @@ object YouTube {
             setLogin = true
         ).body<BrowseResponse>()
 
-        val tabs = response.contents?.singleColumnBrowseResultsRenderer?.tabs
-
-        val contents = if (tabs != null && tabs.size >= tabIndex) {
-            tabs[tabIndex].tabRenderer.content?.sectionListRenderer?.contents?.firstOrNull()
-        }
-        else {
-            null
-        }
-
-        when {
-            contents?.gridRenderer != null -> {
-                LibraryPage(
-                    items = contents.gridRenderer.items
-                        .mapNotNull (GridRenderer.Item::musicTwoRowItemRenderer)
-                        .mapNotNull { LibraryPage.fromMusicTwoRowItemRenderer(it) },
-                    continuation = contents.gridRenderer.continuations?.getContinuation()
-                )
-            }
-
-            else -> { // contents?.musicShelfRenderer != null
-                LibraryPage(
-                    items = contents?.musicShelfRenderer?.contents
-                        ?.mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                        ?.mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) }
-                        .orEmpty(),
-                    continuation = contents?.musicShelfRenderer?.continuations?.getContinuation()
-                )
-            }
-        }
+        LibraryPage.fromBrowseResponse(response, tabIndex)
     }
 
     suspend fun libraryContinuation(continuation: String) = runCatching {
@@ -516,28 +486,7 @@ object YouTube {
             setLogin = true
         ).body<BrowseResponse>()
 
-        val contents = response.continuationContents
-
-        when {
-            contents?.gridContinuation != null -> {
-                LibraryContinuationPage(
-                    items = contents.gridContinuation.items
-                        .mapNotNull (GridRenderer.Item::musicTwoRowItemRenderer)
-                        .mapNotNull { LibraryPage.fromMusicTwoRowItemRenderer(it) },
-                    continuation = contents.gridContinuation.continuations?.getContinuation()
-                )
-            }
-
-            else -> { // contents?.musicShelfContinuation != null
-                LibraryContinuationPage(
-                    items = contents?.musicShelfContinuation?.contents
-                        ?.mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
-                        ?.mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) }
-                        .orEmpty(),
-                    continuation = contents?.musicShelfContinuation?.continuations?.getContinuation()
-                )
-            }
-        }
+        LibraryPage.continuationFromBrowseResponse(response)
     }
 
     suspend fun libraryRecentActivity(): Result<LibraryPage> = runCatching {
@@ -549,17 +498,7 @@ object YouTube {
             setLogin = true
         ).body<BrowseResponse>()
 
-        val items = response.continuationContents?.sectionListContinuation?.contents?.firstOrNull()
-            ?.gridRenderer?.items!!.mapNotNull {
-                it.musicTwoRowItemRenderer?.let { renderer ->
-                    LibraryPage.fromMusicTwoRowItemRenderer(renderer)
-                }
-            }
-
-        LibraryPage(
-            items = items,
-            continuation = null
-        )
+        LibraryPage.recentActivityFromBrowseResponse(response)
     }
 
     suspend fun musicHistory() = runCatching {

@@ -29,16 +29,20 @@ suspend fun Result<PlaylistPage>.completed(): Result<PlaylistPage> = runCatching
 @JvmName("completedPlaylist")
 suspend fun Result<LibraryPage>.completed(): Result<LibraryPage> = runCatching {
     val page = getOrThrow()
+    require(page.snapshotComplete) { "Incomplete library snapshot" }
     val items = page.items.toMutableList()
     var continuation = page.continuation
+    val consumedTokens = mutableSetOf<String>()
     while (continuation != null) {
+        require(continuation.isNotBlank() && consumedTokens.add(continuation)) { "Invalid or repeated library continuation" }
         val continuationPage = YouTube.libraryContinuation(continuation).getOrThrow()
+        require(continuationPage.snapshotComplete) { "Incomplete library continuation" }
         items += continuationPage.items
         continuation = continuationPage.continuation
     }
     LibraryPage(
         items = items,
-        continuation = page.continuation
+        continuation = null
     )
 }
 

@@ -206,6 +206,7 @@ object YTPlayerUtils {
         connectivityManager: ConnectivityManager,
         clientStartIndex: Int = 0,
         rejectedClient: String? = null,
+        requiredItag: Int? = null,
     ): Result<PlaybackData> = runCatching {
         Log.d(TAG, "Playback info requested: $videoId")
 
@@ -306,7 +307,7 @@ object YTPlayerUtils {
                 continue
             }
 
-            val formats = findFormats(streamPlayerResponse, audioQuality, connectivityManager)
+            val formats = formatsForPinnedItag(findFormats(streamPlayerResponse, audioQuality, connectivityManager), requiredItag)
             val expiresInSeconds = streamPlayerResponse.streamingData?.expiresInSeconds
             if (formats.isEmpty() || expiresInSeconds == null) {
                 diagnostics += StreamClientDiagnostic(
@@ -396,6 +397,7 @@ object YTPlayerUtils {
         connectivityManager: ConnectivityManager,
         attempts: Int = 3,
         rejectedClient: String? = null,
+        requiredItag: Int? = null,
     ): Result<PlaybackData> {
         require(attempts > 0) { "attempts must be positive" }
         val startIndex = STREAM_CLIENTS.indexOfFirst { it.clientName == rejectedClient } + 1
@@ -411,6 +413,7 @@ object YTPlayerUtils {
                 connectivityManager = connectivityManager,
                 clientStartIndex = startIndex + attempt - 1,
                 rejectedClient = rejectedClient,
+                requiredItag = requiredItag,
             )
             if (result.isSuccess) return result
             Log.w(
@@ -461,6 +464,12 @@ object YTPlayerUtils {
                 } + (if (it.mimeType.startsWith("audio/webm")) 10240 else 0) // prefer opus stream
             }
             .orEmpty()
+
+    internal fun formatsForPinnedItag(
+        formats: List<PlayerResponse.StreamingData.Format>,
+        requiredItag: Int?,
+    ): List<PlayerResponse.StreamingData.Format> =
+        if (requiredItag == null) formats else formats.filter { it.itag == requiredItag }
 
     /**
      * Checks if the stream url returns a successful status.

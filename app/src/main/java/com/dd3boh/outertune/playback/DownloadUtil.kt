@@ -108,59 +108,75 @@ class DownloadUtil @Inject constructor(
             )
     ) { dataSpec ->
         val mediaId = dataSpec.key ?: error("No media id")
-        val contentLength = playerCache.getContentMetadata(mediaId)
-            .get(ContentMetadata.KEY_CONTENT_LENGTH, -1L)
-        val cachedRangeLength = requiredCachedStreamLength(dataSpec.length, dataSpec.position, contentLength)
-        if (cachedRangeLength != null && playerCache.isCached(mediaId, dataSpec.position, cachedRangeLength)) {
-            return@Factory dataSpec
-        }
-
-        songUrlCache[mediaId]?.let { cachedStream ->
-            return@Factory dataSpec.withResolvedStream(cachedStream)
-        }
-
-        val playbackData = runBlocking(Dispatchers.IO) {
-            YTPlayerUtils.playerResponseForPlaybackWithRetry(
-                mediaId,
-                audioQuality = audioQuality,
-                connectivityManager = connectivityManager,
-                rejectedClient = songUrlCache.rejectedClient(mediaId),
-            )
-        }.getOrThrow()
-        val format = playbackData.format
-
-        format.contentLength?.let { contentLength ->
-            database.query {
-                upsert(
-                    FormatEntity(
-                        id = mediaId,
-                        itag = format.itag,
-                        mimeType = format.mimeType.substringBefore(";"),
-                        codecs = format.mimeType.substringAfter("codecs=", "").removeSurrounding("\""),
-                        bitrate = format.bitrate,
-                        sampleRate = format.audioSampleRate,
-                        contentLength = contentLength,
-                        loudnessDb = playbackData.audioConfig?.loudnessDb,
-                        playbackTrackingUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
-                    )
-                )
+        withStreamRepresentationLock(mediaId) {
+            val caches = listOf(playerCache, downloadCache)
+            val legacyFormat = runBlocking { database.format(mediaId).first() }
+            val pinned = cachedStreamRepresentation(mediaId, caches, legacyFormat)
+            if (pinned != null) pinStreamRepresentation(mediaId, caches, pinned, legacyFormat)
+            val contentLength = playerCache.getContentMetadata(mediaId)
+                .get(ContentMetadata.KEY_CONTENT_LENGTH, -1L)
+            val cachedRangeLength = requiredCachedStreamLength(dataSpec.length, dataSpec.position, contentLength)
+            if (cachedRangeLength != null && playerCache.isCached(mediaId, dataSpec.position, cachedRangeLength)) {
+                return@withStreamRepresentationLock dataSpec
             }
+
+            songUrlCache[mediaId]?.let { cachedStream ->
+                val representation = cachedStream.representation
+                if (representation == null || (pinned != null && !compatibleStreamRepresentations(pinned, representation))) {
+                    songUrlCache.invalidate(mediaId)
+                } else {
+                    pinStreamRepresentation(mediaId, caches, representation, legacyFormat)
+                    return@withStreamRepresentationLock dataSpec.withResolvedStream(cachedStream)
+                }
+            }
+
+            val playbackData = runBlocking(Dispatchers.IO) {
+                YTPlayerUtils.playerResponseForPlaybackWithRetry(
+                    mediaId,
+                    audioQuality = audioQuality,
+                    connectivityManager = connectivityManager,
+                    rejectedClient = songUrlCache.rejectedClient(mediaId),
+                    requiredItag = pinned?.itag,
+                )
+            }.getOrThrow()
+            val format = playbackData.format
+            val representation = CachedStreamRepresentation(format.itag, canonicalStreamMimeType(format.mimeType), format.contentLength)
+            pinStreamRepresentation(mediaId, caches, representation, legacyFormat)
+
+            format.contentLength?.let { contentLength ->
+                database.query {
+                    upsert(
+                        FormatEntity(
+                            id = mediaId,
+                            itag = format.itag,
+                            mimeType = format.mimeType.substringBefore(";"),
+                            codecs = format.mimeType.substringAfter("codecs=", "").removeSurrounding("\""),
+                            bitrate = format.bitrate,
+                            sampleRate = format.audioSampleRate,
+                            contentLength = contentLength,
+                            loudnessDb = playbackData.audioConfig?.loudnessDb,
+                            playbackTrackingUrl = playbackData.playbackTracking?.videostatsPlaybackUrl?.baseUrl
+                        )
+                    )
+                }
+            }
+
+            val streamUrl = format.contentLength?.let { contentLength ->
+                // Keep the bounded range when YouTube reports a real length; never truncate an
+                // unknown-length track to an arbitrary 10 MB fallback.
+                "${playbackData.streamUrl}&range=0-$contentLength"
+            } ?: playbackData.streamUrl
+
+            val stream = songUrlCache.put(
+                mediaId = mediaId,
+                url = streamUrl,
+                requestHeaders = playbackData.streamHeaders,
+                clientName = playbackData.streamClient,
+                expiresInSeconds = playbackData.streamExpiresInSeconds,
+                representation = representation,
+            )
+            dataSpec.withResolvedStream(stream)
         }
-
-        val streamUrl = format.contentLength?.let { contentLength ->
-            // Keep the bounded range when YouTube reports a real length; never truncate an
-            // unknown-length track to an arbitrary 10 MB fallback.
-            "${playbackData.streamUrl}&range=0-$contentLength"
-        } ?: playbackData.streamUrl
-
-        val stream = songUrlCache.put(
-            mediaId = mediaId,
-            url = streamUrl,
-            requestHeaders = playbackData.streamHeaders,
-            clientName = playbackData.streamClient,
-            expiresInSeconds = playbackData.streamExpiresInSeconds,
-        )
-        dataSpec.withResolvedStream(stream)
     }
     val downloadNotificationHelper = DownloadNotificationHelper(context, ExoDownloadService.CHANNEL_ID)
     val downloadManager: DownloadManager =

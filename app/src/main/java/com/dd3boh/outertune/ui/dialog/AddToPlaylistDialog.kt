@@ -1,5 +1,6 @@
 package com.dd3boh.outertune.ui.dialog
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -46,10 +48,13 @@ import com.dd3boh.outertune.ui.component.items.ListItem
 import com.dd3boh.outertune.ui.component.items.PlaylistListItem
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun AddToPlaylistDialog(
@@ -61,11 +66,13 @@ fun AddToPlaylistDialog(
     onDismiss: () -> Unit,
 ) {
     val database = LocalDatabase.current
+    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
     val (sortType, onSortTypeChange) = rememberEnumPreference(PlaylistSortTypeKey, PlaylistSortType.CREATE_DATE)
     val (sortDescending, onSortDescendingChange) = rememberPreference(PlaylistSortDescendingKey, true)
     val syncMode by rememberEnumPreference(key = YtmSyncModeKey, defaultValue = SyncMode.RW)
+    val requestedSongIds = songIds
 
     var playlists by remember {
         mutableStateOf(emptyList<Playlist>())
@@ -89,6 +96,50 @@ fun AddToPlaylistDialog(
     var duplicates by remember {
         mutableStateOf(emptyList<String>())
     }
+    var isAdding by remember { mutableStateOf(false) }
+
+    suspend fun addConfirmed(playlist: Playlist, ids: List<String>, skip: Set<String> = emptySet()) {
+        withContext(Dispatchers.IO) {
+            addConfirmedPlaylistSongs(ids, skip,
+                remoteAdd = { effectiveIds ->
+                    if (!playlist.playlist.isLocal) {
+                        val remoteIds = effectiveIds.filter { id ->
+                            val song = checkNotNull(database.song(id).first())
+                            !song.song.isLocal
+                        }
+                        if (remoteIds.isNotEmpty()) {
+                            val browseId = checkNotNull(playlist.playlist.browseId)
+                            remoteIds.forEach { YouTube.addToPlaylist(browseId, it).getOrThrow() }
+                        }
+                    }
+                },
+                localAdd = { effectiveIds ->
+                    database.withTransferTransaction {
+                        val currentPlaylist = checkNotNull(database.playlist(playlist.id).first())
+                        addSongToPlaylist(currentPlaylist, effectiveIds)
+                    }
+                },
+            )
+        }
+        onDismiss()
+    }
+
+    fun launchAddition(action: suspend () -> Unit) {
+        if (isAdding) return
+        isAdding = true
+        coroutineScope.launch {
+            try {
+                action()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                reportException(error)
+                Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_LONG).show()
+            } finally {
+                isAdding = false
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (syncMode == SyncMode.RO) {
@@ -111,7 +162,7 @@ fun AddToPlaylistDialog(
     }
 
     ListDialog(
-        onDismiss = onDismiss
+        onDismiss = { if (!isAdding) onDismiss() }
     ) {
         item {
             ListItem(
@@ -124,7 +175,7 @@ fun AddToPlaylistDialog(
                         modifier = Modifier.size(ListThumbnailSize)
                     )
                 },
-                modifier = Modifier.clickable {
+                modifier = Modifier.clickable(enabled = !isAdding) {
                     showCreatePlaylistDialog = true
                 }
             )
@@ -179,29 +230,20 @@ fun AddToPlaylistDialog(
                             .padding(end = 8.dp)
                     )
                 },
-                modifier = Modifier.clickable {
+                modifier = Modifier.clickable(enabled = !isAdding && !showDuplicateDialog) {
                     selectedPlaylist = playlist
-                    coroutineScope.launch(Dispatchers.IO) {
-                        if (onPreAdd != null) {
-                            val result = onPreAdd(playlist)
-                            if (songIds == null) {
-                                songIds = result
-                            }
+                    launchAddition {
+                        val ids = withContext(Dispatchers.IO) {
+                            val preparedIds = onPreAdd?.invoke(playlist)
+                            val ids = requestedSongIds ?: checkNotNull(preparedIds)
+                            duplicates = database.playlistDuplicates(playlist.id, ids)
+                            ids
                         }
-                        duplicates = database.playlistDuplicates(playlist.id, songIds!!)
+                        songIds = ids
                         if (duplicates.isNotEmpty()) {
                             showDuplicateDialog = true
                         } else {
-                            onDismiss()
-                            database.addSongToPlaylist(playlist, songIds!!)
-
-                            if (!playlist.playlist.isLocal) {
-                                playlist.playlist.browseId?.let { plist ->
-                                    songIds?.forEach {
-                                        YouTube.addToPlaylist(plist, it)
-                                    }
-                                }
-                            }
+                            addConfirmed(playlist, ids)
                         }
                     }
                 }
@@ -241,16 +283,11 @@ fun AddToPlaylistDialog(
             title = { Text(stringResource(R.string.duplicates)) },
             buttons = {
                 TextButton(
+                    enabled = !isAdding,
                     onClick = {
-                        showDuplicateDialog = false
-                        onDismiss()
-                        database.transaction {
-                            addSongToPlaylist(
-                                selectedPlaylist!!,
-                                songIds!!.filter {
-                                    !duplicates.contains(it)
-                                }
-                            )
+                        launchAddition {
+                            addConfirmed(checkNotNull(selectedPlaylist), checkNotNull(songIds), duplicates.toSet())
+                            showDuplicateDialog = false
                         }
                     }
                 ) {
@@ -258,11 +295,11 @@ fun AddToPlaylistDialog(
                 }
 
                 TextButton(
+                    enabled = !isAdding,
                     onClick = {
-                        showDuplicateDialog = false
-                        onDismiss()
-                        database.transaction {
-                            addSongToPlaylist(selectedPlaylist!!, songIds!!)
+                        launchAddition {
+                            addConfirmed(checkNotNull(selectedPlaylist), checkNotNull(songIds))
+                            showDuplicateDialog = false
                         }
                     }
                 ) {
@@ -270,6 +307,7 @@ fun AddToPlaylistDialog(
                 }
 
                 TextButton(
+                    enabled = !isAdding,
                     onClick = {
                         showDuplicateDialog = false
                     }
@@ -278,7 +316,7 @@ fun AddToPlaylistDialog(
                 }
             },
             onDismiss = {
-                showDuplicateDialog = false
+                if (!isAdding) showDuplicateDialog = false
             }
         ) {
             Text(

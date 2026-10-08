@@ -375,17 +375,18 @@ class LyricsHelper @Inject constructor(
         songArtists: String,
         duration: Int,
         callback: (LyricsResult) -> Unit,
-    ) {
+    ): Boolean {
         val selection = ProviderSelection.snapshot(context, lyricsProviders)
         val cacheKey = manualLyricsCacheKey(mediaId, songTitle, songArtists, duration, selection.signature)
         cache.get(cacheKey)?.let { results ->
             results.forEach {
                 callback(it)
             }
-            return
+            return true
         }
-        searchManualLyrics(selection.providers, mediaId, songTitle, songArtists, duration, callback, ::reportException)
-            ?.takeIf { it.isNotEmpty() }?.let { cache.put(cacheKey, it) }
+        val results = searchManualLyrics(selection.providers, mediaId, songTitle, songArtists, duration, callback, ::reportException)
+        results?.takeIf { it.isNotEmpty() }?.let { cache.put(cacheKey, it) }
+        return results != null
     }
 
     companion object {

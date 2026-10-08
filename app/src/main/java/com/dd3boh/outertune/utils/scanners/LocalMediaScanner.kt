@@ -45,7 +45,6 @@ import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.SongTempData
 import com.dd3boh.outertune.models.toMediaMetadata
 import com.dd3boh.outertune.ui.utils.ARTIST_SEPARATORS
-import com.dd3boh.outertune.utils.closestAlbumMatch
 import com.dd3boh.outertune.utils.closestMatch
 import com.dd3boh.outertune.utils.dataStore
 import com.dd3boh.outertune.utils.lmScannerCoroutine
@@ -54,6 +53,7 @@ import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.ArtistItem
 import com.zionhuang.innertube.models.SongItem
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -126,43 +126,20 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
     ): SongTempData {
         val path = file.absolutePath
         try {
+            currentCoroutineContext().ensureActive()
             if (!file.exists()) throw IOException("File not found")
 
-            // TagLib handles every flavor. MediaStoreExtractor throws (advanced extraction
-            // disabled), which is caught below and treated as an unscannable file.
-            return advancedScannerImpl.getAllMetadataFromFile(file)
+            val metadata = advancedScannerImpl.getAllMetadataFromFile(file)
+            currentCoroutineContext().ensureActive()
+            return metadata
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            when (e) {
-                is IOException, is IllegalArgumentException, is IllegalStateException -> {
-                    if (SCANNER_DEBUG) {
-                        e.printStackTrace()
-                    }
-                    throw InvalidAudioFileException("Failed to access file or not in a playable format: ${e.message} for: $path")
-                }
-
-                else -> {
-                    if (SCANNER_DEBUG) {
-                        Log.w(TAG, "ERROR READING METADATA: ${e.message} for: $path")
-                        e.printStackTrace()
-                    }
-
-                    // we still want the song to be playable even if metadata extractor fails
-                    return SongTempData(
-                        Song(
-                            SongEntity(
-                                SongEntity.generateSongId(),
-                                path.substringAfterLast('/'),
-                                thumbnailUrl = null,
-                                isLocal = true,
-                                inLibrary = LocalDateTime.now(),
-                                localPath = path
-                            ),
-                            artists = ArrayList()
-                        ),
-                        null
-                    )
-                }
+            if (SCANNER_DEBUG) {
+                Log.w(TAG, "ERROR READING METADATA: ${e.message} for: $path")
+                e.printStackTrace()
             }
+            throw InvalidAudioFileException("Failed to read complete audio metadata for: $path", e)
         }
 
     }
@@ -368,6 +345,8 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
 
                 // update artists and genre
                 with(database) {
+                    val previousAlbumMaps = songAlbumMaps(oldSong.id)
+                    val previousAlbum = oldSong.albumId?.let(::albumById)
                     // get any existing matches
                     song.song.artists.forEachIndexed { index, it ->
                         val dbQuery = localArtistsByNameFuzzy(it.name).sortedBy { item -> item.name.length }
@@ -380,8 +359,12 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                     }
 
                     song.song.album?.let {
-                        val dbQuery = localAlbumsByNameFuzzy(it.title).sortedBy { item -> item.title.length }
-                        albumToDo = Pair(closestAlbumMatch(it.title, dbQuery), it)
+                        // A rescan must retain an existing same-title album identity,
+                        // even when another local album has that title.
+                        val retainedAlbum = previousAlbum?.takeIf { album ->
+                            album.isLocal && album.title == it.title
+                        }
+                        albumToDo = Pair(retainedAlbum ?: albumsByName(it.title, isLocal = true), it)
                     }
 
                     // update song
@@ -423,21 +406,14 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
                     }
 
                     albumToDo?.let { album ->
-                        if (album.first == null) {
-                            // album does not exist in db, add it then link it
-                            insert(album.second)
-                            insert(SongAlbumMap(songToUpdate.id, album.second.id, 0))
-                        } else {
-                            // album does  exist in db, link to it
-                            update(
-                                album.first!!.copy(
-                                    thumbnailUrl = album.second.thumbnailUrl,
-                                    songCount = album.first!!.songCount + 1
-                                )
-                            )
-                            insert(SongAlbumMap(songToUpdate.id, album.first!!.id, album.first!!.songCount))
-                        }
+                        val targetAlbum = album.first ?: album.second.also { insert(it) }
+                        val index = previousAlbumMaps.firstOrNull { it.albumId == targetAlbum.id }?.index
+                            ?: nextAlbumSongIndex(targetAlbum.id)
+                        insert(SongAlbumMap(songToUpdate.id, targetAlbum.id, index))
+                        updateLocalAlbumTotals(targetAlbum.id)
                     }
+                    // Retagging can also remove a song from its previous album.
+                    previousAlbumMaps.map { it.albumId }.distinct().forEach(::updateLocalAlbumTotals)
                 }
             } else { // new song
                 if (SCANNER_DEBUG)
@@ -1073,28 +1049,8 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
             }
         }
 
-        // remove duplicated local albums
-        val dbAlbums: MutableList<AlbumEntity> = database.allLocalAlbumsByName().toMutableList()
-        while (dbAlbums.isNotEmpty()) {
-            currentCoroutineContext().ensureActive()
-            if (scannerRequestCancel) {
-                throw ScannerAbortException("Scanner canceled during local database cleanup")
-            }
-            // gather same artists (precondition: artists are ordered by name
-            val tmp = ArrayList<AlbumEntity>()
-            val oldestAlbum: AlbumEntity = dbAlbums.removeAt(0)
-            tmp.add(oldestAlbum)
-            while (dbAlbums.isNotEmpty() && dbAlbums.first().title == tmp.first().title) {
-                tmp.add(dbAlbums.removeAt(0))
-            }
-
-            if (tmp.size > 1) {
-                // merge all duplicate artists into the oldest one
-                tmp.removeAt(0)
-                tmp.sortBy { it.bookmarkedAt }
-                tmp.forEach { swapAlbumsImmediately(it, oldestAlbum, database) }
-            }
-        }
+        // Existing same-title albums may own distinct bookmarks and song identities.
+        // New local inserts reuse an existing album; scanning must not merge saved rows.
 
         // remove duplicated genres
         val dbGenres: MutableList<GenreEntity> = database.allLocalGenresByName().toMutableList()
@@ -1596,6 +1552,6 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
     }
 }
 
-class InvalidAudioFileException(message: String) : Throwable(message)
+class InvalidAudioFileException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class ScannerAbortException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class ScannerCriticalFailureException(message: String) : Throwable(message)

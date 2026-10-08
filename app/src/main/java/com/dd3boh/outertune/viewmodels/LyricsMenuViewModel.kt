@@ -20,38 +20,61 @@ import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 
 @HiltViewModel
-class LyricsMenuViewModel @Inject constructor(
+class LyricsMenuViewModel internal constructor(
     private val lyricsHelper: LyricsHelper,
     val database: MusicDatabase,
+    private val searchLyrics: suspend (String, String, String, Int, (LyricsResult) -> Unit) -> Boolean,
+    private val searchTimeoutMs: Long,
 ) : ViewModel() {
+    @Inject constructor(lyricsHelper: LyricsHelper, database: MusicDatabase) : this(
+        lyricsHelper, database,
+        lyricsHelper::getAllLyrics, LYRIC_FETCH_TIMEOUT,
+    )
     private var job: Job? = null
+    private val searchLock = Any()
+    private var searchGeneration = 0L
     private var refreshJob: Job? = null
     val results = MutableStateFlow(emptyList<LyricsResult>())
     val isLoading = MutableStateFlow(false)
+    val searchFailed = MutableStateFlow(false)
 
-    fun search(mediaId: String, title: String, artist: String, duration: Int) {
+    fun search(mediaId: String, title: String, artist: String, duration: Int) = synchronized(searchLock) {
+        val generation = ++searchGeneration
+        job?.cancel()
         isLoading.value = true
         results.value = emptyList()
-        job?.cancel()
+        searchFailed.value = false
         job = viewModelScope.launch(Dispatchers.IO) {
+            var failed = false
             try {
-                withTimeoutOrNull(LYRIC_FETCH_TIMEOUT) {
-                    lyricsHelper.getAllLyrics(mediaId, title, artist, duration) { result ->
-                        results.update {
-                            it + result
+                failed = withTimeoutOrNull(searchTimeoutMs) {
+                    searchLyrics(mediaId, title, artist, duration) { result ->
+                        synchronized(searchLock) {
+                            if (generation == searchGeneration) results.update { it + result }
                         }
                     }
-                }
+                } != true
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                failed = true
+                reportException(e)
             } finally {
-                isLoading.value = false
+                synchronized(searchLock) {
+                    if (generation == searchGeneration) {
+                        searchFailed.value = failed
+                        isLoading.value = false
+                    }
+                }
             }
         }
     }
 
-    fun cancelSearch() {
+    fun cancelSearch() = synchronized(searchLock) {
+        searchGeneration++
         job?.cancel()
         job = null
+        isLoading.value = false
     }
 
     fun refetchLyrics(mediaMetadata: MediaMetadata) {

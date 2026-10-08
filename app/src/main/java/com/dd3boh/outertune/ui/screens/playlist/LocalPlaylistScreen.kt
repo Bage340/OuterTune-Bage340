@@ -1,5 +1,7 @@
 package com.dd3boh.outertune.ui.screens.playlist
 
+import android.widget.Toast
+
 import android.util.Log
 import com.dd3boh.outertune.constants.UI_DEBUG
 import androidx.activity.compose.BackHandler
@@ -135,14 +137,19 @@ import com.dd3boh.outertune.utils.getDownloadState
 import com.dd3boh.outertune.utils.makeTimeString
 import com.dd3boh.outertune.utils.rememberEnumPreference
 import com.dd3boh.outertune.utils.rememberPreference
+import com.dd3boh.outertune.utils.reportException
 import com.dd3boh.outertune.utils.syncCoroutine
 import com.dd3boh.outertune.viewmodels.LocalPlaylistViewModel
 import com.zionhuang.innertube.YouTube
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import kotlin.math.roundToInt
@@ -347,6 +354,7 @@ fun LocalPlaylistScreen(
     var dragInfo by remember {
         mutableStateOf<Pair<Int, Int>?>(null)
     }
+    val reorderMutex = remember(viewModel.playlistId) { Mutex() }
     val reorderableState = rememberReorderableLazyListState(
         lazyListState = lazyListState,
 //        scrollThresholdPadding = LocalPlayerAwareWindowInsets.current.asPaddingValues()
@@ -366,50 +374,57 @@ fun LocalPlaylistScreen(
     LaunchedEffect(reorderableState.isAnyItemDragging) {
         if (!reorderableState.isAnyItemDragging) {
             dragInfo?.let { (from, to) ->
-                database.transaction {
-                    move(viewModel.playlistId, from, to)
-                }
-                if (playlistWithSongs.first?.playlist?.isLocal == false) {
-                    viewModel.viewModelScope.launch(Dispatchers.IO) {
-                        val from = from
-                        val to = to
-                        val playlistSongMap = database.songMapsToPlaylist(viewModel.playlistId, 0)
+                dragInfo = null
+                val remotePlaylistId = playlistWithSongs.first?.playlist
+                    ?.takeIf { !it.isLocal }?.browseId
+                viewModel.viewModelScope.launch(Dispatchers.IO) {
+                    try {
+                        reorderMutex.withLock {
+                            val playlistSongMap = database.withTransferTransaction {
+                                val originalOrder = songMapsToPlaylist(viewModel.playlistId, 0)
+                                require(from in originalOrder.indices && to in originalOrder.indices)
+                                move(viewModel.playlistId, from, to)
+                                originalOrder
+                            }
+                            if (remotePlaylistId == null || from == to) return@withLock
+                            var fromIndex = from //- headerItems
+                            val toIndex = to //- headerItems
 
-                        var fromIndex = from //- headerItems
-                        val toIndex = to //- headerItems
+                            var successorIndex = if (fromIndex > toIndex) toIndex else toIndex + 1
 
-                        var successorIndex = if (fromIndex > toIndex) toIndex else toIndex + 1
-
-                        /*
-                        * Because of how YouTube Music handles playlist changes, you necessarily need to
-                        * have the SetVideoId of the successor when trying to move a song inside of a
-                        * playlist.
-                        * For this reason, if we are trying to move a song to the last element of a playlist,
-                        * we need to first move it as penultimate and then move the last element before it.
-                        */
-                        if (successorIndex >= playlistSongMap.size) {
-                            playlistSongMap[fromIndex].setVideoId?.let { setVideoId ->
-                                playlistSongMap[toIndex].setVideoId?.let { successorSetVideoId ->
-                                    playlistWithSongs.first?.playlist?.browseId?.let { browseId ->
-                                        YouTube.moveSongPlaylist(browseId, setVideoId, successorSetVideoId)
+                            /*
+                            * Because of how YouTube Music handles playlist changes, you necessarily need to
+                            * have the SetVideoId of the successor when trying to move a song inside of a
+                            * playlist.
+                            * For this reason, if we are trying to move a song to the last element of a playlist,
+                            * we need to first move it as penultimate and then move the last element before it.
+                            */
+                            if (successorIndex >= playlistSongMap.size) {
+                                playlistSongMap[fromIndex].setVideoId?.let { setVideoId ->
+                                    playlistSongMap[toIndex].setVideoId?.let { successorSetVideoId ->
+                                        YouTube.moveSongPlaylist(remotePlaylistId, setVideoId, successorSetVideoId).getOrThrow()
                                     }
                                 }
+
+                                successorIndex = fromIndex
+                                fromIndex = toIndex
                             }
 
-                            successorIndex = fromIndex
-                            fromIndex = toIndex
-                        }
-
-                        playlistSongMap[fromIndex].setVideoId?.let { setVideoId ->
-                            playlistSongMap[successorIndex].setVideoId?.let { successorSetVideoId ->
-                                playlistWithSongs.first?.playlist?.browseId?.let { browseId ->
-                                    YouTube.moveSongPlaylist(browseId, setVideoId, successorSetVideoId)
+                            playlistSongMap[fromIndex].setVideoId?.let { setVideoId ->
+                                playlistSongMap[successorIndex].setVideoId?.let { successorSetVideoId ->
+                                    YouTube.moveSongPlaylist(remotePlaylistId, setVideoId, successorSetVideoId).getOrThrow()
                                 }
                             }
+                        }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        reportException(error)
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(context, R.string.error_unknown, Toast.LENGTH_LONG).show()
                         }
                     }
                 }
-                dragInfo = null
             }
         }
     }

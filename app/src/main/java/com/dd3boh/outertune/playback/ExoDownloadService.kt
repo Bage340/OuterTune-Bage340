@@ -31,9 +31,7 @@ class ExoDownloadService : DownloadService(
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == REMOVE_ALL_PENDING_DOWNLOADS) {
-            downloadManager.currentDownloads.forEach { download ->
-                downloadManager.removeDownload(download.request.id)
-            }
+            downloadUtil.removeDownloads(downloadManager.currentDownloads.map { it.request.id }, cancelOnly = true)
         }
         return super.onStartCommand(intent, flags, startId)
     }

@@ -166,8 +166,12 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
 
     @Transaction
     fun insert(mediaMetadata: MediaMetadata, block: (SongEntity) -> SongEntity = { it }) {
-        val album = mediaMetadata.album?.let { albumsByName(it.title) }
-        val albumId = mediaMetadata.album?.let { album?.id ?: AlbumEntity.generateAlbumId() }
+        val album = mediaMetadata.album?.let {
+            if (it.isLocal) albumsByName(it.title, isLocal = true) else albumById(it.id)
+        }
+        val albumId = mediaMetadata.album?.let {
+            album?.id ?: if (it.isLocal) AlbumEntity.generateAlbumId() else it.id
+        }
         val song = mediaMetadata.toSongEntity().let(block)
         if (insert(if (mediaMetadata.isLocal && albumId != null) song.copy(albumId = albumId) else song) == -1L) return
         mediaMetadata.artists.forEachIndexed { index, artist ->
@@ -208,12 +212,12 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
         mediaMetadata.album?.let {
             val resolvedAlbumId = requireNotNull(albumId)
             upsert(
-                AlbumEntity(
+                album ?: AlbumEntity(
                     id = resolvedAlbumId,
                     title = it.title,
-                    thumbnailUrl = album?.thumbnailUrl?: mediaMetadata.thumbnailUrl,
-                    songCount = (album?.songCount ?: 0).coerceAtLeast(1),
-                    duration = (album?.duration ?: 0) + mediaMetadata.duration,
+                    thumbnailUrl = mediaMetadata.thumbnailUrl,
+                    songCount = 1,
+                    duration = mediaMetadata.duration.coerceAtLeast(0),
                     isLocal = it.isLocal
                 )
             )
@@ -221,9 +225,10 @@ interface DatabaseDao : SongsDao, AlbumsDao, ArtistsDao, PlaylistsDao, QueueDao 
                 SongAlbumMap(
                     songId = mediaMetadata.id,
                     albumId = resolvedAlbumId,
-                    index = album?.songCount ?: 0
+                    index = nextAlbumSongIndex(resolvedAlbumId)
                 )
             )
+            if (it.isLocal) updateLocalAlbumTotals(resolvedAlbumId)
         }
     }
 

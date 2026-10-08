@@ -1,5 +1,10 @@
 # OuterTune 0.11.1 v92: final review
 
+Latest whole-version source review and corrective validation:
+[2026-10-08 review](V92_MEGA_REVIEW_2026-10-08.md). The counts and APK evidence
+below are historical receipts for the source revisions explicitly identified;
+they do not validate the later corrective source or authorize Stable promotion.
+
 Review started 2026-09-30, continued through 2026-10-03. This document separates source review, automated evidence,
 and device acceptance. It does not authorize a Stable publication.
 

@@ -43,7 +43,6 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastSumBy
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
@@ -61,7 +60,7 @@ import com.dd3boh.outertune.db.entities.PlaylistSong
 import com.dd3boh.outertune.db.entities.Song
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.button.IconButton
@@ -252,16 +251,10 @@ fun SongMenu(
                     downloadUtil.download(song.toMediaMetadata())
                 },
                 onRemoveDownload = {
-                    if (song.song.localPath != null) {
-                        downloadUtil.delete(song)
-                    } else {
-                        DownloadService.sendRemoveDownload(
-                            context,
-                            ExoDownloadService::class.java,
-                            song.id,
-                            false
-                        )
-                    }
+                    downloadUtil.removeDownloads(
+                        listOf(song.id),
+                        cancelOnly = download == DownloadUtil.STATE_DOWNLOADING,
+                    )
                 }
             )
 
@@ -381,12 +374,7 @@ fun SongMenu(
         AddToPlaylistDialog(
             navController = navController,
             songIds = listOf(song.id),
-            onPreAdd = { playlist ->
-                playlist.playlist.browseId?.let { browseId ->
-                    YouTube.addToPlaylist(browseId, song.id)
-                }
-                listOf(song.id)
-            },
+            onPreAdd = { listOf(song.id) },
             onDismiss = { showChoosePlaylistDialog = false }
         )
     }

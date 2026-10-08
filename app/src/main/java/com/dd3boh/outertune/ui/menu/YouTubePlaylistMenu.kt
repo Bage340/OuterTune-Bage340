@@ -400,21 +400,12 @@ fun YouTubePlaylistMenu(
         AddToPlaylistDialog(
             navController = navController,
             songIds = null,
-            onPreAdd = { targetPlaylist ->
-                val allSongs = songs
-                    .ifEmpty {
-                        YouTube.playlist(targetPlaylist.id).completed().getOrNull()?.songs.orEmpty()
-                    }.map {
-                        it.toMediaMetadata()
-                    }
-                database.transaction {
+            onPreAdd = {
+                val allSongs = YouTube.playlist(playlist.id).completed().getOrThrow().songs
+                    .map { it.toMediaMetadata() }
+                database.withTransferTransaction {
                     allSongs.forEach(::insert)
                 }
-
-                targetPlaylist.playlist.browseId?.let { playlistId ->
-                    YouTube.addPlaylistToPlaylist(playlistId, targetPlaylist.id)
-                }
-
                 allSongs.map { it.id }
             },
             onDismiss = { showChoosePlaylistDialog = false }

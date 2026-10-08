@@ -224,14 +224,13 @@ fun YouTubeAlbumMenu(
     if (showChoosePlaylistDialog) {
         AddToPlaylistDialog(
             navController = navController,
-            songIds = album?.songs?.map { it.id }.orEmpty(),
-            onPreAdd = { playlist ->
-                playlist.playlist.browseId?.let { playlistId ->
-                    album?.album?.playlistId?.let { addPlaylistId ->
-                        YouTube.addPlaylistToPlaylist(playlistId, addPlaylistId)
-                    }
+            songIds = null,
+            onPreAdd = {
+                val albumPage = YouTube.album(albumItem.id).getOrThrow()
+                database.withTransferTransaction {
+                    insert(albumPage)
                 }
-                emptyList()
+                albumPage.songs.map { it.id }
             },
             onDismiss = { showChoosePlaylistDialog = false }
         )

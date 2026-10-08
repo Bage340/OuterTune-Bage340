@@ -206,6 +206,7 @@ fun LyricsMenu(
     if (showSearchResultDialog) {
         val results by viewModel.results.collectAsState()
         val isLoading by viewModel.isLoading.collectAsState()
+        val searchFailed by viewModel.searchFailed.collectAsState()
 
         var expandedItemIndex by rememberSaveable {
             mutableIntStateOf(-1)
@@ -297,6 +298,8 @@ fun LyricsMenu(
                     Text(
                         text = if (!context.isInternetConnected()) {
                             stringResource(R.string.error_no_internet)
+                        } else if (searchFailed) {
+                            stringResource(R.string.error_unknown)
                         } else {
                             stringResource(R.string.lyrics_not_found)
                         },

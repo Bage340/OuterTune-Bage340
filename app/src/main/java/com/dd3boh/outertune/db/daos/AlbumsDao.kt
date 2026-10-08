@@ -188,8 +188,24 @@ interface AlbumsDao : ArtistsDao {
     fun albumsInLibraryAsc() = albums(AlbumFilter.LIBRARY, AlbumSortType.CREATE_DATE, false)
     fun albumsLikedAsc() = albums(AlbumFilter.LIKED, AlbumSortType.CREATE_DATE, false)
 
-    @Query("SELECT * FROM album WHERE title = :name")
-    fun albumsByName(name: String): AlbumEntity?
+    @Query("SELECT * FROM album WHERE title = :name AND isLocal = :isLocal")
+    fun albumsByName(name: String, isLocal: Boolean): AlbumEntity?
+
+    @Query("SELECT COALESCE(MAX(`index`) + 1, 0) FROM song_album_map WHERE albumId = :albumId")
+    fun nextAlbumSongIndex(albumId: String): Int
+
+    @Query("SELECT * FROM song_album_map WHERE songId = :songId")
+    fun songAlbumMaps(songId: String): List<SongAlbumMap>
+
+    @Query("""
+        UPDATE album SET
+            songCount = (SELECT COUNT(*) FROM song_album_map WHERE albumId = :albumId),
+            duration = (SELECT COALESCE(SUM(MAX(song.duration, 0)), 0)
+                        FROM song_album_map JOIN song ON song.id = song_album_map.songId
+                        WHERE song_album_map.albumId = :albumId)
+        WHERE id = :albumId AND isLocal = 1
+    """)
+    fun updateLocalAlbumTotals(albumId: String)
 
     @Transaction
     @Query(

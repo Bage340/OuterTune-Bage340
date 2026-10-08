@@ -7,6 +7,19 @@ replace every case in that checklist.
 
 ## 0.11.1 v92 — Preview / pre-release
 
+- Preserve existing metadata when native tag extraction fails. Repeated full
+  rescans retain album identities, bookmarks and order, with accurate counts
+  and duration; local album titles cannot overwrite remote albums.
+- Reject incomplete account-library snapshots before overwrite reconciliation,
+  including malformed rows and unconsumed continuation tokens.
+- Copy complete remote playlists using their source identity. Duplicate choices
+  share one confirmed remote/local addition path; failures remain visible.
+- Resolve stream holes inside the cache chain and read beyond the first cached
+  fragment. Pin compatible stream formats across playback/download caches, and
+  prefer readable physical files over stale cached fragments.
+- Use the shared safe cancellation path for single-track actions and notification
+  cancellation. Manual lyrics search distinguishes provider failure from absence
+  and protects replacement searches from stale callbacks.
 - Make local-library scans safer: incomplete traversal or metadata reads must
   not be treated as a complete scan that removes songs from the library.
 - Keep newly imported local songs linked to the same album in both their
@@ -58,3 +71,6 @@ replace every case in that checklist.
 
 This iteration remains a Preview/pre-release. No Stable release has been
 authorized by this changelog.
+
+The whole-version review and current evidence limits are recorded in
+[the 2026-10-08 review](docs/V92_MEGA_REVIEW_2026-10-08.md).

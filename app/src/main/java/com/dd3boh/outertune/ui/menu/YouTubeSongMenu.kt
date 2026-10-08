@@ -33,7 +33,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.dd3boh.outertune.LocalDatabase
@@ -47,7 +46,7 @@ import com.dd3boh.outertune.db.entities.SongEntity
 import com.dd3boh.outertune.extensions.toMediaItem
 import com.dd3boh.outertune.models.MediaMetadata
 import com.dd3boh.outertune.models.toMediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.ListQueue
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.button.IconButton
@@ -197,11 +196,9 @@ fun YouTubeSongMenu(
                 downloadUtil.download(song.toMediaMetadata())
             },
             onRemoveDownload = {
-                DownloadService.sendRemoveDownload(
-                    context,
-                    ExoDownloadService::class.java,
-                    song.id,
-                    false
+                downloadUtil.removeDownloads(
+                    listOf(song.id),
+                    cancelOnly = download == DownloadUtil.STATE_DOWNLOADING,
                 )
             }
         )
@@ -268,17 +265,10 @@ fun YouTubeSongMenu(
         AddToPlaylistDialog(
             navController = navController,
             songIds = null,
-            onPreAdd = { playlist ->
-                database.transaction {
+            onPreAdd = {
+                database.withTransferTransaction {
                     insert(song.toMediaMetadata())
                 }
-
-                coroutineScope.launch(syncCoroutine) {
-                    playlist.playlist.browseId?.let { browseId ->
-                        YouTube.addToPlaylist(browseId, song.id)
-                    }
-                }
-
                 listOf(song.id)
             },
             onDismiss = { showChoosePlaylistDialog = false }

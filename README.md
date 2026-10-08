@@ -30,6 +30,11 @@ Feature availability can vary with device, account, network, region, provider, a
 
 ## Install or build
 
+The [2026-10-08 v92 review](docs/V92_MEGA_REVIEW_2026-10-08.md) records the
+latest corrections and remaining acceptance checks. Unknown legacy partial
+cache formats are rejected to preserve retained audio; successful account sync
+and phone acceptance remain separate from source/build verification.
+
 The active test iteration is **OuterTune 0.11.1 v92** (Android `versionCode` 92), tag `0.11.1-v92`. It remains Preview/pre-release until phone testing is accepted; no Stable release is implied. Stable and Preview use different package IDs and keep separate app data. Preserve a backup/export and try a normal Preview update first. If Android rejects installation, retain the error and do not uninstall the only copy of your data. When a release is published, use only the APKs on this repository's [Releases](https://github.com/Bage340/OuterTune-Bage340/releases) page. Test-build artifacts, when available, are attached to [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) runs and are not a substitute for a published release. See [release policy](docs/RELEASE_POLICY.md), [custom build notes](CUSTOM_BUILD.md), and the [phone test plan](docs/PHONE_TEST_PLAN.md).
 
 To build from source, clone this repository with submodules and use Android Studio or the Gradle wrapper:

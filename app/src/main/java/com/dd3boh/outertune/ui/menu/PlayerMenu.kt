@@ -80,7 +80,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastSumBy
 import androidx.compose.ui.window.DialogProperties
 import androidx.media3.common.PlaybackParameters
-import androidx.media3.exoplayer.offline.DownloadService
 import androidx.navigation.NavController
 import com.dd3boh.outertune.LocalDatabase
 import com.dd3boh.outertune.LocalDownloadUtil
@@ -92,7 +91,7 @@ import com.dd3boh.outertune.constants.SleepTimerDefaults
 import com.dd3boh.outertune.constants.SleepTimerFadeDurationKey
 import com.dd3boh.outertune.constants.SleepTimerFadeKey
 import com.dd3boh.outertune.models.MediaMetadata
-import com.dd3boh.outertune.playback.ExoDownloadService
+import com.dd3boh.outertune.playback.DownloadUtil
 import com.dd3boh.outertune.playback.queues.YouTubeQueue
 import com.dd3boh.outertune.ui.component.BigSeekBar
 import com.dd3boh.outertune.ui.component.BottomSheetState
@@ -275,11 +274,9 @@ fun PlayerMenu(
                     downloadUtil.download(mediaMetadata)
                 },
                 onRemoveDownload = {
-                    DownloadService.sendRemoveDownload(
-                        context,
-                        ExoDownloadService::class.java,
-                        mediaMetadata.id,
-                        false
+                    downloadUtil.removeDownloads(
+                        listOf(mediaMetadata.id),
+                        cancelOnly = download == DownloadUtil.STATE_DOWNLOADING,
                     )
                 }
             )
@@ -409,13 +406,10 @@ fun PlayerMenu(
         AddToPlaylistDialog(
             navController = navController,
             songIds = listOf(mediaMetadata.id),
-            onPreAdd = { playlist ->
-                database.transaction {
+            onPreAdd = {
+                database.withTransferTransaction {
                     insert(mediaMetadata)
                 }
-
-                playlist.playlist.browseId?.let { YouTube.addToPlaylist(it, mediaMetadata.id) }
-
                 listOf(mediaMetadata.id)
             },
             onDismiss = {

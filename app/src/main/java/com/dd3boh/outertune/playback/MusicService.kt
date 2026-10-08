@@ -38,11 +38,10 @@ import androidx.media3.common.Player.STATE_IDLE
 import androidx.media3.common.Timeline
 import androidx.media3.common.audio.SonicAudioProcessor
 import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.HttpDataSource.InvalidResponseCodeException
 import androidx.media3.datasource.ResolvingDataSource
-import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.cache.CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
@@ -698,34 +697,18 @@ class MusicService : MediaLibraryService(),
         )
     }
 
-    private fun createCacheDataSource(): CacheDataSource.Factory {
-        return CacheDataSource.Factory()
-            .setCache(downloadCache)
-            .setUpstreamDataSourceFactory(
-                CacheDataSource.Factory()
-                    .setCache(playerCache)
-                    .setUpstreamDataSourceFactory(
-                        DefaultDataSource.Factory(
-                            this,
-                            OkHttpDataSource.Factory(
-                                OkHttpClient.Builder()
-                                    .proxy(YouTube.proxy)
-                                    .build()
-                            )
-                        )
-                    )
-                    .setCacheWriteDataSinkFactory(
-                        HybridCacheDataSinkFactory(playerCache) { dataSpec ->
-                            val isLocal = queueBoard.value.getCurrentQueue()?.findSong(dataSpec.key ?: "")?.isLocal == true
-                            if (SERVICE_DEBUG) Log.d(TAG, "SONG CACHE: ${!isLocal}")
-                            !isLocal
-                        }
-                    )
-                    .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
-            )
-            .setCacheWriteDataSinkFactory(null)
-            .setFlags(FLAG_IGNORE_CACHE_ON_ERROR)
-    }
+    private fun createCacheDataSource(): DataSource.Factory = playbackCacheDataSourceFactory(
+        downloadCache = downloadCache,
+        playerCache = playerCache,
+        upstreamFactory = DefaultDataSource.Factory(
+            this,
+            OkHttpDataSource.Factory(OkHttpClient.Builder().proxy(YouTube.proxy).build()),
+        ),
+        streamResolver = { dataSpec -> resolveRemotePlaybackDataSpec(dataSpec) },
+        playerSinkFactory = HybridCacheDataSinkFactory(playerCache) { dataSpec ->
+            queueBoard.value.getCurrentQueue()?.findSong(dataSpec.key ?: "")?.isLocal != true
+        },
+    )
 
     private fun createDataSourceFactory(): DataSource.Factory {
         return ResolvingDataSource.Factory(createCacheDataSource()) { dataSpec ->
@@ -737,7 +720,6 @@ class MusicService : MediaLibraryService(),
             val downloadedUri = downloadUtil.localMgr.getFilePathIfExists(mediaId)
             val queueSong = queueBoard.value.getCurrentQueue()?.findSong(mediaId)
             val dbSong = runBlocking { database.song(mediaId).first()?.toMediaMetadata() }
-            val song = if (dbSong?.localPath != null) dbSong else queueSong ?: dbSong
 
             val localDataSpec = resolveLocalPlaybackDataSpec(dataSpec, contentResolver, dbSong, queueSong)
             val isLocal = isLocalPlayback(mediaId, dbSong, queueSong)
@@ -789,21 +771,45 @@ class MusicService : MediaLibraryService(),
                 PlaybackSourceKind.PLAYER_CACHE -> {
                     if (SERVICE_DEBUG) Log.d(TAG, "PLAYING: player cache")
                     offloadScope.launch { recoverSong(mediaId) }
-                    return@Factory dataSpec
                 }
 
                 PlaybackSourceKind.REMOTE -> Unit
             }
 
+            withStreamRepresentationLock(mediaId) {
+                val caches = listOf(playerCache, downloadCache)
+                val legacyFormat = runBlocking { database.format(mediaId).first() }
+                cachedStreamRepresentation(mediaId, caches, legacyFormat)?.let {
+                    pinStreamRepresentation(mediaId, caches, it, legacyFormat)
+                }
+            }
+            dataSpec
+        }
+    }
+
+    private fun resolveRemotePlaybackDataSpec(dataSpec: DataSpec): DataSpec {
+        val mediaId = dataSpec.key ?: error("No media id")
+        if (dataSpec.uri.scheme != null) return dataSpec
+        return withStreamRepresentationLock(mediaId) {
+            val caches = listOf(playerCache, downloadCache)
+            val legacyFormat = runBlocking { database.format(mediaId).first() }
+            val pinned = cachedStreamRepresentation(mediaId, caches, legacyFormat)
+            val queueSong = queueBoard.value.getCurrentQueue()?.findSong(mediaId)
+            val dbSong = runBlocking { database.song(mediaId).first()?.toMediaMetadata() }
+            val song = queueSong ?: dbSong
+            val downloadedUri = downloadUtil.localMgr.getFilePathIfExists(mediaId)
+            val localDataSpec = resolveLocalPlaybackDataSpec(dataSpec, contentResolver, dbSong, queueSong)
+            val isDownload = downloadUtil.isDownloadCompleted(mediaId)
             songUrlCache[mediaId]?.let { cachedStream ->
-                if (SERVICE_DEBUG) Log.d(TAG, "PLAYING: remote song (temp cache)")
-                offloadScope.launch { recoverSong(mediaId) }
-                // Bounded like the fresh-resolve path below; letting this read run open-ended was
-                // measurably worse (playback died at 31 s rather than 62 s). The headers matter as
-                // much as the url: googlevideo expects the fetch to look like the client it issued
-                // the url for, and every read past the first chunk comes through here.
-                return@Factory dataSpec.withResolvedStream(cachedStream)
-                    .subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
+                val representation = cachedStream.representation
+                if (representation == null || (pinned != null && !compatibleStreamRepresentations(pinned, representation))) {
+                    songUrlCache.invalidate(mediaId)
+                } else {
+                    pinStreamRepresentation(mediaId, caches, representation, legacyFormat)
+                    if (SERVICE_DEBUG) Log.d(TAG, "PLAYING: remote song (temp cache)")
+                    offloadScope.launch { recoverSong(mediaId) }
+                    return@withStreamRepresentationLock dataSpec.withResolvedStream(cachedStream)
+                }
             }
 
             if (SERVICE_DEBUG) Log.d(TAG, "PLAYING: remote song (online fetch)")
@@ -815,6 +821,7 @@ class MusicService : MediaLibraryService(),
                     audioQuality = audioQuality,
                     connectivityManager = connectivityManager,
                     rejectedClient = songUrlCache.rejectedClient(mediaId),
+                    requiredItag = pinned?.itag,
                 )
             }.getOrElse { throwable ->
                 val sourceDiagnostics = buildString {
@@ -860,6 +867,8 @@ class MusicService : MediaLibraryService(),
                 }
             }
             val format = playbackData.format
+            val representation = CachedStreamRepresentation(format.itag, canonicalStreamMimeType(format.mimeType), format.contentLength)
+            pinStreamRepresentation(mediaId, caches, representation, legacyFormat)
 
             format.contentLength?.let { contentLength ->
                 database.query {
@@ -887,9 +896,9 @@ class MusicService : MediaLibraryService(),
                 requestHeaders = playbackData.streamHeaders,
                 clientName = playbackData.streamClient,
                 expiresInSeconds = playbackData.streamExpiresInSeconds,
+                representation = representation,
             )
-            dataSpec.withResolvedStream(stream)
-                .subrange(dataSpec.uriPositionOffset, CHUNK_LENGTH)
+            return@withStreamRepresentationLock dataSpec.withResolvedStream(stream)
         }
     }
 

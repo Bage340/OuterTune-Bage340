@@ -94,7 +94,115 @@ class MediaMetadataInsertTest {
 
         val stored = requireNotNull(database.song("remote").first()).song
         assertEquals(remote.toSongEntity().copy(inLibrary = addedAt, liked = true), stored)
+        assertEquals("MPREremote", requireNotNull(database.song("remote").first()).album?.id)
+        assertEquals(listOf("remote"), database.albumSongs("MPREremote").first().map { it.id })
     }
+
+    @Test
+    fun localAlbumWithRemoteTitleDoesNotOverwriteRemoteAlbum() = runBlocking {
+        val remote = savedAlbum("MPREsaved", isLocal = false)
+        database.insert(remote)
+
+        database.insert(metadata("local", album = MediaMetadata.Album("LBscan", remote.title, isLocal = true)))
+
+        assertEquals(remote, database.albumById(remote.id))
+        val local = database.allLocalDbSongs().single()
+        assertTrue(requireNotNull(local.album).isLocal)
+        assertTrue(local.song.albumId != remote.id)
+        assertEquals(local.song.albumId, local.album?.id)
+        assertEquals(listOf("local"), database.albumSongs(local.song.albumId!!).first().map { it.id })
+        assertTrue(database.albumSongs(remote.id).first().isEmpty())
+    }
+
+    @Test
+    fun addingSongToExistingLocalAlbumPreservesSavedAlbumState() = runBlocking {
+        val existing = savedAlbum("LBsaved", isLocal = true)
+        database.insert(existing)
+
+        database.insert(metadata("local", album = MediaMetadata.Album("LBscan", existing.title, isLocal = true)))
+
+        val stored = requireNotNull(database.albumById(existing.id))
+        assertEquals(existing.bookmarkedAt, stored.bookmarkedAt)
+        assertEquals(existing.playlistId, stored.playlistId)
+        assertEquals(existing.year, stored.year)
+        assertEquals(existing.themeColor, stored.themeColor)
+        assertEquals(existing.thumbnailUrl, stored.thumbnailUrl)
+        assertTrue(stored.isLocal)
+        assertEquals(existing.id, database.allLocalDbSongs().single().song.albumId)
+    }
+
+    @Test
+    fun remoteAlbumUsesItsIdDespiteAnotherAlbumWithTheSameTitle() = runBlocking {
+        val other = savedAlbum("MPREother", isLocal = false)
+        val existing = savedAlbum("MPREincoming", isLocal = false)
+        database.insert(other)
+        database.insert(existing)
+
+        database.insert(metadata("remote", album = MediaMetadata.Album(existing.id, existing.title), isLocal = false))
+
+        assertEquals(other, database.albumById(other.id))
+        val stored = requireNotNull(database.albumById(existing.id))
+        assertEquals(existing.bookmarkedAt, stored.bookmarkedAt)
+        assertEquals(existing.playlistId, stored.playlistId)
+        assertEquals(existing.year, stored.year)
+        assertEquals(existing.themeColor, stored.themeColor)
+        assertEquals(existing.thumbnailUrl, stored.thumbnailUrl)
+        val remote = requireNotNull(database.song("remote").first())
+        assertEquals(existing.id, remote.song.albumId)
+        assertEquals(existing.id, remote.album?.id)
+        assertEquals(listOf("remote"), database.albumSongs(existing.id).first().map { it.id })
+        assertTrue(database.albumSongs(other.id).first().isEmpty())
+        assertEquals(existing, stored)
+    }
+
+    @Test
+    fun localSongCanRetainAnExplicitRemoteAlbumLink() = runBlocking {
+        val remote = savedAlbum("MPREsaved", isLocal = false)
+        val local = savedAlbum("LBsaved", isLocal = true)
+        database.insert(local)
+        database.insert(remote)
+
+        database.insert(metadata("local", album = MediaMetadata.Album(remote.id, remote.title)))
+
+        val stored = database.allLocalDbSongs().single()
+        assertEquals(remote.id, stored.song.albumId)
+        assertEquals(remote.id, stored.album?.id)
+        assertEquals(remote, database.albumById(remote.id))
+        assertEquals(local, database.albumById(local.id))
+    }
+
+    @Test
+    fun localAlbumTotalsAndOrderReflectDistinctInsertedSongs() = runBlocking {
+        val album = MediaMetadata.Album("LBscan", "Local Album", isLocal = true)
+        listOf("first", "second", "third").forEach { database.insert(metadata(it, album)) }
+        database.insert(metadata("second", album).copy(duration = 500))
+
+        val stored = database.allLocalAlbumsByName().single()
+        assertEquals(3, stored.songCount)
+        assertEquals(90, stored.duration)
+        database.openHelper.readableDatabase.query(
+            "SELECT songId, `index` FROM song_album_map WHERE albumId = ? ORDER BY `index`",
+            arrayOf(stored.id),
+        ).use { cursor ->
+            val order = mutableListOf<Pair<String, Int>>()
+            while (cursor.moveToNext()) order.add(cursor.getString(0) to cursor.getInt(1))
+            assertEquals(listOf("first" to 0, "second" to 1, "third" to 2), order)
+        }
+    }
+
+    private fun savedAlbum(id: String, isLocal: Boolean) = AlbumEntity(
+        id = id,
+        playlistId = "saved-playlist",
+        title = "Shared Album",
+        year = 2001,
+        thumbnailUrl = "saved-artwork",
+        themeColor = 123,
+        songCount = 2,
+        duration = 60,
+        lastUpdateTime = LocalDateTime.of(2026, 1, 2, 3, 4),
+        bookmarkedAt = LocalDateTime.of(2026, 1, 2, 3, 4),
+        isLocal = isLocal,
+    )
 
     private fun metadata(id: String, album: MediaMetadata.Album?, isLocal: Boolean = true) = MediaMetadata(
         id = id,

@@ -15,6 +15,7 @@ internal data class CachedStreamUrl(
     val expiresAtMillis: Long,
     val clientName: String,
     val requestHeaders: Map<String, String>,
+    val representation: CachedStreamRepresentation? = null,
 )
 
 /** Keeps every property of one resolved stream together under a single lock. */
@@ -46,6 +47,7 @@ internal class StreamUrlCache(
         requestHeaders: Map<String, String>,
         clientName: String,
         expiresInSeconds: Int,
+        representation: CachedStreamRepresentation? = null,
     ): CachedStreamUrl = synchronized(lock) {
         val usableLifetimeMillis =
             (expiresInSeconds.coerceAtLeast(0).toLong() * 1_000L - expirySafetyMarginMillis)
@@ -56,6 +58,7 @@ internal class StreamUrlCache(
             expiresAtMillis = currentTimeMillis() + usableLifetimeMillis,
             clientName = clientName,
             requestHeaders = requestHeaders.toMap(),
+            representation = representation,
         ).also {
             entries[mediaId] = it
             rejectedClients.remove(mediaId)
