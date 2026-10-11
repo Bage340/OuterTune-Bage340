@@ -7,6 +7,11 @@ replace every case in that checklist.
 
 ## 0.11.1 v92 — Stable
 
+- Recover access to saved scan folders through Android's folder picker when
+  the current app has no SAF grant, including restored settings. Preserve the
+  configured roots and library if the picker is cancelled. Stop discovery
+  progress and release scanner ownership immediately on failure so retry does
+  not wait for an error message to disappear.
 - Preserve existing metadata when native tag extraction fails. Repeated full
   rescans retain album identities, bookmarks and order, with accurate counts
   and duration; local album titles cannot overwrite remote albums.

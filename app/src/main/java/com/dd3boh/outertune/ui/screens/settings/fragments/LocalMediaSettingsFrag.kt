@@ -99,6 +99,7 @@ import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerRe
 import com.dd3boh.outertune.utils.scanners.LocalMediaScanner.Companion.scannerState
 import com.dd3boh.outertune.utils.scanners.ScannerAbortException
 import com.dd3boh.outertune.utils.scanners.absoluteFilePathFromUri
+import com.dd3boh.outertune.utils.scanners.scanTreeNeedingPermission
 import com.dd3boh.outertune.utils.scanners.stringFromUriList
 import com.dd3boh.outertune.utils.scanners.uriListFromString
 import kotlinx.coroutines.CancellationException
@@ -123,7 +124,7 @@ fun ColumnScope.LocalScannerFrag() {
     val scannerProgressTotal by scannerProgressTotal.collectAsState()
     val scannerProgressCurrent by scannerProgressCurrent.collectAsState()
 
-    var scannerFailure = false
+    var scannerFailure by remember { mutableStateOf(false) }
     val mediaPermission = remember(context) { ScannerMediaPermissionState(context) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
@@ -165,6 +166,19 @@ fun ColumnScope.LocalScannerFrag() {
 
     val (lastLocalScan, onLastLocalScanChange) = rememberPreference(LastLocalScanKey, 0L)
 
+    val scanAccessLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        try {
+            // Scanning needs read access only; a provider may not offer write access.
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (e: SecurityException) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(resources.getString(R.string.restore_lm_tooltip))
+            }
+        }
+        // Do not replace the configured root with a different, potentially narrower tree.
+    }
+
     LaunchedEffect(scanPaths, scannerImpl) {
         if (scanPaths.isBlank() && scannerImpl != ScannerImpl.MEDIASTORE) {
             showAddFolderDialog = true
@@ -203,6 +217,12 @@ fun ColumnScope.LocalScannerFrag() {
 
                 scannerFailure = false
 
+                val missingTree = scanTreeNeedingPermission(context, uriListFromString(scanPaths))
+                if (missingTree != null) {
+                    scanAccessLauncher.launch(missingTree)
+                    return@Button
+                }
+
                 playerConnection?.player?.pause()
 
                 coroutineScope.launch(lmScannerCoroutine) {
@@ -237,19 +257,23 @@ fun ColumnScope.LocalScannerFrag() {
                         } catch (e: ScannerAbortException) {
                             scannerFailure = true
 
-                            snackbarHostState.showSnackbar(
-                                message = "$scanFailMessage: ${e.message}",
-                                withDismissAction = true,
-                                duration = SnackbarDuration.Short
-                            )
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "$scanFailMessage: ${e.message}",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
                         } catch (e: Exception) {
                             scannerFailure = handleManualScanException(e) { reportException(it) }
 
-                            snackbarHostState.showSnackbar(
-                                message = "$scanFailMessage: ${e.message}",
-                                withDismissAction = true,
-                                duration = SnackbarDuration.Short
-                            )
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "$scanFailMessage: ${e.message}",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
                         } finally {
                             clearDtCache()
                             if (scannerAcquired) destroyScanner(SCANNER_OWNER_LM)
@@ -285,19 +309,23 @@ fun ColumnScope.LocalScannerFrag() {
                         } catch (e: ScannerAbortException) {
                             scannerFailure = true
 
-                            snackbarHostState.showSnackbar(
-                                message = "$scanFailMessage: ${e.message}",
-                                withDismissAction = true,
-                                duration = SnackbarDuration.Short
-                            )
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "$scanFailMessage: ${e.message}",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
                         } catch (e: Exception) {
                             scannerFailure = handleManualScanException(e) { reportException(it) }
 
-                            snackbarHostState.showSnackbar(
-                                message = "$scanFailMessage: ${e.message}",
-                                withDismissAction = true,
-                                duration = SnackbarDuration.Short
-                            )
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "$scanFailMessage: ${e.message}",
+                                    withDismissAction = true,
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
                         } finally {
                             clearDtCache()
                             if (scannerAcquired) destroyScanner(SCANNER_OWNER_LM)
@@ -504,8 +532,14 @@ fun ColumnScope.LocalScannerFrag() {
                 if (uri == null) return@rememberLauncherForActivityResult
 
                 val contentResolver = context.contentResolver
-                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
-                contentResolver.takePersistableUriPermission(uri, takeFlags)
+                try {
+                    contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                } catch (e: SecurityException) {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(resources.getString(R.string.restore_lm_tooltip))
+                    }
+                    return@rememberLauncherForActivityResult
+                }
                 if (tempScanPaths.any { it.toString() == uri.toString() }) return@rememberLauncherForActivityResult
                 tempScanPaths.add(uri)
             }

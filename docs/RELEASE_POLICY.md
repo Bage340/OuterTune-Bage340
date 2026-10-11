@@ -6,6 +6,10 @@ OuterTune-Bage340 currently follows upstream's base `versionName` (`0.11.1`) whi
 - Stable and Preview are separate installable packages with separate signing keys and app-private data. Both may show `0.11.1 v92`; the channel is separate from version/revision.
 - Publish prereleases for further technical changes unless Stable publication is explicitly authorized. Only the user's explicit confirmation after phone testing authorizes a full/stable release; this authorization was received for v92. Promote the same release/tag if appropriate; do not increment its version solely for promotion.
 - Start v93 only for a *new* development cycle after v92 has been accepted as Stable.
+- The owner explicitly authorized correcting the reported Stable scanner failure
+  and replacing the existing v92 universal Core/Full assets on October 11.
+  This repair keeps versionCode 92, versionName 0.11.1, the Stable signing key,
+  the release's Stable status and its historical tag. It does not open v93.
 - Android may reject installing a different APK over the same package/signature/versionCode. Preview's separate package enables side-by-side testing with Stable but does not by itself guarantee in-place replacement of an earlier Preview v92 APK. Explain this honestly and protect app data; do not silently increase the public revision.
 - Keep historical tags, commits, changelogs and releases; do not delete them without explicit authorization.
 

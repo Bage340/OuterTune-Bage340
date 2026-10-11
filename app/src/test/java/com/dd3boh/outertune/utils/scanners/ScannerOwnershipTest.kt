@@ -52,6 +52,17 @@ class ScannerOwnershipTest {
         }
     }
 
+    @Test
+    fun failedDiscoveryStopsProgressBeforeCallerDisplaysError() {
+        val scanner = LocalMediaScanner.getScanner(context, ScannerImpl.TAGLIB, FIRST_OWNER)
+
+        assertThrows(ScannerAbortException::class.java) {
+            scanner.scanLocal("content://missing/tree/music", "")
+        }
+
+        assertEquals(0, LocalMediaScanner.scannerState.value)
+    }
+
     private companion object {
         const val FIRST_OWNER = 91
         const val SECOND_OWNER = 92

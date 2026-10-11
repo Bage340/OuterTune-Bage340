@@ -1,6 +1,8 @@
 package com.dd3boh.outertune.utils.scanners
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -27,6 +29,15 @@ fun stringFromUriList(uris: List<Uri>): String {
 fun uriListFromString(str: String): List<Uri> {
     return str.split("\n").map { it.toUri() }.filter { it.toString().isNotBlank() }.distinctBy { it.toString() }
 }
+
+/** Restored paths do not restore Android's per-package SAF grants. */
+fun scanTreeNeedingPermission(context: Context, scanPaths: List<Uri>): Uri? =
+    scanPaths.firstOrNull { uri ->
+        DocumentsContract.isTreeUri(uri) && context.checkCallingOrSelfUriPermission(
+            DocumentsContract.buildDocumentUriUsingTree(uri, DocumentsContract.getTreeDocumentId(uri)),
+            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+        ) != PackageManager.PERMISSION_GRANTED
+    }
 
 fun fileFromUri(context: Context, uri: Uri): File? {
     if (!DocumentsContract.isTreeUri(uri) && !DocumentsContract.isDocumentUri(context, uri)) return null

@@ -168,18 +168,20 @@ class LocalMediaScanner(context: Context, scannerImpl: ScannerImpl) {
         scannerProgressTotal.value = 0
         scannerProgressCurrent.value = -1
 
-        val scanPaths = uriListFromString(scanPaths)
-        val excludedScanPaths = uriListFromString(excludedScanPaths)
-        setScanCoverage(scanPaths, excludedScanPaths)
+        try {
+            val scanPaths = uriListFromString(scanPaths)
+            val excludedScanPaths = uriListFromString(excludedScanPaths)
+            setScanCoverage(scanPaths, excludedScanPaths)
 
-        getScanFiles(scanPaths, excludedScanPaths, context).forEach { uri ->
-            if (SCANNER_DEBUG)
-                Log.v(TAG, "PATH: $uri")
+            getScanFiles(scanPaths, excludedScanPaths, context).forEach { uri ->
+                if (SCANNER_DEBUG)
+                    Log.v(TAG, "PATH: $uri")
 
-            songs.add(uri)
+                songs.add(uri)
+            }
+        } finally {
+            scannerState.value = 0
         }
-
-        scannerState.value = 0
         Log.i(TAG, "------------ SCAN: Finished Full Scanner ------------")
         return songs.toList()
     }
