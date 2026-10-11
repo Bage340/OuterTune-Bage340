@@ -2,7 +2,7 @@
 
 [![Значок приложения OuterTune](assets/outertune.webp)](assets/outertune.webp)
 
-[![Последняя предварительная версия](https://img.shields.io/github/v/release/Bage340/OuterTune-Bage340?include_prereleases&sort=semver)](https://github.com/Bage340/OuterTune-Bage340/releases)
+[![Последняя версия](https://img.shields.io/github/v/release/Bage340/OuterTune-Bage340?sort=semver)](https://github.com/Bage340/OuterTune-Bage340/releases)
 [![Сборка](https://github.com/Bage340/OuterTune-Bage340/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/Bage340/OuterTune-Bage340/actions/workflows/build.yml)
 [![Лицензия](https://img.shields.io/github/license/Bage340/OuterTune-Bage340)](LICENSE)
 
@@ -35,13 +35,19 @@
 частичного кеша отклоняется для сохранности аудио; успешная синхронизация аккаунта
 и приёмка на телефоне проверяются отдельно от исходного кода и сборки.
 
-Текущая тестовая итерация — **OuterTune 0.11.1 v92** (Android `versionCode` 92), тег `0.11.1-v92`. Пока проверка на телефоне не принята, это Preview/pre-release; выпуск Stable не подразумевается. Stable и Preview имеют разные идентификаторы пакетов и отдельные данные приложения. Сохраните резервную копию/экспорт и сначала попробуйте обычное обновление Preview. Если Android отклонит установку, сохраните текст ошибки и не удаляйте единственную копию данных. Опубликованные APK берите только со страницы [Releases](https://github.com/Bage340/OuterTune-Bage340/releases). Тестовые сборки, если доступны, находятся в [Actions](https://github.com/Bage340/OuterTune-Bage340/actions) и не заменяют опубликованный релиз. См. [правила релизов](docs/RELEASE_POLICY.md), [заметки о сборке](CUSTOM_BUILD.md) и [план проверки на телефоне](docs/PHONE_TEST_PLAN.md).
+Текущий релиз — **OuterTune 0.11.1 v92 — Stable** (Android `versionCode` 92), тег `0.11.1-v92`. Скачайте [Core universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-core.apk) для обычного использования или [Full universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-full.apk) с дополнительным декодером FFmpeg. APK для отдельных архитектур и принятая сборка Preview остаются на [странице релиза](https://github.com/Bage340/OuterTune-Bage340/releases/tag/0.11.1-v92).
+
+Stable сохраняет пакет `com.dd3boh.outertune` и прежний ключ подписи. Сохраните резервную копию/экспорт и сначала попробуйте обычное обновление Stable. Preview использует `com.dd3boh.outertune.preview` с отдельными данными; установка Stable не переносит их автоматически. Если Android отклонит установку, сохраните текст ошибки и не удаляйте единственную копию данных. Ревью исходников и минимальная приёмка на Poco пройдены в Preview; новые Stable APK собраны и проверены без замены Stable на телефоне. См. [правила релизов](docs/RELEASE_POLICY.md), [заметки о сборке](CUSTOM_BUILD.md) и [результаты ревью](docs/V92_MEGA_REVIEW_2026-10-08.md).
+
+Опубликованные APK обоих каналов собраны из `514af1f37d12824188bf0dcbeba0f3724d9321b2`; источник и хеши указаны в `SOURCE_COMMIT.txt` и `SHA256SUMS.txt`. Исторический тег сохранён; его автоматический архив исходников старше этих APK. Для сборки точного исходника выберите commit ниже.
 
 Для сборки из исходного кода клонируйте этот репозиторий вместе с подмодулями и используйте Android Studio или Gradle Wrapper:
 
 ```bash
 git clone --recurse-submodules https://github.com/Bage340/OuterTune-Bage340.git
 cd OuterTune-Bage340
+git checkout 514af1f37d12824188bf0dcbeba0f3724d9321b2
+git submodule update --init --recursive
 
 # Отладочный APK Core
 ./gradlew assemblePreviewCoreDebug

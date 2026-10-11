@@ -1,11 +1,11 @@
 # Changelog
 
-User-facing highlights for the active `0.11.1 v92` Preview iteration. This is
+User-facing highlights for the accepted `0.11.1 v92` Stable release. This is
 not a commit-by-commit log. Phone acceptance is tracked separately in
 [docs/PHONE_TEST_PLAN.md](docs/PHONE_TEST_PLAN.md); automated checks do not
 replace every case in that checklist.
 
-## 0.11.1 v92 — Preview / pre-release
+## 0.11.1 v92 — Stable
 
 - Preserve existing metadata when native tag extraction fails. Repeated full
   rescans retain album identities, bookmarks and order, with accurate counts
@@ -72,8 +72,12 @@ replace every case in that checklist.
 - Open an empty lyrics editor when no text was found, instead of exposing the
   internal negative-cache marker. Preserve existing plain and timed lyrics.
 
-This iteration remains a Preview/pre-release. No Stable release has been
-authorized by this changelog.
+Stable publication was explicitly authorized after the agreed minimal Preview
+phone acceptance. Core and Full use the same accepted source `514af1f37d12824188bf0dcbeba0f3724d9321b2`,
+the existing Stable package/certificate and versionCode92. Signed/minified CI
+run [38159046409](https://github.com/Bage340/OuterTune-Bage340/actions/runs/38159046409) passed. All 10 Stable APK identities and public asset
+checksums are checked separately from phone runtime acceptance. Android10/API29
+is owner-waived; residual device/provider scenarios remain unverified.
 
 The whole-version review and current evidence limits are recorded in
 [the 2026-10-08 review](docs/V92_MEGA_REVIEW_2026-10-08.md).

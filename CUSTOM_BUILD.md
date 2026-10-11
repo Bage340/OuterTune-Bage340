@@ -2,8 +2,9 @@
 
 The active fork iteration uses upstream base version `0.11.1`, fork revision
 `v92`, and Android `versionCode` 92. Its tag is `0.11.1-v92`. A build attempt
-does not increment the revision. Preview is the current test channel; a Stable
-release requires explicit user acceptance after phone testing.
+does not increment the revision. Stable v92 was explicitly authorized after the
+agreed minimal phone acceptance in Preview. Core and Full Stable builds are
+published alongside the separate Preview package.
 
 ## Channels and installation
 
@@ -26,14 +27,14 @@ The pinned source and licenses are in [prebuilt/README.md](prebuilt/README.md).
 
 ```text
 ./gradlew :app:testPreviewCoreDebugUnitTest :app:lintPreviewCoreRelease :app:assemblePreviewCoreRelease -DskipFormatKtlint
-./gradlew :app:testStableFullDebugUnitTest :app:assembleStableCoreRelease :app:assembleStableFullRelease -DskipFormatKtlint
+./gradlew :app:testStableCoreDebugUnitTest :app:testStableFullDebugUnitTest :app:lintStableCoreRelease :app:assembleStableCoreRelease :app:assembleStableFullRelease --max-workers=2 -DskipFormatKtlint
 ```
 
 On Windows, use `gradlew.bat`. Release outputs are under
 `app/build/outputs/apk/<channel><Abi>/<buildType>/` (for example,
 `previewCore/userdebug` or `stableFull/release`); inspect the actual output
-variant before distributing it. The published Preview candidate is Core Release
-with R8 and resource shrinking. CI must validate package ID, version, signing
+variant before distributing it. Published Stable Core/Full and Preview Core use
+R8 and resource shrinking. CI must validate package ID, version, signing
 certificate, and SHA-256 before attaching an APK to a release.
 
 Stable signing reads ignored `keystore.properties`; preserve that key to allow
@@ -79,6 +80,10 @@ even when the existing historical v92 tag remains on its original commit.
   `072d8b119e6ebf210870b2447fb419a210c14a6e`.
 - The v91 source iteration added local-file playback recovery, download and
   stream retry handling, fail-safe scanning, and playlist-folder organization.
-- v92 continues from the existing `0.11.1-v92` prerelease. See Git history for
+- Stable v92 promotes the existing `0.11.1-v92` release without moving its tag.
+  Published Stable and Preview APKs use source `514af1f37d12824188bf0dcbeba0f3724d9321b2`.
+  Clone with submodules, check out that commit, then run
+  `git submodule update --init --recursive`; the automatic archive of the
+  historical tag is not the replacement APK source. See Git history for
   implementation detail; this document is not a substitute for attribution
   notices in source and dependency files.

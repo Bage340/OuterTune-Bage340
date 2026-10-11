@@ -13,7 +13,9 @@ device/provider scenarios remain explicitly unverified.
 Parent-candidate8585c09b phone acceptance has now
 confirmed update preservation, offline playback, rescans, cancellation and local
 copy; see the October11 continuation below.
-This document does not authorize Stable publication.
+After this review and Preview acceptance, the owner explicitly requested Stable
+publication. The signed Stable release work is recorded below; it does not
+relabel Preview runtime evidence as a Stable phone upgrade.
 
 The user requested source-led review with a minimal, high-value test set.
 The corrective validation deliberately exercises the discovered failures and
@@ -260,8 +262,8 @@ as a full rerun on this later APK.
 3. Exact APK/source identity, update backups, complete export/cache comparison
    and restoration of temporary phone controls are recorded. No required gate
    remains unfinished under the current minimal acceptance scope.
-4. Android10 is deferred by the owner. Stable promotion still requires an explicit
-   release request; the current Preview verification does not authorize it.
+4. Android10 is deferred by the owner. The subsequent explicit Stable release
+   request authorizes promotion; the review itself did not supply that approval.
 
 Remote per-song batches can partly succeed before a later request fails; local
 commit is withheld, but server mutations cannot be rolled back atomically. Remote
@@ -277,8 +279,32 @@ races. No byte loss was established for that caveat.
 
 All scopes requested by the original v92 handoff were compared with the finished
 source. This review improves and verifies the implementation; it cannot honestly
-promise every device/provider scenario works perfectly. Publish/update Preview
-only, close the completed playlist-preservation issue#14 and keep issue#15 open
-for the remaining unverified device scenarios, with the completed minimal scope
-recorded. Wait for an explicit Stable release request. Stable
-publication and a newly signed Stable binary are separate release work.
+promise every device/provider scenario works perfectly. Issue#14 is closed after
+actual completed playlist acceptance. Issue#15 stays open for residual unverified
+device scenarios, with the completed minimal scope recorded. The owner then
+explicitly requested Stable publication; the separate release work follows.
+
+## Stable promotion — October11, explicitly authorized
+
+- Source stays `514af1f37d12824188bf0dcbeba0f3724d9321b2` for both Stable and Preview; promotion changes
+  the release channel without moving historical tag `0.11.1-v92` or creating v93.
+- Signed CI run [38159046409](https://github.com/Bage340/OuterTune-Bage340/actions/runs/38159046409) passed Stable Core/Full unit tests,
+  Stable Core release lint and both minified/shrunk release builds. The workflow
+  does not attach test XML; no aggregate CI test count is inferred.
+- All 10 Stable APKs (Core/Full, universal plus four ABIs each) were inspected
+  locally: package `com.dd3boh.outertune`, versionName0.11.1/code92,
+  certificate `98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736`, no debug/testOnly flag and16KiB alignment.
+  Native ABI sets match; Full includes its decoder, Core omits it.
+- Universal Core SHA-256: `8bfcbe852097d517f0d95f2daa08f719bf8ed6436392cb78d856288ec1858ad0`.
+  Universal Full SHA-256: `bd001d8bcf13383749063e2008a01b8b88a169b0d6c5d38a3ba6fbb2f6252b60`. All 11 published APK hashes, including
+  the unchanged accepted Preview, appear in SHA256SUMS.txt.
+- Read-only inspection of installed Poco Stable v91 verified the same package
+  and certificate. VersionCode92 is higher; this supports update compatibility,
+  without claiming a newly performed Stable install or migration acceptance.
+  Stable was not replaced; phone data and controls were untouched by promotion.
+- [Stable release](https://github.com/Bage340/OuterTune-Bage340/releases/tag/0.11.1-v92) contains 10 Stable APKs, accepted Preview and
+  curated evidence. Public bytes/hashes are verified before switching off
+  prerelease; source and historical tag are checked again after promotion.
+- No app source, dependency, schema, signing key or public version changed during
+  promotion. Android10 remains WAIVED and issue#15 remains open. Private
+  diagnostics, databases, account data and signing material are excluded.
