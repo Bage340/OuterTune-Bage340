@@ -5,9 +5,12 @@
 The source review found and corrected real defects, including data-preservation
 and playback defects that the earlier broad passing tests did not cover.
 No blocking introduced source finding remains in the independent corrective
-review. **Stable readiness is not yet established.** A successful fresh account
-playlist read after the October11 continuation correction remains outstanding.
-Exact-candidate phone acceptance has now
+review. **No known blocking finding remains under the owner's source-led review
+and minimal phone acceptance scope.** The October11 continuation correction
+passed complete existing-playlist export and local cache refresh on the exact
+signed replacement APK. This supports source readiness for Stable; residual
+device/provider scenarios remain explicitly unverified.
+Parent-candidate8585c09b phone acceptance has now
 confirmed update preservation, offline playback, rescans, cancellation and local
 copy; see the October11 continuation below.
 This document does not authorize Stable publication.
@@ -73,9 +76,9 @@ database reconciliation or ViewModel state under test.
 | Backup/staged restore/startup recovery | Archive bounds/allowlist, database probe before replacement, main/WAL consistency and rollback/startup markers inspected | Settings copy precedes locked DB snapshot; no joint DB/DataStore lock. Real power loss/process kill not performed on user's data |
 | Downloads prefilter/retry/concurrency/readiness | Existing safe common policies, actual byte/file readiness and failed scan preservation; missing single-item callers corrected | Provider retry and custom-folder permissions/remount on candidate remain device checks; default parallelism1 retained |
 | Playlist folders / add-to-library | Real persisted DAO/UI wiring; canonical paths, collision handling, transactional membership preservation and idempotent additions | Case-only folder rename remains documented no-op; device rendering/recreation evidence is historical |
-| Account/library/playlist sync | Individual playlist and account-library completeness safeguards; cached state preserved on failure | Owner clarified on October11 that the selected remote playlist had been deleted. Missing contents no longer establishes a failure for an existing playlist. Successful fresh server snapshot remains unverified; #14 stays open |
+| Account/library/playlist sync | Individual playlist and account-library completeness safeguards; cached state preserved on failure | Owner clarified the old selected playlist was deleted. The new existing-playlist complete export and cache refresh pass with73 memberships/order on514af1f37; full account-library reconciliation is not a new phone pass |
 | Lyrics automatic/manual/editor/provider matching | Existing provider/cache/recording/timestamp logic inspected; manual failures/replacement races corrected; editor keeps plain/timed text | Real lyrics quality/availability depends on providers and recording; skipped live provider tests are not passes |
-| JSON/CSV/M3U8 library/playlist transfer | Bounded parsing, canonical local identity, preparation/commit revalidation, transaction rollback and real SAF UI flows inspected | Relative M3U references and portable URI grants remain limits; no account export/import replay in this review |
+| JSON/CSV/M3U8 library/playlist transfer | Bounded parsing, canonical local identity, preparation/commit revalidation, transaction rollback and real SAF UI flows inspected | Existing remote-playlist JSON export passes on514af1f37; account-specific import was not replayed. Relative M3U references and portable URI grants remain limits |
 | Stable/Preview/signing/source buildability | Separate package/data/certificates; code92, permanent tag, pinned Full decoder mechanism and attribution retained | Signed replacement identities must be read from actual APK; Stable build success is not Stable publication or phone upgrade acceptance |
 | Localization/docs/release hygiene | Translation audit passes51 locales/574 keys/0 defects; English/Russian README, changelog and review link updated | Kotlin unsupported by Aislop0.16.1; actual result is NOT_SCORED, supplemented by manual wiring/security/preservation review |
 
@@ -134,7 +137,7 @@ the earlier committed-source results below are not substitutes.
   API29 follow-up was not completed: automatic approval review rejected the
   composite emulator-launch action as `blocked by policy`, without further detail.
 
-## October11 continuation on the exact signed candidate
+## October11 continuation on the signed parent candidate8585c09b
 
 The published Preview from source `8585c09b69b948994b97aed6ab4440c6daf5dbff`
 was installed normally over Preview; installed APK readback matches SHA-256
@@ -216,23 +219,47 @@ blocking source issue in this change. Fresh module XML records76 passing tests
 zero failures/errors. A fresh app rerun records10 PlaylistSyncTest passes with
 zero failures/errors/skips. Unsupported Kotlin remains NOT_SCORED by Aislop;
 manual review, compilation and actual regression tests provide the evidence.
-The new signed candidate and phone replay must be recorded separately from the
-8585c09b passes above. No schema, version, signing or remote-account write change.
+No schema, version, signing or remote-account write change.
 
-1. Confirm one successful complete authenticated playlist/library read on the
-   replacement Preview. Validate order/membership and cached state after failure.
-   The previously selected playlist was deleted by its owner. Use an existing
-   playlist; missing contents are rejected safely rather than replacing cache.
-2. On that same APK, check continuous playback/seek across a partial cache,
-   completed/custom file playback offline, and cancel versus completed download.
-   Completed downloaded and direct local playback/seek passed on this candidate;
-   partial cache traversal, custom-folder audio and the exact cancellation race
-   remain unverified. Old device passes cannot be transferred.
-3. Check a repeated full TagLib rescan of representative files preserves likes,
-   album identity/count/order; manual lyrics timeout/retry and copy confirmation
-   behave in the rendered UI. Repeated native scan, local copy and duplicate
-   cancellation passed; successful lyrics retry and remote-write cases remain
-   unverified. Do not mutate a personal remote playlist for acceptance.
+### Final replacement candidate514af1f37 — October11
+
+- Exact APK source: `514af1f37d12824188bf0dcbeba0f3724d9321b2`.
+- Signed Preview CI run38118136028 succeeded with app unit tests, release lint,
+  minification/resource shrinking and release build. The workflow does not attach
+  test XML; no aggregate CI test count is invented.
+- Actual signed APK SHA-256:
+  `4cb037ff673e10c34d2865be54e7c483aa187205356efc59bd8c8fb2ebd72ce3`.
+  Package/certificate/code92 match Preview, no debug/testOnly flag,16KiB alignment.
+- Normal update succeeded; installed APK readback matches that hash. Immediate
+  before/after backups match all22 tables and30 typed preferences; integrity and
+  foreign keys pass. Stable package/data remain untouched.
+- An existing remote playlist fully exports through the JSON document picker;
+  all73 songs match the refreshed local cache IDs and order. The application
+  shows the successful-sync message. Recommendation cards are excluded.
+- All other cached playlist membership rows are unchanged, including the deleted
+  playlist's99 entries/order. New cache creation legitimately adds song/artist/
+  album relations; all30 typed preferences are unchanged. No remote account write.
+- Temporary screen/network controls restored, playback stopped. Private backups,
+  export files, account values and raw responses are not published.
+
+The final report is updated in a documentation-only follow-up; the APK's
+SOURCE_COMMIT remains514af1f37. Parent8585c09b phone tests above are not relabelled
+as a full rerun on this later APK.
+
+1. Complete existing-playlist read, export and local cache refresh now pass on
+   the replacement Preview with exact membership/order. The old missing playlist
+   remains a safe failure preserving cached data; its owner confirmed deletion.
+2. Parent8585c09b phone checks passed completed downloaded and direct local
+   offline playback/seek, repeated native scan, local copy, active cancellation
+   and duplicate cancellation. They are parent receipts, not a full phone rerun
+   on the later continuation correction. Partial cache traversal, custom-folder
+   audio, the exact cancellation race, successful lyrics retry and remote-write
+   cases remain explicitly unverified. The owner's minimal-check request does
+   not require repeating the historical full plan or mutating a personal remote
+   playlist; these limits remain visible rather than being marked PASS.
+3. Exact APK/source identity, update backups, complete export/cache comparison
+   and restoration of temporary phone controls are recorded. No required gate
+   remains unfinished under the current minimal acceptance scope.
 4. Android10 is deferred by the owner. Stable promotion still requires an explicit
    release request; the current Preview verification does not authorize it.
 
@@ -251,5 +278,7 @@ races. No byte loss was established for that caveat.
 All scopes requested by the original v92 handoff were compared with the finished
 source. This review improves and verifies the implementation; it cannot honestly
 promise every device/provider scenario works perfectly. Publish/update Preview
-only, keep acceptance issues open, and wait for explicit successful phone
-acceptance plus a Stable release request.
+only, close the completed playlist-preservation issue#14 and keep issue#15 open
+for the remaining unverified device scenarios, with the completed minimal scope
+recorded. Wait for an explicit Stable release request. Stable
+publication and a newly signed Stable binary are separate release work.
