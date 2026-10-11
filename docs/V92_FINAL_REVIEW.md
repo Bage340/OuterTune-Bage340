@@ -8,6 +8,11 @@ they do not validate the later corrective source or authorize Stable promotion.
 Review started 2026-09-30, continued through 2026-10-03. This document separates source review, automated evidence,
 and device acceptance. It does not authorize a Stable publication.
 
+Asset references below describe the Preview prerelease at the time of review.
+On October 11, the owner reduced the Stable v92 release attachments to the two
+universal APKs; the Preview APK, reports, checksums and `.md` files are no longer
+attached to that Stable release. This review remains in the source repository.
+
 ## Source and preservation
 
 The handoff started at `f067bd08434b1c76d1725857e1436fe4a0d6a93c` on

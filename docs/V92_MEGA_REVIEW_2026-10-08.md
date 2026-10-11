@@ -39,8 +39,9 @@ their nearby paths rather than repeating the four-variant matrix.
   operations; subsequent exact-candidate phone checks are recorded below.
 - Revision remains `0.11.1 v92`, code92, tag `0.11.1-v92`. Stable/Preview
   packages and certificates remain distinct; Room schema remains22. No v93.
-- The release's `SOURCE_COMMIT.txt`, `SHA256SUMS.txt`, signature receipt and
-  `VALIDATION.json` identify the exact candidate. The historical tag is not moved.
+- The then-current Preview prerelease's `SOURCE_COMMIT.txt`, `SHA256SUMS.txt`,
+  signature receipt and `VALIDATION.json` identified that exact candidate. The
+  historical tag is not moved; those receipts were later removed from Stable.
 
 ## Corrective findings and resolution
 
@@ -291,20 +292,24 @@ explicitly requested Stable publication; the separate release work follows.
 - Signed CI run [38159046409](https://github.com/Bage340/OuterTune-Bage340/actions/runs/38159046409) passed Stable Core/Full unit tests,
   Stable Core release lint and both minified/shrunk release builds. The workflow
   does not attach test XML; no aggregate CI test count is inferred.
-- All 10 Stable APKs (Core/Full, universal plus four ABIs each) were inspected
-  locally: package `com.dd3boh.outertune`, versionName0.11.1/code92,
+- At promotion, all 10 Stable APKs (Core/Full, universal plus four ABIs each)
+  were inspected locally: package `com.dd3boh.outertune`, versionName0.11.1/code92,
   certificate `98de410a5f16c5743ca3885d4ded7850fab73730a99bfd67f5912a5d91f6b736`, no debug/testOnly flag and16KiB alignment.
   Native ABI sets match; Full includes its decoder, Core omits it.
-- Universal Core SHA-256: `8bfcbe852097d517f0d95f2daa08f719bf8ed6436392cb78d856288ec1858ad0`.
-  Universal Full SHA-256: `bd001d8bcf13383749063e2008a01b8b88a169b0d6c5d38a3ba6fbb2f6252b60`. All 11 published APK hashes, including
-  the unchanged accepted Preview, appear in SHA256SUMS.txt.
+- The two universal APKs retained on the release page are the same inspected
+  Core and Full files: Core SHA-256
+  `8bfcbe852097d517f0d95f2daa08f719bf8ed6436392cb78d856288ec1858ad0`; Full
+  SHA-256 `bd001d8bcf13383749063e2008a01b8b88a169b0d6c5d38a3ba6fbb2f6252b60`.
 - Read-only inspection of installed Poco Stable v91 verified the same package
   and certificate. VersionCode92 is higher; this supports update compatibility,
   without claiming a newly performed Stable install or migration acceptance.
   Stable was not replaced; phone data and controls were untouched by promotion.
-- [Stable release](https://github.com/Bage340/OuterTune-Bage340/releases/tag/0.11.1-v92) contains 10 Stable APKs, accepted Preview and
-  curated evidence. Public bytes/hashes are verified before switching off
-  prerelease; source and historical tag are checked again after promotion.
+- The Stable release was initially promoted with the inspected APK variants and
+  validation receipts. On October 11, at the owner's request, its attachments
+  were reduced to the two universal Stable APKs (Core and Full). Preview, split
+  APKs, reports, checksums and all `.md` attachments were removed; the retained
+  APK identities are unchanged. The release tag and source commit were not
+  changed.
 - No app source, dependency, schema, signing key or public version changed during
   promotion. Android10 remains WAIVED and issue#15 remains open. Private
   diagnostics, databases, account data and signing material are excluded.

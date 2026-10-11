@@ -35,11 +35,11 @@ latest corrections and remaining acceptance checks. Unknown legacy partial
 cache formats are rejected to preserve retained audio; successful account sync
 and phone acceptance remain separate from source/build verification.
 
-The current release is **OuterTune 0.11.1 v92 — Stable** (Android `versionCode` 92), tag `0.11.1-v92`. Download [Core universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-core.apk) for the default build, or [Full universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-full.apk) for the additional FFmpeg decoder. Separate APKs for individual ABIs and the accepted Preview build remain on the [release page](https://github.com/Bage340/OuterTune-Bage340/releases/tag/0.11.1-v92).
+The current release is **OuterTune 0.11.1 v92 — Stable** (Android `versionCode` 92), tag `0.11.1-v92`. Download [Core universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-core.apk) for most users, or [Full universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-full.apk) for additional audio-format support. The release contains only these two Stable APKs; Preview is a separate app and is not attached to the Stable release.
 
 Stable keeps package `com.dd3boh.outertune` and its existing signing identity. Preserve a backup/export and try a normal Stable update first. Preview uses `com.dd3boh.outertune.preview` with separate private data; installing Stable does not automatically migrate Preview data. If Android rejects installation, retain the error and do not uninstall the only copy of your data. Source-led review and minimal Poco acceptance passed in Preview; the new Stable APKs were built and inspected, without replacing Stable on the phone. See [release policy](docs/RELEASE_POLICY.md), [custom build notes](CUSTOM_BUILD.md), and [review evidence](docs/V92_MEGA_REVIEW_2026-10-08.md).
 
-Both channels' published APKs use source `514af1f37d12824188bf0dcbeba0f3724d9321b2`, identified by `SOURCE_COMMIT.txt` and `SHA256SUMS.txt`. The historical tag stays in place; its automatic source archive is older than these APKs. To build their exact source, check out the commit below.
+Both Stable APKs are built from source commit `514af1f37d12824188bf0dcbeba0f3724d9321b2`. The historical tag stays in place; its automatic source archive is older than these APKs. To build their exact source, check out the commit below.
 
 To build from source, clone this repository with submodules and use Android Studio or the Gradle wrapper:
 
