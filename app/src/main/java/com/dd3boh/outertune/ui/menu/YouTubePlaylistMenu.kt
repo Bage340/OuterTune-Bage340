@@ -66,6 +66,7 @@ import com.dd3boh.outertune.transfer.TransferDocument
 import com.dd3boh.outertune.transfer.TransferPlaylist
 import com.dd3boh.outertune.transfer.TransferTrack
 import com.dd3boh.outertune.utils.getDownloadState
+import com.dd3boh.outertune.utils.reportException
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.PlaylistItem
 import com.zionhuang.innertube.models.SongItem
@@ -308,7 +309,8 @@ fun YouTubePlaylistMenu(
                     } catch (cancelled: CancellationException) {
                         throw cancelled
                     } catch (failure: Exception) {
-                        exportError = failure.message ?: resources.getString(R.string.transfer_failed)
+                        reportException(failure)
+                        exportError = resources.getString(R.string.error_unknown)
                     } finally {
                         exportLoading = false
                     }

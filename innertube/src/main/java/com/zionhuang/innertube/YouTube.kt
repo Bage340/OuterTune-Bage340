@@ -43,6 +43,7 @@ import com.zionhuang.innertube.pages.NewReleaseAlbumPage
 import com.zionhuang.innertube.pages.NextPage
 import com.zionhuang.innertube.pages.NextResult
 import com.zionhuang.innertube.pages.PlaylistPage
+import com.zionhuang.innertube.pages.PlaylistSectionContinuationPage
 import com.zionhuang.innertube.pages.RelatedPage
 import com.zionhuang.innertube.pages.SearchPage
 import com.zionhuang.innertube.pages.SearchResult
@@ -53,8 +54,10 @@ import io.ktor.client.call.body
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
@@ -361,19 +364,28 @@ object YouTube {
             client = WEB_REMIX,
             browseId = "VL$playlistId",
             setLogin = true
-        ).body<BrowseResponse>()
+        ).body<JsonObject>()
 
-        PlaylistPage.fromBrowseResponse(response, playlistId)
-    }
+        val page = PlaylistPage.fromBrowseResponse(playlistJson.decodeFromJsonElement(BrowseResponse.serializer(), response), playlistId)
+        page.copy(snapshotComplete = page.snapshotComplete && PlaylistSectionContinuationPage.initialSectionComplete(response))
+    }.onFailure { if (it is CancellationException) throw it }
 
     suspend fun playlistContinuation(continuation: String) = runCatching {
         val response = innerTube.browse(
             client = WEB_REMIX,
             continuation = continuation,
             setLogin = true
-        ).body<BrowseResponse>()
-        PlaylistPage.continuationFromBrowseResponse(response)
-    }
+        ).body<JsonObject>()
+        val page = PlaylistPage.continuationFromBrowseResponse(playlistJson.decodeFromJsonElement(BrowseResponse.serializer(), response))
+        page.copy(snapshotComplete = page.snapshotComplete && PlaylistSectionContinuationPage.songContinuationComplete(response))
+    }.onFailure { if (it is CancellationException) throw it }
+
+    suspend fun playlistSectionContinuation(continuation: String): Result<PlaylistSectionContinuationPage> = runCatching {
+        val response = innerTube.browse(client = WEB_REMIX, continuation = continuation, setLogin = true).body<JsonObject>()
+        PlaylistSectionContinuationPage.fromResponse(response)
+    }.onFailure { if (it is CancellationException) throw it }
+
+    private val playlistJson = Json { ignoreUnknownKeys = true; explicitNulls = false }
     suspend fun home(continuation: String? = null, params: String? = null): Result<HomePage> = runCatching {
         if (continuation != null) {
             return@runCatching homeContinuation(continuation).getOrThrow()

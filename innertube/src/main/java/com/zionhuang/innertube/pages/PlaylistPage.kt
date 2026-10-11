@@ -43,7 +43,8 @@ data class PlaylistPage(
             }
             val parsed = parsePlaylistSongs(shelf.contents)
             val sectionContinuation = section.continuations?.getContinuation()
-            val sectionMetadataComplete = section.continuations.isNullOrEmpty() || !sectionContinuation.isNullOrBlank()
+            val sectionMetadataComplete = section.continuations.isNullOrEmpty() ||
+                (section.continuations.size == 1 && !sectionContinuation.isNullOrBlank())
             return PlaylistPage(
                 playlist = PlaylistItem(
                     id = playlistId,
@@ -65,7 +66,8 @@ data class PlaylistPage(
                 songs = parsed.songs,
                 songsContinuation = shelf.contents.getContinuation(),
                 continuation = sectionContinuation,
-                snapshotComplete = parsed.complete && sectionMetadataComplete,
+                snapshotComplete = parsed.complete && sectionMetadataComplete &&
+                    section.contents.orEmpty().count { it.musicPlaylistShelfRenderer != null } == 1,
             )
         }
 
@@ -73,10 +75,13 @@ data class PlaylistPage(
             response.continuationContents?.musicPlaylistShelfContinuation?.let {
                 val parsed = parsePlaylistSongs(it.contents)
                 val continuation = it.continuations?.getContinuation()
-                val metadataComplete = it.continuations.isNullOrEmpty() || !continuation.isNullOrBlank()
+                val inlineContinuation = it.contents.getContinuation()
+                val metadataComplete = (it.continuations.isNullOrEmpty() ||
+                    (it.continuations.size == 1 && !continuation.isNullOrBlank())) &&
+                    (continuation == null || inlineContinuation == null || continuation == inlineContinuation)
                 return PlaylistContinuationPage(
                     songs = parsed.songs,
-                    continuation = continuation ?: it.contents.getContinuation(),
+                    continuation = continuation ?: inlineContinuation,
                     snapshotComplete = parsed.complete && metadataComplete,
                 )
             }
@@ -91,10 +96,11 @@ data class PlaylistPage(
         private data class ParsedSongs(val songs: List<SongItem>, val complete: Boolean)
 
         private fun parsePlaylistSongs(contents: List<MusicShelfRenderer.Content>): ParsedSongs {
-            var complete = true
+            var complete = contents.count { it.continuationItemRenderer != null } <= 1
             val songs = contents.mapNotNull { row ->
                 val renderer = row.musicResponsiveListItemRenderer
                 if (renderer != null) {
+                    if (row.continuationItemRenderer != null) complete = false
                     fromMusicResponsiveListItemRenderer(renderer).also {
                         if (it == null) complete = false
                     }

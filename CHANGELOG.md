@@ -12,6 +12,9 @@ replace every case in that checklist.
   and duration; local album titles cannot overwrite remote albums.
 - Reject incomplete account-library snapshots before overwrite reconciliation,
   including malformed rows and unconsumed continuation tokens.
+- Consume validated playlist-recommendation continuations when reading a complete
+  playlist, so recommendations do not block export or sync or become songs.
+  Unknown sections, ambiguous tokens and continuation loops still fail safely.
 - Copy complete remote playlists using their source identity. Duplicate choices
   share one confirmed remote/local addition path; failures remain visible.
 - Resolve stream holes inside the cache chain and read beyond the first cached

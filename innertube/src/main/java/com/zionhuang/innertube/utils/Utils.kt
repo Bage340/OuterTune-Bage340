@@ -3,28 +3,39 @@ package com.zionhuang.innertube.utils
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.pages.LibraryPage
 import com.zionhuang.innertube.pages.PlaylistPage
+import kotlinx.coroutines.CancellationException
 import java.security.MessageDigest
 
 @JvmName("completedLibrary")
 suspend fun Result<PlaylistPage>.completed(): Result<PlaylistPage> = runCatching {
     val page = getOrThrow()
     require(page.snapshotComplete) { "Incomplete playlist snapshot" }
-    require(page.continuation == null) { "Unconsumed playlist section continuation" }
     val songs = page.songs.toMutableList()
+    val consumedTokens = mutableSetOf<String>()
+    fun consume(token: String) {
+        require(token.isNotBlank() && consumedTokens.add(token)) { "Invalid or repeated playlist continuation" }
+        require(consumedTokens.size <= 1000) { "Playlist continuation limit exceeded" }
+    }
     var continuation = page.songsContinuation
     while (continuation != null) {
+        consume(continuation)
         val continuationPage = YouTube.playlistContinuation(continuation).getOrThrow()
         require(continuationPage.snapshotComplete) { "Incomplete playlist continuation" }
         songs += continuationPage.songs
         continuation = continuationPage.continuation
     }
+    continuation = page.continuation
+    while (continuation != null) {
+        consume(continuation)
+        continuation = YouTube.playlistSectionContinuation(continuation).getOrThrow().continuation
+    }
     PlaylistPage(
         playlist = page.playlist,
         songs = songs,
         songsContinuation = null,
-        continuation = page.continuation
+        continuation = null
     )
-}
+}.onFailure { if (it is CancellationException) throw it }
 
 @JvmName("completedPlaylist")
 suspend fun Result<LibraryPage>.completed(): Result<LibraryPage> = runCatching {
