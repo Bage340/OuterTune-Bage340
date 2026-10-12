@@ -37,16 +37,16 @@ and phone acceptance remain separate from source/build verification.
 
 The current release is **OuterTune 0.11.1 v92 — Stable** (Android `versionCode` 92), tag `0.11.1-v92`. Download [Core universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-core.apk) for most users, or [Full universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-full.apk) for additional audio-format support. The release contains only these two Stable APKs; Preview is a separate app and is not attached to the Stable release.
 
-Stable keeps package `com.dd3boh.outertune` and its existing signing identity. Preserve a backup/export and try a normal Stable update first. Preview uses `com.dd3boh.outertune.preview` with separate private data; installing Stable does not automatically migrate Preview data. If Android rejects installation, retain the error and do not uninstall the only copy of your data. Source-led review and minimal Poco acceptance passed in Preview; the new Stable APKs were built and inspected, without replacing Stable on the phone. See [release policy](docs/RELEASE_POLICY.md), [custom build notes](CUSTOM_BUILD.md), and [review evidence](docs/V92_MEGA_REVIEW_2026-10-08.md).
+Stable keeps package `com.dd3boh.outertune` and its existing signing identity. Preserve a backup/export and try a normal Stable update first. Preview uses `com.dd3boh.outertune.preview` with separate private data; installing Stable does not automatically migrate Preview data. If Android rejects installation, retain the error and do not uninstall the only copy of your data. The repaired signed Core and Full APKs updated Stable in place on Poco Android 13 with versionCode 92. Both scanner methods, permission recovery, error/retry and local playback were checked. See [release policy](docs/RELEASE_POLICY.md), [custom build notes](CUSTOM_BUILD.md), and [scanner verification](docs/V92_SCANNER_FIX_2026-10-12.md).
 
-Both Stable APKs are built from source commit `514af1f37d12824188bf0dcbeba0f3724d9321b2`. The historical tag stays in place; its automatic source archive is older than these APKs. To build their exact source, check out the commit below.
+Both Stable APKs are built from source commit `d38a7f35f3bfd26eb5cb82f7ea1a9f67bf67b424`. The historical tag stays in place; its automatic source archive is older than these APKs. To build their exact source, check out the commit below.
 
 To build from source, clone this repository with submodules and use Android Studio or the Gradle wrapper:
 
 ```bash
 git clone --recurse-submodules https://github.com/Bage340/OuterTune-Bage340.git
 cd OuterTune-Bage340
-git checkout 514af1f37d12824188bf0dcbeba0f3724d9321b2
+git checkout d38a7f35f3bfd26eb5cb82f7ea1a9f67bf67b424
 git submodule update --init --recursive
 
 # Core debug APK

@@ -37,16 +37,16 @@
 
 Текущий релиз — **OuterTune 0.11.1 v92 — Stable** (Android `versionCode` 92), тег `0.11.1-v92`. Скачайте [Core universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-core.apk) для большинства пользователей или [Full universal](https://github.com/Bage340/OuterTune-Bage340/releases/download/0.11.1-v92/OuterTune-Bage340-0.11.1-v92-stable-full.apk) для дополнительной поддержки аудиоформатов. В релизе оставлены только эти два Stable APK; Preview — отдельное приложение и не входит в Stable-релиз.
 
-Stable сохраняет пакет `com.dd3boh.outertune` и прежний ключ подписи. Сохраните резервную копию/экспорт и сначала попробуйте обычное обновление Stable. Preview использует `com.dd3boh.outertune.preview` с отдельными данными; установка Stable не переносит их автоматически. Если Android отклонит установку, сохраните текст ошибки и не удаляйте единственную копию данных. Ревью исходников и минимальная приёмка на Poco пройдены в Preview; новые Stable APK собраны и проверены без замены Stable на телефоне. См. [правила релизов](docs/RELEASE_POLICY.md), [заметки о сборке](CUSTOM_BUILD.md) и [результаты ревью](docs/V92_MEGA_REVIEW_2026-10-08.md).
+Stable сохраняет пакет `com.dd3boh.outertune` и прежний ключ подписи. Сохраните резервную копию/экспорт и сначала попробуйте обычное обновление Stable. Preview использует `com.dd3boh.outertune.preview` с отдельными данными; установка Stable не переносит их автоматически. Если Android отклонит установку, сохраните текст ошибки и не удаляйте единственную копию данных. Исправленные подписанные Core и Full обновили Stable на Poco с Android 13 поверх прежней установки и с versionCode 92. Проверены оба способа сканирования, восстановление доступа, ошибка/повтор и локальное воспроизведение. См. [правила релизов](docs/RELEASE_POLICY.md), [заметки о сборке](CUSTOM_BUILD.md) и [проверку сканера](docs/V92_SCANNER_FIX_2026-10-12.md).
 
-Обе Stable-сборки собраны из исходного кода `514af1f37d12824188bf0dcbeba0f3724d9321b2`. Исторический тег сохранён; его автоматический архив исходников старше этих APK. Для сборки точного исходника выберите commit ниже.
+Обе Stable-сборки собраны из исходного кода `d38a7f35f3bfd26eb5cb82f7ea1a9f67bf67b424`. Исторический тег сохранён; его автоматический архив исходников старше этих APK. Для сборки точного исходника выберите commit ниже.
 
 Для сборки из исходного кода клонируйте этот репозиторий вместе с подмодулями и используйте Android Studio или Gradle Wrapper:
 
 ```bash
 git clone --recurse-submodules https://github.com/Bage340/OuterTune-Bage340.git
 cd OuterTune-Bage340
-git checkout 514af1f37d12824188bf0dcbeba0f3724d9321b2
+git checkout d38a7f35f3bfd26eb5cb82f7ea1a9f67bf67b424
 git submodule update --init --recursive
 
 # Отладочный APK Core

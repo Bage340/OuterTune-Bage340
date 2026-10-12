@@ -3,8 +3,8 @@
 The active fork iteration uses upstream base version `0.11.1`, fork revision
 `v92`, and Android `versionCode` 92. Its tag is `0.11.1-v92`. A build attempt
 does not increment the revision. Stable v92 was explicitly authorized after the
-agreed minimal phone acceptance in Preview. Core and Full Stable builds are
-published alongside the separate Preview package.
+agreed minimal phone acceptance in Preview. The current Stable release contains
+only universal Core and Full APKs. Preview remains a separate Android package.
 
 ## Channels and installation
 
@@ -69,9 +69,10 @@ Unit tests use deterministic provider fixtures. Live KuGou checks require
 `OUTERTUNE_LIVE_LYRICS_TESTS=true`; live Innertube checks require
 `OUTERTUNE_LIVE_YOUTUBE_TESTS=true`. Otherwise those tests are reported as
 skipped, not passed. The final review is in
-[docs/V92_FINAL_REVIEW.md](docs/V92_FINAL_REVIEW.md). Release assets include
-`SOURCE_COMMIT.txt` and `SHA256SUMS.txt`: these identify the replacement APK
-even when the existing historical v92 tag remains on its original commit.
+[docs/V92_FINAL_REVIEW.md](docs/V92_FINAL_REVIEW.md). The Stable release description
+links the exact replacement APK source; private CI artifacts also contain its
+source and checksum receipts. The historical v92 tag remains on its original
+commit, and the public release contains only its two APKs.
 
 ## Source history
 
@@ -81,7 +82,7 @@ even when the existing historical v92 tag remains on its original commit.
 - The v91 source iteration added local-file playback recovery, download and
   stream retry handling, fail-safe scanning, and playlist-folder organization.
 - Stable v92 promotes the existing `0.11.1-v92` release without moving its tag.
-  Published Stable and Preview APKs use source `514af1f37d12824188bf0dcbeba0f3724d9321b2`.
+  The repaired Stable Core/Full APKs use source `d38a7f35f3bfd26eb5cb82f7ea1a9f67bf67b424`.
   Clone with submodules, check out that commit, then run
   `git submodule update --init --recursive`; the automatic archive of the
   historical tag is not the replacement APK source. See Git history for
