@@ -19,3 +19,5 @@ Acceptance plan:
 5. Only after device acceptance, replace both APKs in the existing Stable release and verify remote digests. Keep the historical tag unchanged.
 
 The first candidate has not yet passed phone acceptance. A tiny GET, an anonymous desktop bot response, or a successful build does not prove full download reliability. Cache representation pins remain strict: zero cached spans do not exclude a concurrent upstream already in flight.
+
+The initial signed build ([run 38221717364](https://github.com/Bage340/OuterTune-Bage340/actions/runs/38221717364), source `2bd68bc12a720d5512feb9226b2f18135b6d1ec4`) reached the Full packaging task, then produced no further output for approximately 42 minutes before the job's 60-minute timeout cancelled it. No final APK verification/upload or successful overall checks were recorded. The release workflow now runs the same unit suites, lint and Core/Full builds in separate sequential steps with individual time limits. A signed Core intermediate artifact permits device testing while Full builds; it does not satisfy the final publication gate.
