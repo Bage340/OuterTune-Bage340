@@ -161,15 +161,10 @@ class DownloadUtil @Inject constructor(
                 }
             }
 
-            val streamUrl = format.contentLength?.let { contentLength ->
-                // Keep the bounded range when YouTube reports a real length; never truncate an
-                // unknown-length track to an arbitrary 10 MB fallback.
-                "${playbackData.streamUrl}&range=0-$contentLength"
-            } ?: playbackData.streamUrl
-
             val stream = songUrlCache.put(
                 mediaId = mediaId,
-                url = streamUrl,
+                // Reuse the validated URL; Media3 supplies the HTTP Range for initial/resumed reads.
+                url = playbackData.streamUrl,
                 requestHeaders = playbackData.streamHeaders,
                 clientName = playbackData.streamClient,
                 expiresInSeconds = playbackData.streamExpiresInSeconds,

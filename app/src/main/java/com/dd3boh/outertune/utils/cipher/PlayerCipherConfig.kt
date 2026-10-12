@@ -49,7 +49,15 @@ object PlayerCipherConfigStore {
 
     private fun load(): Map<String, PlayerCipherConfig> = try {
         val text = App.instance.assets.open(ASSET_NAME).bufferedReader().use { it.readText() }
-        val players = JSONObject(text).getJSONObject("players")
+        parse(JSONObject(text)).also { Log.d(TAG, "Loaded ${it.size} player cipher configs") }
+    } catch (e: Exception) {
+        Log.e(TAG, "Failed to load $ASSET_NAME", e)
+        emptyMap()
+    }
+
+    internal fun parse(table: JSONObject): Map<String, PlayerCipherConfig> {
+        require(table.getInt("schemaVersion") == 1) { "Unsupported player cipher schema" }
+        val players = table.getJSONObject("players")
         val result = mutableMapOf<String, PlayerCipherConfig>()
         players.keys().forEach { hash ->
             val entry = players.getJSONObject(hash)
@@ -61,11 +69,7 @@ object PlayerCipherConfigStore {
                 }
             }
         }
-        Log.d(TAG, "Loaded ${result.size} player cipher configs")
-        result
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to load $ASSET_NAME", e)
-        emptyMap()
+        return result
     }
 
     // sig is a `name(int,int,INPUT)` call; returns null on any malformed field so one bad entry can't break the map.

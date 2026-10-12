@@ -12,6 +12,7 @@ import android.util.Log
 import com.zionhuang.innertube.YouTube
 import com.zionhuang.innertube.models.YouTubeClient
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -58,6 +59,7 @@ object PlayerJsFetcher {
                 cached?.let { return PlayerJs(it.first, it.second, fromCache = true) }
             }
             val result = runCatching { fetch(videoId) }.getOrElse {
+                if (it is CancellationException) throw it
                 Log.e(TAG, "Failed to fetch player.js", it)
                 null
             }

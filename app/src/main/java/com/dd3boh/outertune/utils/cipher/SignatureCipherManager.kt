@@ -12,6 +12,7 @@ import android.net.Uri
 import android.util.Log
 import com.dd3boh.outertune.App
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -80,6 +81,8 @@ object SignatureCipherManager {
                 val urlWithN = transformNParam(baseUrl, cipher, videoId)
                 val separator = if ("?" in urlWithN) "&" else "?"
                 "$urlWithN$separator$sigParam=${Uri.encode(deobfuscatedSig)}"
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e(TAG, "[$videoId] cipher deobfuscation failed (forceRefresh=$forceRefresh)", e)
                 null
@@ -122,6 +125,8 @@ object SignatureCipherManager {
                 Log.i(TAG, "[$videoId] n parameter transformed")
                 "$prefix${leadChar}n=${Uri.encode(transformed)}$suffix"
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "[$videoId] n transform failed", e)
             url
